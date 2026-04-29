@@ -1,17 +1,19 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from '../context/AuthContext';
-import HeroSection from '../components/sections/HeroSection';
-import FeaturesSection from '../components/sections/FeaturesSection';
-import VisualsSection from '../components/sections/VisualsSection';
-import CTASection from '../components/sections/CTASection';
-import Footer from '../components/layout/Footer';
-import LoginPage from '../pages/auth/LoginPage';
-import SignupPage from '../pages/auth/SignupPage';
-import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
-import ResetPasswordPage from '../pages/auth/ResetPasswordPage';
-import Dashboard from '../pages/Dashboard';
-import { PublicRoute, ProtectedRoute } from './authRoutes';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import HeroSection from '@/components/sections/HeroSection';
+import FeaturesSection from '@/components/sections/FeaturesSection';
+import VisualsSection from '@/components/sections/VisualsSection';
+import CTASection from '@/components/sections/CTASection';
+import Footer from '@/components/layout/Footer';
+import Navbar from '@/components/layout/Navbar';
+import { DashboardNavbar } from '@/components/layout/DashboardNavbar';
+import LoginPage from '@/pages/auth/LoginPage';
+import SignupPage from '@/pages/auth/SignupPage';
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
+import Dashboard from '@/pages/Dashboard';
+import { PublicRoute, ProtectedRoute } from '@/routes/authRoutes';
 
 // Simple loading component
 const LoadingIndicator: React.FC = () => {
@@ -35,10 +37,11 @@ function AppRouter() {
             <Route path="/" element={
               <LoadingRoute>
                 <>
+                  <Navbar />
                   <HeroSection />
-                  <FeaturesSection />
-                  <VisualsSection />
-                  <CTASection />
+                  <FeaturesSection id="features" />
+                  <VisualsSection id="visuals" />
+                  <CTASection id="cta" />
                   <Footer />
                 </>
               </LoadingRoute>
@@ -51,7 +54,7 @@ function AppRouter() {
             <Route path="/reset-password" element={<LoadingRoute><PublicRoute><ResetPasswordPage /></PublicRoute></LoadingRoute>} />
             
             {/* Protected routes */}
-            <Route path="/dashboard" element={<LoadingRoute><ProtectedRoute><Dashboard /></ProtectedRoute></LoadingRoute>} />
+            <Route path="/dashboard" element={<LoadingRoute><ProtectedRoute><><DashboardNavbar /><Dashboard /></></ProtectedRoute></LoadingRoute>} />
             {/* Add more protected routes here as they're implemented */}
             
             {/* Redirect root to home if not already there */}

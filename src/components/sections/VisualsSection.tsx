@@ -1,5 +1,9 @@
 
-const VisualsSection = () => {
+interface VisualsSectionProps {
+  id?: string;
+}
+
+const VisualsSection = ({ id }: VisualsSectionProps) => {
   // Placeholder images - in a real app, these would be actual screenshots
   const visuals = [
     {
@@ -26,7 +30,7 @@ const VisualsSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-surface">
+    <section id={id} className="py-20 bg-surface">
       <div className="max-w-7xl mx-auto px-6">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-white">
           See Plot in Action

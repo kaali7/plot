@@ -1,7 +1,11 @@
-import Button from './../../components/ui/Button';
+import Button from '@/components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 
-const CTASection: React.FC = () => {
+interface CTASectionProps {
+  id?: string;
+}
+
+const CTASection: React.FC<CTASectionProps> = ({ id }) => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
@@ -13,7 +17,7 @@ const CTASection: React.FC = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-r from-black via-[#2a003f] to-[#5a007a]">
+    <section id={id} className="py-20 bg-gradient-to-r from-black via-[#2a003f] to-[#5a007a]">
       <div className="max-w-4xl mx-auto px-6 text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-8 text-white">
           Ready to Transform Your Storytelling Process?

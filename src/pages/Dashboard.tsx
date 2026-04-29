@@ -2,7 +2,7 @@ import React from 'react';
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-r from-black to-[#2a003f] text-white p-6">
+    <div className="min-h-screen bg-gradient-to-r from-black to-[#2a003f] text-white pt-16 p-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Welcome to Plot Dashboard</h1>
         <p className="text-gray-400 mb-6">

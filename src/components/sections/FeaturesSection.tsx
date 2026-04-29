@@ -28,9 +28,13 @@ const features: Feature[] = [
   }
 ];
 
-const FeaturesSection = () => {
+interface FeaturesSectionProps {
+  id?: string;
+}
+
+const FeaturesSection = ({ id }: FeaturesSectionProps) => {
   return (
-    <section className="py-20 bg-background">
+    <section id={id} className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-6 space-y-16">
         <h2 className="text-3xl md:text-4xl font-bold text-center text-white">
           How Plot Works
