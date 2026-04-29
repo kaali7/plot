@@ -69,3 +69,5 @@ const DashboardNavbar = () => {
     </div>
   );
 };
+
+export default DashboardNavbar;

@@ -7,12 +7,13 @@ import VisualsSection from '@/components/sections/VisualsSection';
 import CTASection from '@/components/sections/CTASection';
 import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
-import { DashboardNavbar } from '@/components/layout/DashboardNavbar';
+import DashboardNavbar from '@/components/layout/DashboardNavbar';
 import LoginPage from '@/pages/auth/LoginPage';
 import SignupPage from '@/pages/auth/SignupPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import Dashboard from '@/pages/Dashboard';
+import StoryEditor from '@/pages/StoryEditor';
 import { PublicRoute, ProtectedRoute } from '@/routes/authRoutes';
 
 // Simple loading component
@@ -53,9 +54,10 @@ function AppRouter() {
             <Route path="/forgot-password" element={<LoadingRoute><PublicRoute><ForgotPasswordPage /></PublicRoute></LoadingRoute>} />
             <Route path="/reset-password" element={<LoadingRoute><PublicRoute><ResetPasswordPage /></PublicRoute></LoadingRoute>} />
             
-            {/* Protected routes */}
-            <Route path="/dashboard" element={<LoadingRoute><ProtectedRoute><><DashboardNavbar /><Dashboard /></></ProtectedRoute></LoadingRoute>} />
-            {/* Add more protected routes here as they're implemented */}
+              {/* Protected routes */}
+              <Route path="/dashboard" element={<LoadingRoute><ProtectedRoute><DashboardNavbar /><Dashboard /></ProtectedRoute></LoadingRoute>} />
+               <Route path="/story/:storyId" element={<LoadingRoute><ProtectedRoute><StoryEditor /></ProtectedRoute></LoadingRoute>} />
+              {/* Add more protected routes here as they're implemented */}
             
             {/* Redirect root to home if not already there */}
             <Route path="*" element={<Navigate to="/" replace />} />
