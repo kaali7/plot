@@ -1,6 +1,17 @@
 import Button from './../../components/ui/Button';
+import { useNavigate } from 'react-router-dom';
 
-const CTASection = () => {
+const CTASection: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/signup');
+  };
+
+  const handleLearnMore = () => {
+    navigate('/login');
+  };
+
   return (
     <section className="py-20 bg-gradient-to-r from-black via-[#2a003f] to-[#5a007a]">
       <div className="max-w-4xl mx-auto px-6 text-center">
@@ -10,9 +21,14 @@ const CTASection = () => {
         <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl mx-auto">
           Join thousands of writers who have moved from messy drafts to polished stories with Plot's structured approach.
         </p>
-        <Button variant="primary" size="large">
-          Get Started Free
-        </Button>
+        <div className="flex flex-wrap gap-4 justify-center">
+          <Button variant="primary" size="large" onClick={handleGetStarted}>
+            Get Started Free
+          </Button>
+          <Button variant="outline" size="large" onClick={handleLearnMore}>
+            Learn More
+          </Button>
+        </div>
       </div>
     </section>
   );
