@@ -1,30 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #000000;
-  --primary: #5a007a;
-  --accent: #8a00c2;
-  --surface: #1a001f;
+@layer base {
+  :root {
+    --background: #000000;
+    --primary: #ff00ff;
+    --accent: #ff00ff;
+    --surface: #0a0a0a;
+    --editor-bg: #050505;
+    --editor-border: #1a1a1a;
+  }
+
+  body {
+    @apply bg-background text-editor-text antialiased;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'EB Garamond', serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
 }
 
-body {
-  background-color: #000000;
-  color: white;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  margin: 0;
-  min-height: 100vh;
-}
+@layer components {
+  .card-tactile {
+    @apply bg-editor-card border border-editor-border rounded-sm transition-all duration-300;
+  }
 
-* {
-  box-sizing: border-box;
+  .card-tactile:hover {
+    @apply border-editor-magenta/30 shadow-magenta-glow;
+  }
+
+  .btn-magenta {
+    @apply bg-magenta-gradient text-white px-4 py-2 font-medium transition-all duration-300 hover:shadow-magenta-glow active:scale-95;
+  }
+
+  .input-tactile {
+    @apply bg-editor-bg border border-editor-border rounded-sm px-3 py-2 text-editor-text focus:border-editor-magenta/50 focus:outline-none transition-all duration-300;
+  }
+
+  .glass-pill {
+    @apply bg-white/5 border border-white/10 rounded-pill px-3 py-1 text-xs text-editor-text-muted hover:bg-white/10 transition-colors;
+  }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -32,25 +63,18 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a003f;
-  border-radius: 10px;
+  background: #1a1a1a;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a004f;
+  background: #ff00ff;
 }
 
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Typography polish */
+.prose-editor {
+  @apply font-serif text-xl leading-relaxed max-w-2xl mx-auto;
 }
 
-.animate-slide-up {
-  animation: slide-up 300ms ease-out forwards;
+.prose-editor p {
+  @apply mb-6;
 }
