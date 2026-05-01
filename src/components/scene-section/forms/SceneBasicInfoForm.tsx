@@ -8,6 +8,7 @@ interface SceneBasicInfoFormProps {
     pov_character_id?: string;
     goal?: string;
   };
+  characters: any[];
   onUpdate: (data: {
     title?: string;
     type?: string;
@@ -17,7 +18,7 @@ interface SceneBasicInfoFormProps {
   }) => void;
 }
 
-export const SceneBasicInfoForm: React.FC<SceneBasicInfoFormProps> = ({ data, onUpdate }) => {
+export const SceneBasicInfoForm: React.FC<SceneBasicInfoFormProps> = ({ data, characters, onUpdate }) => {
   return (
     <div className="space-y-4">
       <div>
@@ -64,7 +65,11 @@ export const SceneBasicInfoForm: React.FC<SceneBasicInfoFormProps> = ({ data, on
           className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
         >
           <option value="">None (Narrator)</option>
-          {/* Options would be populated from characters prop */}
+          {characters.map(char => (
+            <option key={char.id} value={char.id}>
+              {char.name}
+            </option>
+          ))}
         </select>
       </div>
     </div>

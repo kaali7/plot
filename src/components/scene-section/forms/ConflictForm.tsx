@@ -5,7 +5,7 @@ interface ConflictFormProps {
   onUpdate: (data: any) => void;
 }
 
-export const ConflictForm: React.FC<ConflictFormProps> = ({ data, onUpdate }) => {
+export const ConflictForm: React.FC<ConflictFormProps> = ({ data: _data, onUpdate: _onUpdate }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-white">Scene Conflicts</h3>

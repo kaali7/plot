@@ -18,7 +18,7 @@ interface DialogueFormProps {
 
 const dialogueSchema = z.object({
   characterId: z.string({ 
-    required_error: 'Character is required' 
+    message: 'Character is required' 
   }),
   content: z.string().min(1, { message: 'Dialogue content is required' }),
   order: z.number().int().nonnegative({ message: 'Order must be a non-negative integer' })
@@ -50,7 +50,7 @@ export const DialogueForm: React.FC<DialogueFormProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-purple-300 mb-1">
           Character
@@ -115,6 +115,6 @@ export const DialogueForm: React.FC<DialogueFormProps> = ({
           Save Dialogue
         </button>
       </div>
-    </div>
+    </form>
   );
 };

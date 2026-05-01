@@ -23,25 +23,23 @@ export const SceneDialogueForm: React.FC<SceneDialogueFormProps> = ({ data, char
         content: dialogueContent.trim(),
         order: data.length
       };
-      onUpdate(prev => [...prev, newDialogue]);
+      onUpdate([...data, newDialogue]);
       setSelectedCharacterId('');
       setDialogueContent('');
     }
   };
 
   const updateDialogueContent = (index: number, content: string) => {
-    onUpdate((prev: DialogueEntry[]) => {
-      const newData = [...prev];
-      newData[index] = {
-        ...newData[index],
-        content
-      };
-      return newData;
-    });
+    const newData = [...data];
+    newData[index] = {
+      ...newData[index],
+      content
+    };
+    onUpdate(newData);
   };
 
   const removeDialogue = (index: number) => {
-    onUpdate(prev => prev.filter((_, i) => i !== index));
+    onUpdate(data.filter((_, i) => i !== index));
   };
 
   return (

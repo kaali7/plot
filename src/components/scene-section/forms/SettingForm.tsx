@@ -5,7 +5,7 @@ interface SettingFormProps {
   onUpdate: (data: any) => void;
 }
 
-export const SettingForm: React.FC<SettingFormProps> = ({ data, onUpdate }) => {
+export const SettingForm: React.FC<SettingFormProps> = ({ data: _data, onUpdate: _onUpdate }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-white">Scene Setting</h3>

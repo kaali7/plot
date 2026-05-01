@@ -1,38 +1,38 @@
 import React, { useState } from 'react';
-import { BasicInfoForm } from './forms/BasicInfoForm';
-import { SettingForm } from './forms/SettingForm';
-import { CharactersForm } from './forms/CharactersForm';
-import { EventsForm } from './forms/EventsForm';
-import { DialogueForm } from './forms/DialogueForm';
-import { ConflictForm } from './forms/ConflictForm';
-import { OutcomeForm } from './forms/OutcomeForm';
+import { SceneBasicInfoForm } from './forms/SceneBasicInfoForm';
+import { SceneSettingForm } from './forms/SceneSettingForm';
+import { SceneCharactersForm } from './forms/SceneCharactersForm';
+import { SceneEventsForm } from './forms/SceneEventsForm';
+import { SceneConflictForm } from './forms/SceneConflictForm';
+import { SceneOutcomeForm } from './forms/SceneOutcomeForm';
 import type { Scene } from '../../types/story.types';
 
 interface SceneModalProps {
   scene: Scene | null;
   characters: any[]; // Character type
+  conflicts: any[]; // Conflict type
   onSave: (sceneData: Partial<Scene>) => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
-export const SceneModal: React.FC<SceneModalProps> = ({ scene, onSave, onDelete, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'basic' | 'setting' | 'characters' | 'events' | 'conflicts' | 'dialogue' | 'outcome'>('basic');
+export const SceneModal: React.FC<SceneModalProps> = ({ scene, characters, conflicts, onSave, onDelete, onClose }) => {
+  const [activeTab, setActiveTab] = useState<'basic' | 'setting' | 'characters' | 'events' | 'conflicts' | 'outcome'>('basic');
   
   // Initialize form data
   const [formData, setFormData] = useState<Partial<Scene>>({
     title: scene?.title || '',
     type: scene?.type || 'transition',
     order: scene?.order || 0,
-    pov_character_id: scene?.pov_character_id,
-    goal: scene?.goal,
-    setting: scene?.setting || { location: undefined, time: undefined, environment: undefined },
+    pov_character_id: scene?.pov_character_id || null,
+    goal: scene?.goal || '',
+    setting: scene?.setting || { location: null, time: null, environment: null },
     characters: scene?.characters || [],
-    events: scene?.events || { main: undefined, turningPoint: undefined },
-    conflicts: scene?.conflicts || { internal: undefined, external: undefined },
+    events: scene?.events || { main: null, turningPoint: null },
+    conflicts: scene?.conflicts || { internal: null, external: null },
     dialogue: scene?.dialogue || [],
-    background: scene?.background,
-    outcome: scene?.outcome
+    background: scene?.background || '',
+    outcome: scene?.outcome || ''
   });
 
   const handleTabChange = (tab: typeof activeTab) => {
@@ -51,13 +51,12 @@ export const SceneModal: React.FC<SceneModalProps> = ({ scene, onSave, onDelete,
     onClose();
   };
 
-  const tabs = [
+  const tabs: { id: typeof activeTab; label: string; icon: string }[] = [
     { id: 'basic', label: 'Basic Info', icon: '📋' },
     { id: 'setting', label: 'Setting', icon: '📍' },
     { id: 'characters', label: 'Characters', icon: '👥' },
     { id: 'events', label: 'Events', icon: '⚡' },
     { id: 'conflicts', label: 'Conflicts', icon: '⚔️' },
-    { id: 'dialogue', label: 'Dialogue', icon: '💬' },
     { id: 'outcome', label: 'Outcome', icon: '🏁' }
   ];
 
@@ -79,69 +78,61 @@ export const SceneModal: React.FC<SceneModalProps> = ({ scene, onSave, onDelete,
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-4 mb-6 pb-2 border-b border-purple-900/30">
+        <div className="flex space-x-2 mb-6 pb-2 border-b border-purple-900/30 overflow-x-auto whitespace-nowrap scrollbar-hide">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
-              className={`flex-1 text-center py-2 rounded-t-lg 
+              className={`flex-shrink-0 px-4 py-2 rounded-t-lg transition-all
               ${activeTab === tab.id 
                 ? 'bg-purple-800/50 border-b-2 border-purple-500 text-purple-200' 
-                : 'hover:bg-[#1a001f]/50 text-purple-300'}`}
+                : 'hover:bg-purple-900/20 text-purple-400 hover:text-purple-300'}`}
             >
               <span className="mr-1">{tab.icon}</span>
-              <span>{tab.label}</span>
+              <span className="text-sm font-medium">{tab.label}</span>
             </button>
           ))}
         </div>
 
         {/* Form Content */}
-        <div className="space-y-6">
+        <div className="space-y-6 max-h-[60vh] overflow-y-auto px-1 custom-scrollbar">
            {activeTab === 'basic' && (
-             <BasicInfoForm
+             <SceneBasicInfoForm
                data={formData}
-               onUpdate={(data) => handleFormUpdate('title', data)}
+               characters={characters}
+               onUpdate={(data) => setFormData(prev => ({ ...prev, ...data }))}
              />
            )}
            {activeTab === 'setting' && (
-             <SettingForm
-               data={formData.setting || { location: undefined, time: undefined, environment: undefined }}
+             <SceneSettingForm
+               data={formData.setting || { location: null, time: null, environment: null }}
                onUpdate={(data) => handleFormUpdate('setting', data)}
              />
            )}
            {activeTab === 'characters' && (
-             <CharactersForm
+             <SceneCharactersForm
                data={formData.characters || []}
+               characters={characters}
                onUpdate={(data) => handleFormUpdate('characters', data)}
              />
            )}
            {activeTab === 'events' && (
-             <EventsForm
-               data={formData.events || { main: undefined, turningPoint: undefined }}
+             <SceneEventsForm
+               data={formData.events || { main: null, turningPoint: null }}
                onUpdate={(data) => handleFormUpdate('events', data)}
              />
            )}
             {activeTab === 'conflicts' && (
-              <ConflictForm
-                data={formData.conflicts || { internal: undefined, external: undefined }}
+              <SceneConflictForm
+                data={formData.conflicts || { internal: null, external: null }}
+                conflicts={conflicts}
                 onUpdate={(data) => handleFormUpdate('conflicts', data)}
               />
             )}
-            {activeTab === 'dialogue' && (
-              <DialogueForm
-                onSubmit={(dialogueEntry) => {
-                  handleFormUpdate('dialogue', [...(formData.dialogue || []), dialogueEntry]);
-                }}
-                onCancel={() => {
-                  // Cancel logic here
-                }}
-                characters={[]}
-              />
-            )}
             {activeTab === 'outcome' && (
-              <OutcomeForm
+              <SceneOutcomeForm
                 data={formData}
-                onUpdate={(data) => handleFormUpdate('outcome', data)}
+                onUpdate={(data) => setFormData(prev => ({ ...prev, ...data }))}
               />
             )}
         </div>
