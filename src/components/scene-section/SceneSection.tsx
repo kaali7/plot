@@ -99,30 +99,29 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       {/* Header with Reorder Controls */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <h2 className="text-2xl font-bold text-white">Scenes ({scenes.length})</h2>
-          {scenes.length > 0 && (
-            <div className="flex items-center text-xs text-purple-400 bg-purple-900/20 px-3 py-1 rounded-full border border-purple-500/20 font-medium">
-              <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-              </svg>
-              Drag cards to reorder
-            </div>
-          )}
+      <div className="flex items-end justify-between pb-8 border-b border-editor-border">
+        <div>
+          <h2 className="text-4xl font-serif font-bold text-white tracking-tight">Chronicle Grid</h2>
+          <div className="flex items-center space-x-3 mt-2">
+            <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] italic">Sequence of Events ({scenes.length})</p>
+            {scenes.length > 0 && (
+              <div className="flex items-center text-[9px] font-mono text-editor-magenta uppercase tracking-widest border border-editor-magenta/20 px-2 py-0.5 rounded-sm">
+                Active Reorder: Enabled
+              </div>
+            )}
+          </div>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 shadow-lg shadow-purple-900/20"
+          className="btn-magenta px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
         >
-          <span>+</span>
-          <span>Add Scene</span>
+          Draft New Scene
         </button>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {[...scenes].sort((a, b) => {
           if (a.order !== b.order) return a.order - b.order;
           return a.id.localeCompare(b.id);
@@ -134,54 +133,51 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
             onDragOver={(e) => handleDragOver(e, scene.id)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, scene.id)}
-            className={`cursor-move rounded-xl p-4 border transition-all duration-200 flex items-center space-x-5 ${
+            className={`cursor-move card-tactile p-6 transition-all duration-200 flex items-center space-x-8 group ${
               draggedSceneId === scene.id 
-              ? 'bg-purple-900/5 border-purple-500/30' 
+              ? 'opacity-30 scale-[0.98]' 
               : dragOverId === scene.id
-              ? 'bg-purple-600/10 border-purple-400 border-t-4'
-              : 'bg-[#1a001f] border-purple-900/30 hover:border-purple-500/40 shadow-[0_0_20px_rgba(138,0,194,0.1)]'
+              ? 'border-t-2 border-editor-magenta bg-white/[0.02]'
+              : 'hover:bg-white/[0.01]'
             }`}
           >
             {/* Big Scene Number */}
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-purple-900/40 to-purple-800/20 border border-purple-700/30 flex items-center justify-center">
-              <span className="text-xl font-black text-purple-400/80 italic">
+            <div className="flex-shrink-0 w-12 h-12 bg-surface border border-editor-border flex flex-col items-center justify-center">
+              <span className="text-[8px] font-mono text-editor-text-muted uppercase tracking-tighter mb-0.5">SCN</span>
+              <span className="text-xl font-mono font-bold text-editor-magenta tracking-tighter">
                 {(index + 1).toString().padStart(2, '0')}
               </span>
             </div>
 
             <div className="flex-1 min-w-0" onClick={() => handleSceneClick(scene)}>
-              <div className="flex items-center space-x-3">
-                <h3 className="font-bold text-white group-hover:text-purple-300 transition-colors truncate">
+              <div className="flex items-center space-x-3 mb-1">
+                <h3 className="text-2xl font-serif font-bold text-editor-text group-hover:text-white transition-colors truncate">
                   {scene.title}
                 </h3>
               </div>
-              <div className="flex items-center space-x-3 mt-1">
-                <span className="text-[9px] font-black text-purple-500 uppercase tracking-widest bg-purple-900/30 px-1.5 py-0.5 rounded">
+              <div className="flex items-center space-x-4">
+                <span className="text-[10px] font-mono text-editor-magenta uppercase tracking-widest border border-editor-magenta/20 px-2 py-0.5">
                   {scene.type}
                 </span>
-                <span className="text-gray-700 text-xs">•</span>
-                <span className="text-[9px] font-bold text-gray-500 uppercase">Scene {index + 1}</span>
                  {scene.pov_character_id && (
-                   <>
-                     <span className="text-gray-700 text-xs">•</span>
-                     <span className="text-purple-400/40 text-[9px] font-bold uppercase truncate">
+                   <div className="flex items-center space-x-2">
+                     <span className="text-editor-text-muted text-[10px]">/</span>
+                     <span className="text-editor-text-muted text-[10px] font-mono uppercase tracking-widest italic">
                        POV: {characters.find(c => c.id === scene.pov_character_id)?.name || 'Unknown'}
                      </span>
-                   </>
+                   </div>
                  )}
               </div>
             </div>
 
-            <div className="flex-shrink-0 flex items-center space-x-2">
+            <div className="flex-shrink-0 flex items-center space-x-4">
               <button
                 onClick={() => handleSceneClick(scene)}
-                className="p-2.5 text-purple-400/50 hover:text-purple-300 hover:bg-purple-900/30 rounded-xl transition-all"
-                title="Open Scene Editor"
+                className="text-[10px] font-mono text-editor-text-muted hover:text-white uppercase tracking-widest transition-all opacity-0 group-hover:opacity-100"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
+                Inspect
               </button>
+              <div className="w-1.5 h-1.5 rounded-full bg-editor-magenta shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </div>
         ))}
