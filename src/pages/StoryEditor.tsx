@@ -66,7 +66,7 @@ const StoryEditor: React.FC = () => {
       if (error) throw error;
       
       // Update local state
-      setStory(prev => ({ ...prev, [section]: content, updated_at: new Date().toISOString() }));
+      setStory((prev: any) => ({ ...prev, [section]: content, updated_at: new Date().toISOString() }));
     } catch (err: any) {
       setError(`Failed to save: ${err.message}`);
       console.error('Error saving story:', err);

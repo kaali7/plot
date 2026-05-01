@@ -27,33 +27,25 @@ export const RelationshipsForm: React.FC<RelationshipsFormProps> = ({ data, onUp
   const [newType, setNewType] = useState('');
   const [newDescription, setNewDescription] = useState('');
 
-   const addRelationship = () => {
-     if (newCharacterId.trim() && newType) {
-       onUpdate((prev) => [
-         ...prev,
-         {
-           characterId: newCharacterId.trim(),
-           type: newType,
-           description: newDescription.trim() || undefined
-         }
-       ] as {
-         characterId?: string;
-         type?: string;
-         description?: string;
-       }[]);
-       setNewCharacterId('');
-       setNewType('');
-       setNewDescription('');
-     }
-   };
+    const addRelationship = () => {
+      if (newCharacterId.trim() && newType) {
+        onUpdate([
+          ...data,
+          {
+            characterId: newCharacterId.trim(),
+            type: newType,
+            description: newDescription.trim() || undefined
+          }
+        ]);
+        setNewCharacterId('');
+        setNewType('');
+        setNewDescription('');
+      }
+    };
 
-   const removeRelationship = (index: number) => {
-     onUpdate((prev) => prev.filter((_, i) => i !== index) as {
-       characterId?: string;
-       type?: string;
-       description?: string;
-     }[]);
-   };
+    const removeRelationship = (index: number) => {
+      onUpdate(data.filter((_, i) => i !== index));
+    };
 
   return (
     <div className="space-y-6">

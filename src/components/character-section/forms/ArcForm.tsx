@@ -1,14 +1,10 @@
 import React from 'react';
 
+import type { Character } from '../../../types/story.types';
+
 interface ArcFormProps {
-  data: {
-    start?: string;
-    end?: string;
-  };
-  onUpdate: (data: {
-    start?: string;
-    end?: string;
-  }) => void;
+  data: Character['arc'];
+  onUpdate: (data: Character['arc']) => void;
 }
 
 export const ArcForm: React.FC<ArcFormProps> = ({ data, onUpdate }) => {

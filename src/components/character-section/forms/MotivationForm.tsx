@@ -1,16 +1,10 @@
 import React from 'react';
 
+import type { Character } from '../../../types/story.types';
+
 interface MotivationFormProps {
-  data: {
-    goal?: string;
-    fear?: string;
-    desire?: string;
-  };
-  onUpdate: (data: {
-    goal?: string;
-    fear?: string;
-    desire?: string;
-  }) => void;
+  data: Character['motivation'];
+  onUpdate: (data: Character['motivation']) => void;
 }
 
 export const MotivationForm: React.FC<MotivationFormProps> = ({ data, onUpdate }) => {

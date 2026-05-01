@@ -4,12 +4,10 @@ const HeroSection = () => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    console.log('Get Started clicked');
     navigate('/signup');
   };
 
   const handleLearnMore = () => {
-    console.log('Learn More clicked');
     // For now, navigate to dashboard to show what Plot offers
     navigate('/dashboard');
   };

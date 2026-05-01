@@ -10,7 +10,7 @@ interface ResourceModalProps {
 }
 
 export const ResourceModal: React.FC<ResourceModalProps> = ({ resource, onSave, onDelete, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'content' | 'links'> = 'content';
+  const [activeTab, setActiveTab] = useState<'content' | 'links'>('content');
   
   // Initialize form data
   const [formData, setFormData] = useState<Partial<Resource>>({

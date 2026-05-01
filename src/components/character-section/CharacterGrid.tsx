@@ -18,15 +18,7 @@ export const CharacterGrid: React.FC<CharacterGridProps> = ({ characters, onChar
     }
   };
 
-  const getEmotionColor = (emotion: string) => {
-    switch (emotion) {
-      case 'danger': return 'bg-red-900/50 text-red-300';
-      case 'calm': return 'bg-purple-900/50 text-purple-300';
-      case 'highlight': return 'bg-purple-700/50 text-purple-200';
-      case 'info': return 'bg-indigo-900/50 text-indigo-300';
-      default: return 'bg-gray-900/50 text-gray-300';
-    }
-  };
+
 
   if (characters.length === 0) {
     return (
@@ -44,14 +36,13 @@ export const CharacterGrid: React.FC<CharacterGridProps> = ({ characters, onChar
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {characters.map(character => (
-        <CharacterCard
-          key={character.id}
-          character={character}
-          roleColor={getRoleColor(character.role)}
-          emotionColor={getEmotionColor}
-          onClick={() => onCharacterClick(character)}
-        />
+      {characters.map(character => character && (
+         <CharacterCard
+           key={character.id}
+           character={character}
+           roleColor={getRoleColor(character.role)}
+           onClick={() => onCharacterClick(character)}
+         />
       ))}
     </div>
   );

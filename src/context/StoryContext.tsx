@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext } from 'react';
 import { useStoryManager } from '../hooks/useStoryData';
 import type { Story, Character, Scene, Conflict, Resource, WritingSession } from '../types/story.types';
 

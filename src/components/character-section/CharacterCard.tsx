@@ -4,11 +4,10 @@ import type { Character } from '../../types/story.types';
 interface CharacterCardProps {
   character: Character;
   roleColor: string;
-  emotionColor: (emotion: string) => string;
   onClick: (character: Character) => void;
 }
 
-export const CharacterCard: React.FC<CharacterCardProps> = ({ character, roleColor, emotionColor, onClick }) => {
+export const CharacterCard: React.FC<CharacterCardProps> = ({ character, roleColor, onClick }) => {
   return (
     <div 
       className="bg-[#1a001f] rounded-xl p-6 border border-purple-900/30 shadow-[0_0_20px_rgba(138,0,194,0.2)] hover:border-purple-700/40 transition-colors cursor-pointer"

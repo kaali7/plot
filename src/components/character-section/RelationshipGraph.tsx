@@ -79,60 +79,60 @@ export const RelationshipGraph: React.FC<RelationshipGraphProps> = ({
         );
       })}
 
-      {/* Relationship lines */}
-      {relationships.map((rel, index) => {
-        const sourceChar = characters.find(c => c.id === rel.characterId);
-        const targetChar = characters.find(c => 
-          // For simplicity, connecting to first other character (in real app, would have targetId)
-          c.id !== rel.characterId && characters.length > 1
-        );
-        
-        if (!sourceChar || !targetChar) return null;
-        
-        const sourceIndex = characters.indexOf(sourceChar);
-        const targetIndex = characters.indexOf(targetChar);
-        
-        if (sourceIndex === -1 || targetIndex === -1) return null;
-        
-        const sourcePos = positions[sourceIndex];
-        const targetPos = positions[targetIndex];
-        
-        // Calculate line properties
-        const length = Math.sqrt(
-          Math.pow(targetPos.x - sourcePos.x, 2) + 
-          Math.pow(targetPos.y - sourcePos.y, 2)
-        );
-        const angle = Math.atan2(targetPos.y - sourcePos.y, targetPos.x - sourcePos.x) * (180 / Math.PI);
-        const midpointX = (sourcePos.x + targetPos.x) / 2;
-        const midpointY = (sourcePos.y + targetPos.y) / 2;
-        
-        return (
-          <div 
-            key={rel.id || index}
-            className="absolute left-1/2 top-1/2 transform"
-            style={{
-              left: `calc(50% + ${midpointX}px)`,
-              top: `calc(50% + ${midpointY}px)`,
-              width: `${length}px`,
-              height: '2px',
-              background: 'linear-gradient(to right, transparent, currentColor, transparent)',
-              backgroundSize: '200% 100%',
-              backgroundPosition: '0% 50%',
-              transform: `rotate(${angle}deg)`
-            }}
-          >
-            {/* Relationship label */}
-            <div 
-              className="absolute -top-4 left-1/2 -translate-x-1/2 text-xs font-medium"
-              style={{ color: 'currentColor' }}
-            >
-               <span className={`${relationshipColors[rel.type.split(' ')[0]] || relationshipColors.friend} px-1 rounded`}>
-                 {rel.type}
-               </span>
-            </div>
-          </div>
-        );
-      })}
+       {/* Relationship lines */}
+       {relationships.map((rel, index) => {
+         const sourceChar = characters.find(c => c.id === rel.characterId);
+         const targetChar = characters.find(c => 
+           // For simplicity, connecting to first other character (in real app, would have targetId)
+           c.id !== rel.characterId && characters.length > 1
+         );
+         
+         if (!sourceChar || !targetChar) return null;
+         
+         const sourceIndex = characters.indexOf(sourceChar);
+         const targetIndex = characters.indexOf(targetChar);
+         
+         if (sourceIndex === -1 || targetIndex === -1) return null;
+         
+         const sourcePos = positions[sourceIndex];
+         const targetPos = positions[targetIndex];
+         
+         // Calculate line properties
+         const length = Math.sqrt(
+           Math.pow(targetPos.x - sourcePos.x, 2) + 
+           Math.pow(targetPos.y - sourcePos.y, 2)
+         );
+         const angle = Math.atan2(targetPos.y - sourcePos.y, targetPos.x - sourcePos.x) * (180 / Math.PI);
+         const midpointX = (sourcePos.x + targetPos.x) / 2;
+         const midpointY = (sourcePos.y + targetPos.y) / 2;
+         
+         return (
+           <div 
+             key={index}
+             className="absolute left-1/2 top-1/2 transform"
+             style={{
+               left: `calc(50% + ${midpointX}px)`,
+               top: `calc(50% + ${midpointY}px)`,
+               width: `${length}px`,
+               height: '2px',
+               background: 'linear-gradient(to right, transparent, currentColor, transparent)',
+               backgroundSize: '200% 100%',
+               backgroundPosition: '0% 50%',
+               transform: `rotate(${angle}deg)`
+             }}
+           >
+             {/* Relationship label */}
+             <div 
+               className="absolute -top-4 left-1/2 -translate-x-1/2 text-xs font-medium"
+               style={{ color: 'currentColor' }}
+             >
+                <span className={`${relationshipColors[rel.type] || relationshipColors.friend} px-1 rounded`}>
+                  {rel.type}
+                </span>
+             </div>
+           </div>
+         );
+       })}
     </div>
   );
 };

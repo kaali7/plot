@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import type { Character } from '../../../types/story.types';
 
 interface ResourcesFormProps {
@@ -6,14 +5,7 @@ interface ResourcesFormProps {
   onUpdate: (data: Partial<Character>) => void;
 }
 
-export const ResourcesForm: React.FC<ResourcesFormProps> = ({ data, onUpdate }) => {
-  const [resources, setResources] = useState<string[]>((data as Character).resources || []);
-
-  const handleResourcesChange = (newResources: string[]) => {
-    setResources(newResources);
-    onUpdate({ ...data, resources: newResources });
-  };
-
+export const ResourcesForm: React.FC<ResourcesFormProps> = ({ data: _data, onUpdate: _onUpdate }) => {
   return (
     <div className="space-y-4">
       <div>
@@ -49,8 +41,11 @@ export const ResourcesForm: React.FC<ResourcesFormProps> = ({ data, onUpdate }) 
         </ul>
       </div>
       
-      <div className="text-center text-purple-400">
-        <p>Resource linking functionality will be implemented soon</p>
+      <div className="mt-4">
+        {/* TODO: Implement resource linking UI */}
+        <div className="text-center text-purple-400">
+          <p>Resource linking functionality will be implemented soon</p>
+        </div>
       </div>
     </div>
   );

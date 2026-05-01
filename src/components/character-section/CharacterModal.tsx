@@ -24,12 +24,12 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
   const [formData, setFormData] = useState<Partial<Character>>({
     name: character?.name || '',
     role: character?.role || 'supporting',
-    description: character?.description,
-    motivation: character?.motivation || { goal: undefined, fear: undefined, desire: undefined },
+    description: character?.description || '',
+    motivation: character?.motivation || { goal: null, fear: null, desire: null },
     traits: character?.traits || { strengths: [], weaknesses: [], personality: [] },
-    conflicts: character?.conflicts || { internal: undefined, external: undefined },
+    conflicts: character?.conflicts || { internal: null, external: null },
     relationships: character?.relationships || [],
-    arc: character?.arc || { start: undefined, end: undefined },
+    arc: character?.arc || { start: null, end: null },
     resources: character?.resources || []
   });
 
@@ -98,12 +98,12 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
            {activeTab === 'basic' && (
              <BasicInfoForm
                data={formData}
-               onUpdate={(data) => handleFormUpdate('name', data)}
+               onUpdate={(data) => setFormData(prev => ({ ...prev, ...data }))}
              />
            )}
            {activeTab === 'motivation' && (
              <MotivationForm
-               data={formData.motivation || { goal: undefined, fear: undefined, desire: undefined }}
+               data={formData.motivation || { goal: null, fear: null, desire: null }}
                onUpdate={(data) => handleFormUpdate('motivation', data)}
              />
            )}
@@ -115,7 +115,7 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
            )}
            {activeTab === 'conflicts' && (
              <ConflictsForm
-               data={formData.conflicts || { internal: undefined, external: undefined }}
+               data={formData.conflicts || { internal: null, external: null }}
                onUpdate={(data) => handleFormUpdate('conflicts', data)}
              />
            )}
@@ -127,7 +127,7 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
            )}
            {activeTab === 'arc' && (
              <ArcForm
-               data={formData.arc || { start: undefined, end: undefined }}
+               data={formData.arc || { start: null, end: null }}
                onUpdate={(data) => handleFormUpdate('arc', data)}
              />
            )}

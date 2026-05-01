@@ -13,8 +13,12 @@ import SignupPage from '@/pages/auth/SignupPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage';
 import Dashboard from '@/pages/Dashboard';
-import StoryEditor from '@/pages/StoryEditor';
 import { PublicRoute, ProtectedRoute } from '@/routes/authRoutes';
+import { StoryProvider } from '@/context/StoryContext';
+import { WritingProvider } from '@/context/WritingContext';
+import { UIStateProvider } from '@/context/UIStateContext';
+import { UnifiedStoryDashboard } from '@/components/dashboard/UnifiedStoryDashboard';
+import { useParams } from 'react-router-dom';
 
 // Simple loading component
 const LoadingIndicator: React.FC = () => {
@@ -25,6 +29,22 @@ const LoadingIndicator: React.FC = () => {
         <p className="mt-4 text-gray-400">Loading...</p>
       </div>
     </div>
+  );
+};
+
+const StoryDashboardWrapper = () => {
+  const { storyId } = useParams<{ storyId: string }>();
+  
+  if (!storyId) return <Navigate to="/dashboard" replace />;
+  
+  return (
+    <StoryProvider storyId={storyId}>
+      <WritingProvider>
+        <UIStateProvider>
+          <UnifiedStoryDashboard />
+        </UIStateProvider>
+      </WritingProvider>
+    </StoryProvider>
   );
 };
 
@@ -56,7 +76,7 @@ function AppRouter() {
             
               {/* Protected routes */}
               <Route path="/dashboard" element={<LoadingRoute><ProtectedRoute><DashboardNavbar /><Dashboard /></ProtectedRoute></LoadingRoute>} />
-               <Route path="/story/:storyId" element={<LoadingRoute><ProtectedRoute><StoryEditor /></ProtectedRoute></LoadingRoute>} />
+              <Route path="/story/:storyId" element={<LoadingRoute><ProtectedRoute><StoryDashboardWrapper /></ProtectedRoute></LoadingRoute>} />
               {/* Add more protected routes here as they're implemented */}
             
             {/* Redirect root to home if not already there */}

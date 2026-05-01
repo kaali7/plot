@@ -17,9 +17,13 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
   onConflictDelete
 }) => {
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newConflict, setNewConflict] = useState({
+  const [newConflict, setNewConflict] = useState<{
+    title: string;
+    type: Conflict['type'];
+    description: string;
+  }>({
     title: '',
-    type: 'internal' as const,
+    type: 'internal',
     description: ''
   });
 
@@ -29,15 +33,6 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
     onConflictAdd(newConflict);
     setNewConflict({ title: '', type: 'internal', description: '' });
     setShowAddForm(false);
-  };
-
-  const getConflictTypeColor = (type: Conflict['type']) => {
-    switch (type) {
-      case 'internal': return 'bg-blue-900/50 text-blue-300';
-      case 'external': return 'bg-red-900/50 text-red-300';
-      case 'society': return 'bg-purple-900/50 text-purple-300';
-      default: return 'bg-gray-900/50 text-gray-300';
-    }
   };
 
   return (
@@ -56,39 +51,39 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
       {/* Add Conflict Form */}
       {showAddForm && (
         <div className="bg-[#2a003f] border border-purple-700/30 rounded-lg p-4 space-y-3">
-          <div>
-            <label className="block text-purple-300 mb-2">Conflict Title</label>
-            <input
-              type="text"
-              value={newConflict.title}
-              onChange={(e) => setNewConflict(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full bg-[#1a001f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
-              placeholder="e.g., Internal struggle with morality"
-            />
-          </div>
+           <div>
+             <label className="block text-purple-300 mb-2">Conflict Title</label>
+             <input
+               type="text"
+               value={newConflict.title}
+               onChange={(e) => setNewConflict({ ...newConflict, title: e.target.value })}
+               className="w-full bg-[#1a001f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
+               placeholder="e.g., Internal struggle with morality"
+             />
+           </div>
 
-          <div>
-            <label className="block text-purple-300 mb-2">Conflict Type</label>
-            <select
-              value={newConflict.type}
-              onChange={(e) => setNewConflict(prev => ({ ...prev, type: e.target.value as Conflict['type'] }))}
-              className="w-full bg-[#1a001f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
-            >
-              <option value="internal">Internal</option>
-              <option value="external">External</option>
-              <option value="society">Society</option>
-            </select>
-          </div>
+           <div>
+             <label className="block text-purple-300 mb-2">Conflict Type</label>
+             <select
+               value={newConflict.type}
+               onChange={(e) => setNewConflict({ ...newConflict, type: e.target.value as Conflict['type'] })}
+               className="w-full bg-[#1a001f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
+             >
+               <option value="internal">Internal</option>
+               <option value="external">External</option>
+               <option value="society">Society</option>
+             </select>
+           </div>
 
-          <div>
-            <label className="block text-purple-300 mb-2">Description</label>
-            <textarea
-              value={newConflict.description}
-              onChange={(e) => setNewConflict(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full bg-[#1a001f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[80px]"
-              placeholder="Describe the conflict"
-            />
-          </div>
+           <div>
+             <label className="block text-purple-300 mb-2">Description</label>
+             <textarea
+               value={newConflict.description}
+               onChange={(e) => setNewConflict({ ...newConflict, description: e.target.value })}
+               className="w-full bg-[#1a001f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[80px]"
+               placeholder="Describe the conflict"
+             />
+           </div>
 
           <div className="flex space-x-3">
             <button
@@ -118,7 +113,7 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
         </div>
       ) : (
         <div className="space-y-3">
-          {conflicts.map(conflict => (
+          {conflicts.map(conflict => conflict && (
             <ConflictCard
               key={conflict.id}
               conflict={conflict}

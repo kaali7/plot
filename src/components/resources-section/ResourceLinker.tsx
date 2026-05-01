@@ -111,7 +111,7 @@ export const ResourceLinker: React.FC<ResourceLinkerProps> = ({
                   value={`scene:${scene.id}`}
                   disabled={isLinked('scene', scene.id)}
                 >
-                  {scene.title} {isLinked('scene', scene.id) && '(already linked)'}
+                  {scene.name} {isLinked('scene', scene.id) && '(already linked)'}
                 </option>
               ))}
             </optgroup>
@@ -122,7 +122,7 @@ export const ResourceLinker: React.FC<ResourceLinkerProps> = ({
                   value={`conflict:${conflict.id}`}
                   disabled={isLinked('conflict', conflict.id)}
                 >
-                  {conflict.title} {isLinked('conflict', conflict.id) && '(already linked)'}
+                  {conflict.name} {isLinked('conflict', conflict.id) && '(already linked)'}
                 </option>
               ))}
             </optgroup>
@@ -191,7 +191,7 @@ export const ResourceLinker: React.FC<ResourceLinkerProps> = ({
                   if (!scene) return null;
                    return (
                      <span key={sceneId} className="px-2 py-1 bg-purple-900/20 text-purple-300 text-xs rounded">
-                       {scene.title}
+                       {scene.name}
                        <button
                          onClick={() => handleUnlink('scene', sceneId)}
                          className="ml-2 text-purple-400 hover:text-purple-300"
@@ -215,7 +215,7 @@ export const ResourceLinker: React.FC<ResourceLinkerProps> = ({
                   if (!conflict) return null;
                    return (
                      <span key={conflictId} className="px-2 py-1 bg-purple-900/20 text-purple-300 text-xs rounded">
-                       {conflict.title}
+                       {conflict.name}
                        <button
                          onClick={() => handleUnlink('conflict', conflictId)}
                          className="ml-2 text-purple-400 hover:text-purple-300"

@@ -18,66 +18,58 @@ export const TraitsForm: React.FC<TraitsFormProps> = ({ data, onUpdate }) => {
   const [newWeakness, setNewWeakness] = useState('');
   const [newPersonality, setNewPersonality] = useState('');
 
-   const addStrength = () => {
-     if (newStrength.trim()) {
-       onUpdate((prev) => ({
-         ...prev,
-         strengths: [...prev.strengths, newStrength.trim()]
-       }) as {
-         strengths: string[];
-         weaknesses: string[];
-         personality: string[];
-       });
-       setNewStrength('');
-     }
-   };
+    const addStrength = () => {
+      if (newStrength.trim()) {
+        onUpdate({
+          ...data,
+          strengths: [...data.strengths, newStrength.trim()]
+        });
+        setNewStrength('');
+      }
+    };
 
-   const removeStrength = (index: number) => {
-     onUpdate((prev) => ({
-       ...prev,
-       strengths: prev.strengths.filter((_, i) => i !== index)
-     }) as {
-       strengths: string[];
-       weaknesses: string[];
-       personality: string[];
-     });
-   };
+    const removeStrength = (index: number) => {
+      onUpdate({
+        ...data,
+        strengths: data.strengths.filter((_, i) => i !== index)
+      });
+    };
 
-   const addWeakness = () => {
-     if (newWeakness.trim()) {
-       onUpdate((prev: { strengths: string[]; weaknesses: string[]; personality: string[] }) => ({
-         ...prev,
-         weaknesses: [...prev.weaknesses, newWeakness.trim()]
-       }));
-       setNewWeakness('');
-     }
-   };
+    const addWeakness = () => {
+      if (newWeakness.trim()) {
+        onUpdate({
+          ...data,
+          weaknesses: [...data.weaknesses, newWeakness.trim()]
+        });
+        setNewWeakness('');
+      }
+    };
 
-   const removeWeakness = (index: number) => {
-     onUpdate((prev: { strengths: string[]; weaknesses: string[]; personality: string[] }) => ({
-       ...prev,
-       weaknesses: prev.weaknesses.filter((_, i) => i !== index)
-     }));
-   };
+    const removeWeakness = (index: number) => {
+      onUpdate({
+        ...data,
+        weaknesses: data.weaknesses.filter((_, i) => i !== index)
+      });
+    };
 
-   const addPersonality = () => {
-     if (newPersonality.trim()) {
-       onUpdate((prev: { strengths: string[]; weaknesses: string[]; personality: string[] }) => ({
-         ...prev,
-         personality: [...prev.personality, newPersonality.trim()]
-       }));
-       setNewPersonality('');
-     }
-   };
+    const addPersonality = () => {
+      if (newPersonality.trim()) {
+        onUpdate({
+          ...data,
+          personality: [...data.personality, newPersonality.trim()]
+        });
+        setNewPersonality('');
+      }
+    };
 
-   const removePersonality = (index: number) => {
-     onUpdate((prev: { strengths: string[]; weaknesses: string[]; personality: string[] }) => ({
-       ...prev,
-       personality: prev.personality.filter((_, i) => i !== index)
-     }));
-   };
+    const removePersonality = (index: number) => {
+      onUpdate({
+        ...data,
+        personality: data.personality.filter((_, i) => i !== index)
+      });
+    };
 
-  return (
+   return (
     <div className="space-y-6">
       {/* Strengths */}
       <div>

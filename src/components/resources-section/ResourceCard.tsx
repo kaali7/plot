@@ -8,16 +8,7 @@ interface ResourceCardProps {
 }
 
 export const ResourceCard: React.FC<ResourceCardProps> = ({ resource, typeColor, onClick }) => {
-  const getResourceTypeIcon = (type: Resource['type']) => {
-    switch (type) {
-      case 'url': return '🔗';
-      case 'note': return '📝';
-      case 'image': return '🖼️';
-      case 'reference': return '📚';
-      case 'inspiration': return '💡';
-      default: return '📎';
-    }
-  };
+
 
   return (
     <div 

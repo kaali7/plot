@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
+
+import type { Character } from '../../../types/story.types';
 
 interface ConflictsFormProps {
-  data: {
-    internal?: string;
-    external?: string;
-  };
-  onUpdate: (data: {
-    internal?: string;
-    external?: string;
-  }) => void;
+  data: Character['conflicts'];
+  onUpdate: (data: Character['conflicts']) => void;
 }
 
 export const ConflictsForm: React.FC<ConflictsFormProps> = ({ data, onUpdate }) => {

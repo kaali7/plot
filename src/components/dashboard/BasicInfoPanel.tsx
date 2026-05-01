@@ -8,22 +8,51 @@ interface BasicInfoPanelProps {
 
 export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate }) => {
   const [editing, setEditing] = useState(false);
+  const getDisplayDescription = (desc: string) => {
+    if (!desc) return '';
+    if (desc.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(desc);
+        return parsed.premise || '';
+      } catch (e) {
+        return desc;
+      }
+    }
+    return desc;
+  };
+
+  const displayDescription = getDisplayDescription(story.description || '');
+
   const [formData, setFormData] = useState({
-    title: story.title || '',
+    name: story.name || '',
     theme: story.theme || '',
-    description: story.description || ''
+    description: displayDescription
   });
 
   const handleSave = () => {
-    onUpdate(formData);
+    // If the original description was JSON, try to update only the premise
+    let finalDescription = formData.description;
+    if (story.description?.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(story.description);
+        finalDescription = JSON.stringify({ ...parsed, premise: formData.description });
+      } catch (e) {
+        // Fallback to plain text if parsing fails
+      }
+    }
+    
+    onUpdate({
+      ...formData,
+      description: finalDescription
+    });
     setEditing(false);
   };
 
   const handleCancel = () => {
     setFormData({
-      title: story.title || '',
+      name: story.name || '',
       theme: story.theme || '',
-      description: story.description || ''
+      description: displayDescription
     });
     setEditing(false);
   };
@@ -35,10 +64,10 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
           <label className="block text-purple-300 mb-2">Title</label>
           <input
             type="text"
-            value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            value={formData.name}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
-            placeholder="Enter story title"
+            placeholder="Enter story name"
           />
         </div>
         
@@ -84,12 +113,12 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white">{story.title}</h3>
+        <h3 className="text-lg font-semibold text-white">{story.name}</h3>
         {story.theme && (
           <p className="text-purple-300 mt-1">{story.theme}</p>
         )}
-        {story.description && (
-          <p className="text-gray-400 mt-2">{story.description}</p>
+        {displayDescription && (
+          <p className="text-gray-400 mt-2">{displayDescription}</p>
         )}
       </div>
       
