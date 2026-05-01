@@ -4,10 +4,9 @@ interface EditorToolbarProps {
   onSave: () => void;
   onExport: (format: string) => void;
   onInsertReference: (type: 'character' | 'scene', id: string) => void;
-  characters: { id: string; name: string }[];
-  scenes: { id: string; title: string }[];
-  content: string;
-  setContent: React.Dispatch<React.SetStateAction<string>>;
+  characters: any[];
+  scenes: any[];
+  isSaving: boolean;
 }
 
 export const EditorToolbar: React.FC<EditorToolbarProps> = ({
@@ -16,156 +15,128 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onInsertReference,
   characters,
   scenes,
-  content,
-  setContent
+  isSaving: _isSaving
 }) => {
-  const [referenceType, setReferenceType] = useState<'character' | 'scene' | null>(null);
-  const [selectedCharacterId, setSelectedCharacterId] = useState<string>('');
-  const [selectedSceneId, setSelectedSceneId] = useState<string>('');
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [activeRefType, setActiveRefType] = useState<'character' | 'scene' | null>(null);
 
-  const handleInsertReference = () => {
-    if (referenceType === 'character' && selectedCharacterId) {
-      onInsertReference('character', selectedCharacterId);
-      setReferenceType(null);
-      setSelectedCharacterId('');
-    } else if (referenceType === 'scene' && selectedSceneId) {
-      onInsertReference('scene', selectedSceneId);
-      setReferenceType(null);
-      setSelectedSceneId('');
-    }
-  };
-
-  const handleFormat = (format: string) => {
-    // Simple formatting - in a real app, this would manipulate the selected text
-    const formatted = `\n\n${format}\n\n`;
-    setContent(prev => prev + formatted);
+  const handleInsert = (type: 'character' | 'scene', id: string) => {
+    onInsertReference(type, id);
+    setActiveRefType(null);
   };
 
   return (
-    <div className="border-b border-purple-800/20 pb-4 mb-6">
-      <div className="flex flex-wrap items-center gap-4">
-        {/* Save Button */}
+    <div className="flex items-center space-x-4">
+      {/* Quick Insert Actions */}
+      <div className="flex items-center bg-purple-900/20 rounded-xl border border-purple-500/10 p-1">
+        <div className="relative">
+          <button
+            onClick={() => setActiveRefType(activeRefType === 'character' ? null : 'character')}
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-2 ${
+              activeRefType === 'character' ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40' : 'text-purple-400 hover:text-purple-300'
+            }`}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>Character</span>
+          </button>
+          
+          {activeRefType === 'character' && (
+            <div className="absolute right-0 mt-3 w-56 bg-[#1a001f] border border-purple-500/20 rounded-2xl shadow-2xl z-50 overflow-hidden backdrop-blur-xl">
+              <div className="p-2 max-h-64 overflow-y-auto custom-scrollbar">
+                {characters.length === 0 && <div className="p-4 text-xs text-gray-500 italic">No characters found</div>}
+                {characters.map(char => (
+                  <button
+                    key={char.id}
+                    onClick={() => handleInsert('character', char.id)}
+                    className="w-full text-left px-4 py-3 text-sm text-purple-200 hover:bg-purple-600/20 rounded-xl transition-colors flex items-center space-x-3 group"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-purple-900/40 border border-purple-500/20 flex items-center justify-center text-[10px] group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                      {char.name.charAt(0)}
+                    </div>
+                    <span className="font-medium">{char.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="relative">
+          <button
+            onClick={() => setActiveRefType(activeRefType === 'scene' ? null : 'scene')}
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-2 ${
+              activeRefType === 'scene' ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40' : 'text-purple-400 hover:text-purple-300'
+            }`}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+            <span>Scene</span>
+          </button>
+
+          {activeRefType === 'scene' && (
+            <div className="absolute right-0 mt-3 w-64 bg-[#1a001f] border border-purple-500/20 rounded-2xl shadow-2xl z-50 overflow-hidden backdrop-blur-xl">
+              <div className="p-2 max-h-64 overflow-y-auto custom-scrollbar">
+                {scenes.length === 0 && <div className="p-4 text-xs text-gray-500 italic">No scenes found</div>}
+                {scenes.map(scene => (
+                  <button
+                    key={scene.id}
+                    onClick={() => handleInsert('scene', scene.id)}
+                    className="w-full text-left px-4 py-3 text-sm text-purple-200 hover:bg-purple-600/20 rounded-xl transition-colors flex items-center space-x-3 group"
+                  >
+                    <div className="w-6 h-6 rounded-lg bg-purple-900/40 border border-purple-500/20 flex items-center justify-center text-[10px] font-black group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                      {scene.order + 1}
+                    </div>
+                    <span className="font-medium truncate">{scene.title}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="h-6 w-px bg-purple-900/30"></div>
+
+      {/* Export & Save Menu */}
+      <div className="flex items-center space-x-2">
+        <div className="relative">
+          <button
+            onClick={() => setExportMenuOpen(!exportMenuOpen)}
+            className="p-2.5 bg-purple-900/20 hover:bg-purple-800/40 text-purple-400 rounded-xl border border-purple-500/10 transition-all active:scale-95"
+            title="Export Manuscript"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </button>
+          
+          {exportMenuOpen && (
+            <div className="absolute right-0 mt-3 w-48 bg-[#1a001f] border border-purple-500/20 rounded-2xl shadow-2xl z-50 overflow-hidden backdrop-blur-xl">
+              <div className="p-1.5">
+                {['Markdown', 'PDF', 'EPUB', 'Fountain'].map(format => (
+                  <button
+                    key={format}
+                    onClick={() => { onExport(format.toLowerCase()); setExportMenuOpen(false); }}
+                    className="w-full text-left px-4 py-3 text-sm text-purple-200 hover:bg-purple-600/40 rounded-xl transition-colors flex items-center justify-between group"
+                  >
+                    <span>{format}</span>
+                    <span className="text-[9px] font-bold text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity">EXPORT</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         <button
           onClick={onSave}
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+          className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white text-sm font-bold rounded-xl shadow-lg shadow-purple-900/40 transition-all active:scale-95"
         >
-          Save
+          {_isSaving ? 'Syncing...' : 'Save Draft'}
         </button>
-
-        {/* Export Dropdown */}
-        <div className="relative">
-          <button
-            className="flex items-center space-x-2 px-3 py-2 bg-purple-800/50 hover:bg-purple-800 text-purple-300 rounded-lg transition-colors"
-          >
-            Export
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <div className="absolute left-0 mt-2 w-32 bg-[#1a001f] border border-purple-800/20 rounded-lg shadow-lg z-10">
-            <button
-              onClick={() => onExport('markdown')}
-              className="w-full text-left px-3 py-2 text-sm text-purple-300 hover:bg-purple-900/20"
-            >
-              Markdown
-            </button>
-            <button
-              onClick={() => onExport('pdf')}
-              className="w-full text-left px-3 py-2 text-sm text-purple-300 hover:bg-purple-900/20"
-            >
-              PDF
-            </button>
-            <button
-              onClick={() => onExport('epub')}
-              className="w-full text-left px-3 py-2 text-sm text-purple-300 hover:bg-purple-900/20"
-            >
-              EPUB
-            </button>
-            <button
-              onClick={() => onExport('fountain')}
-              className="w-full text-left px-3 py-2 text-sm text-purple-300 hover:bg-purple-900/20"
-            >
-              Fountain
-            </button>
-          </div>
-        </div>
-
-        {/* Reference Insertion */}
-        <div className="relative">
-          <button
-            onClick={() => setReferenceType(referenceType ? null : 'character')}
-            className="flex items-center space-x-2 px-3 py-2 bg-purple-800/50 hover:bg-purple-800 text-purple-300 rounded-lg transition-colors"
-          >
-            {referenceType === 'character' ? 'Cancel' : 'Character Ref'}
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          
-          {referenceType === 'character' && (
-            <div className="absolute left-0 mt-2 w-48 bg-[#1a001f] border border-purple-800/20 rounded-lg shadow-lg z-10">
-              <div className="px-3 py-2">
-                <p className="text-sm font-medium text-purple-300 mb-2">Select Character</p>
-                <select
-                  value={selectedCharacterId}
-                  onChange={(e) => setSelectedCharacterId(e.target.value)}
-                  className="w-full px-2 py-1 bg-purple-900/20 border border-purple-700/30 rounded text-purple-200 focus:border-purple-500"
-                >
-                  <option value="">Select a character</option>
-                  {characters.map(char => (
-                    <option key={char.id} value={char.id}>
-                      {char.name}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={handleInsertReference}
-                  className="w-full mt-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors"
-                >
-                  Insert Reference
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="relative">
-          <button
-            onClick={() => setReferenceType(referenceType ? null : 'scene')}
-            className="flex items-center space-x-2 px-3 py-2 bg-purple-800/50 hover:bg-purple-800 text-purple-300 rounded-lg transition-colors"
-          >
-            {referenceType === 'scene' ? 'Cancel' : 'Scene Ref'}
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          
-          {referenceType === 'scene' && (
-            <div className="absolute left-0 mt-2 w-48 bg-[#1a001f] border border-purple-800/20 rounded-lg shadow-lg z-10">
-              <div className="px-3 py-2">
-                <p className="text-sm font-medium text-purple-300 mb-2">Select Scene</p>
-                <select
-                  value={selectedSceneId}
-                  onChange={(e) => setSelectedSceneId(e.target.value)}
-                  className="w-full px-2 py-1 bg-purple-900/20 border border-purple-700/30 rounded text-purple-200 focus:border-purple-500"
-                >
-                  <option value="">Select a scene</option>
-                  {scenes.map(scene => (
-                    <option key={scene.id} value={scene.id}>
-                      {scene.title}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={handleInsertReference}
-                  className="w-full mt-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors"
-                >
-                  Insert Reference
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
