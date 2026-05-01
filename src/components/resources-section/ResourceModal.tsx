@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ResourceForm } from './forms/ResourceForm';
 import type { Resource } from '../../types/story.types';
+import { resourceSchema } from '../../lib/schemas';
 
 interface ResourceModalProps {
   resource: Resource | null;
@@ -16,9 +17,9 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({ resource, onSave, 
   const [formData, setFormData] = useState<Partial<Resource>>({
     type: resource?.type || 'note',
     title: resource?.title || '',
-    content: resource?.content,
-    url: resource?.url,
-    file_path: resource?.file_path,
+    content: resource?.content || '',
+    url: resource?.url || '',
+    file_path: resource?.file_path || '',
     linked_entities: resource?.linked_entities || {
       characters: [],
       scenes: [],
@@ -31,15 +32,25 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({ resource, onSave, 
     setActiveTab(tab);
   };
 
-  const handleFormUpdate = (section: keyof Partial<Resource>, data: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: data
-    }));
-  };
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSave = () => {
+    const result = resourceSchema.safeParse(formData);
+    
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach(issue => {
+        const path = issue.path.join('.');
+        fieldErrors[path] = issue.message;
+      });
+      setErrors(fieldErrors);
+      setActiveTab('content');
+      return;
+    }
+
     onSave(formData);
+    setErrors({});
     onClose();
   };
 
@@ -91,7 +102,8 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({ resource, onSave, 
           {activeTab === 'content' && (
             <ResourceForm
               data={formData}
-              onUpdate={(data) => handleFormUpdate('content', data)}
+              onUpdate={(data) => setFormData(prev => ({ ...prev, ...data } as Partial<Resource>))}
+              errors={errors}
             />
           )}
           {activeTab === 'links' && (

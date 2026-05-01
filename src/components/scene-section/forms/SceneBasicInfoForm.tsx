@@ -16,9 +16,10 @@ interface SceneBasicInfoFormProps {
     pov_character_id?: string;
     goal?: string;
   }) => void;
+  errors?: Record<string, string>;
 }
 
-export const SceneBasicInfoForm: React.FC<SceneBasicInfoFormProps> = ({ data, characters, onUpdate }) => {
+export const SceneBasicInfoForm: React.FC<SceneBasicInfoFormProps> = ({ data, characters, onUpdate, errors = {} }) => {
   return (
     <div className="space-y-4">
       <div>
@@ -27,9 +28,11 @@ export const SceneBasicInfoForm: React.FC<SceneBasicInfoFormProps> = ({ data, ch
           type="text"
           value={data.title || ''}
           onChange={(e) => onUpdate({ ...data, title: e.target.value })}
-          className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
+          className={`w-full bg-[#2a003f] border ${errors.title ? 'border-red-500' : 'border-purple-700/30'} rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none`}
           placeholder="Enter scene title"
+          maxLength={200}
         />
+        {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
       </div>
 
       <div>
@@ -37,14 +40,15 @@ export const SceneBasicInfoForm: React.FC<SceneBasicInfoFormProps> = ({ data, ch
         <select
           value={data.type || 'transition'}
           onChange={(e) => onUpdate({ ...data, type: e.target.value })}
-          className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
+          className={`w-full bg-[#2a003f] border ${errors.type ? 'border-red-500' : 'border-purple-700/30'} rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none`}
         >
-          <option value="introduction">Introduction</option>
-          <option value="conflict">Conflict</option>
-          <option value="climax">Climax</option>
-          <option value="resolution">Resolution</option>
+          <option value="action">Action</option>
+          <option value="dialogue">Dialogue</option>
+          <option value="suspense">Suspense</option>
           <option value="transition">Transition</option>
+          <option value="climax">Climax</option>
         </select>
+        {errors.type && <p className="text-red-500 text-xs mt-1">{errors.type}</p>}
       </div>
 
       <div>
@@ -52,9 +56,11 @@ export const SceneBasicInfoForm: React.FC<SceneBasicInfoFormProps> = ({ data, ch
         <textarea
           value={data.goal || ''}
           onChange={(e) => onUpdate({ ...data, goal: e.target.value })}
-          className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[60px]"
+          className={`w-full bg-[#2a003f] border ${errors.goal ? 'border-red-500' : 'border-purple-700/30'} rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[60px]`}
           placeholder="What is the goal of this scene?"
+          maxLength={2000}
         />
+        {errors.goal && <p className="text-red-500 text-xs mt-1">{errors.goal}</p>}
       </div>
 
       <div>

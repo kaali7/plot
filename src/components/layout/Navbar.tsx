@@ -15,65 +15,54 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#1a001f]/90 backdrop-blur-sm border-b border-[#8a00c2]/20 shadow-[0_0_20px_rgba(138,0,194,0.2)]">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-editor-border shadow-magenta-glow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           <div className="flex-shrink-0 flex items-center">
-            <span className="text-white font-bold text-2xl">Plot</span>
+            <span className="text-editor-magenta font-serif font-bold text-2xl tracking-tight">Plot</span>
           </div>
           
-          <div className="hidden md:flex md:items-center md:space-x-6">
-            {/* Navigation Links */}
-            <nav className="flex-1 space-x-8">
+          <div className="hidden md:flex md:items-center md:space-x-8">
+            <nav className="flex space-x-8">
               <a 
                 href="/"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-editor-text-muted hover:text-white transition-colors text-sm font-medium tracking-wide uppercase"
               >
                 Stories
               </a>
               <a 
                 href="/#features"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-editor-text-muted hover:text-white transition-colors text-sm font-medium tracking-wide uppercase"
               >
                 How it Works
-              </a>
-              <a 
-                href="/#visuals"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                Examples
-              </a>
-              <a 
-                href="/#cta"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                Start Writing
               </a>
             </nav>
           </div>
           
-          <div className="hidden md:flex md:items-center md:space-x-6">
+          <div className="hidden md:flex md:items-center md:space-x-4">
             {!user ? (
               <>
                 <button 
                   onClick={handleLogin}
-                  className="px-6 py-3 border border-[#5a007a]/50 text-[#5a007a] hover:bg-[#5a007a]/20 rounded-2xl transition-all duration-200"
+                  className="px-5 py-2 text-editor-text-muted hover:text-white transition-all text-sm font-medium tracking-wide uppercase"
                 >
                   Login
                 </button>
                 <button 
                   onClick={handleRegister}
-                  className="px-6 py-3 bg-[#5a007a] text-white hover:bg-[#5a007a]/80 rounded-2xl transition-all duration-200"
+                  className="btn-magenta px-6 py-2 text-sm font-bold tracking-widest uppercase rounded-sm"
                 >
                   Register
                 </button>
               </>
             ) : (
               <>
-                <span className="text-[#cfcfcf] mr-6">{session?.user?.email?.split('@')[0] ?? 'User'}</span>
+                <span className="text-editor-text-muted text-sm font-mono mr-4 italic">
+                  {session?.user?.email?.split('@')[0] ?? 'User'}
+                </span>
                 <button 
                   onClick={signOut}
-                  className="px-6 py-3 bg-[#8a00c2]/20 text-[#8a00c2] hover:bg-[#8a00c2]/30 rounded-2xl transition-all duration-200"
+                  className="px-5 py-2 border border-editor-border text-editor-text hover:bg-white/5 transition-all text-sm font-medium tracking-wide uppercase rounded-sm"
                 >
                   Logout
                 </button>
@@ -81,16 +70,13 @@ const Navbar: React.FC = () => {
             )}
           </div>
           
-          {/* Mobile menu button */}
-          <div className="-mr-2 flex items-center md:hidden">
+          <div className="md:hidden flex items-center">
             <button 
               type="button"
-              className="p-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              className="p-2 text-editor-text-muted hover:text-white"
             >
-              <span className="sr-only">Open main menu</span>
-              {/* Hamburger icon */}
-              <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
               </svg>
             </button>
           </div>

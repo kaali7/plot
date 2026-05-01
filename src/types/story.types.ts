@@ -34,12 +34,12 @@ export interface Character {
   id: string;
   story_id: string;
   name: string;
-  role: 'main' | 'sub-main' | 'supporting' | 'antagonist';
+  role: 'protagonist' | 'antagonist' | 'supporting' | 'minor';
   description?: string;
   motivation: {
-    goal?: string | null;
-    fear?: string | null;
-    desire?: string | null;
+    goal?: string;
+    fear?: string;
+    desire?: string;
   };
   traits: {
     strengths: string[];
@@ -47,13 +47,13 @@ export interface Character {
     personality: string[];
   };
   conflicts: {
-    internal?: string | null;
-    external?: string | null;
+    internal?: string;
+    external?: string;
   };
   relationships: Relationship[];
   arc: {
-    start?: string | null;
-    end?: string | null;
+    start?: string;
+    end?: string;
   };
   resources: string[];
   created_at: string;
@@ -70,23 +70,23 @@ export interface Scene {
   id: string;
   story_id: string;
   title: string;
-  type: 'introduction' | 'conflict' | 'climax' | 'resolution' | 'transition';
+  type: 'action' | 'dialogue' | 'suspense' | 'transition' | 'climax';
   order: number;
   pov_character_id?: string;
   goal?: string;
   setting: {
-    location?: string | null;
-    time?: string | null;
-    environment?: string | null;
+    location?: string;
+    time?: string;
+    environment?: string;
   };
   characters: SceneCharacter[];
   events: {
-    main?: string | null;
-    turningPoint?: string | null;
+    main?: string;
+    turningPoint?: string;
   };
   conflicts: {
-    internal?: string | null;
-    external?: string | null;
+    internal?: string;
+    external?: string;
   };
   dialogue: Dialogue[];
   background?: string;
@@ -110,7 +110,7 @@ export interface Dialogue {
 export interface Resource {
   id: string;
   story_id: string;
-  type: 'url' | 'note' | 'image' | 'reference' | 'inspiration';
+  type: 'link' | 'note' | 'image' | 'document' | 'other';
   title: string;
   content?: string;
   url?: string;

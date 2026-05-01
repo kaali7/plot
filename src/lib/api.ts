@@ -2,6 +2,8 @@
 // Based on the complete specification from unified-story-dashboard.md
 import { supabase } from './supabase';
 import type { Database } from '../types/story.types';
+import { getCurrentUserId } from './auth-helpers';
+import { sanitizeError } from './error-mapper';
 
 type Story = Database['public']['Tables']['stories']['Row'];
 type Conflict = Database['public']['Tables']['conflicts']['Row'];
@@ -16,7 +18,10 @@ const handleResponse = async <T>(promise: PromiseLike<any>): Promise<{ data: T |
     if (error) throw error;
     return { data, error: null };
   } catch (error) {
-    return { data: null, error: error instanceof Error ? error.message : 'Unknown error' };
+    // Log the actual error for developers
+    console.error('API Error:', error);
+    // Return a sanitized message for the user
+    return { data: null, error: sanitizeError(error) };
   }
 };
 
@@ -24,8 +29,10 @@ const handleResponse = async <T>(promise: PromiseLike<any>): Promise<{ data: T |
 export const storyAPI = {
   // Get complete story with nested data
   getFullStory: async (storyId: string) => {
+    const userId = await getCurrentUserId();
+    
     const storyResponse = await handleResponse(
-      supabase.from('stories').select('*').eq('id', storyId).single()
+      supabase.from('stories').select('*').eq('id', storyId).eq('user_id', userId).single()
     );
     
     if (storyResponse.error || !storyResponse.data) return storyResponse;
@@ -54,15 +61,17 @@ export const storyAPI = {
   
   // Update story basics
   updateStoryBasics: async (storyId: string, updates: Partial<Pick<Story, 'name' | 'theme' | 'description'>>) => {
+    const userId = await getCurrentUserId();
     return handleResponse(
-      supabase.from('stories').update(updates).eq('id', storyId)
+      supabase.from('stories').update(updates).eq('id', storyId).eq('user_id', userId)
     );
   },
   
   // Update world settings
   updateWorldSettings: async (storyId: string, worldSettings: Story['world_settings']) => {
+    const userId = await getCurrentUserId();
     return handleResponse(
-      supabase.from('stories').update({ world_settings: worldSettings }).eq('id', storyId)
+      supabase.from('stories').update({ world_settings: worldSettings }).eq('id', storyId).eq('user_id', userId)
     );
   }
 };
@@ -350,36 +359,11 @@ export const writingAPI = {
   }
 };
 
-// RPC Functions (these would need to be created in Supabase)
-export const rpcAPI = {
-  // Link resource to entity (needs to be created in Supabase)
-  linkResourceToEntity: async (resourceId: string, entityType: string, entityId: string) => {
-    return handleResponse(
-      supabase.rpc('link_resource_to_entity', {
-        resource_id: resourceId,
-        entity_type: entityType,
-        entity_id: entityId
-      })
-    );
-  },
-  
-  // Reorder scenes (needs to be created in Supabase)
-  reorderScenes: async (storyId: string, newOrder: string[]) => {
-    return handleResponse(
-      supabase.rpc('reorder_scenes', {
-        story_id: storyId,
-        new_order: newOrder
-      })
-    );
-  }
-};
-
 export default {
   story: storyAPI,
   conflict: conflictAPI,
   character: characterAPI,
   scene: sceneAPI,
   resource: resourceAPI,
-  writing: writingAPI,
-  rpc: rpcAPI
+  writing: writingAPI
 };
