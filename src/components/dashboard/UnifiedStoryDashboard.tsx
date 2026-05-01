@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { useStoryManager } from '../../hooks/useStoryData';
+import React, { useState } from 'react';
+import { useStory } from '../../context/StoryContext';
 import { DashboardHeader } from './DashboardHeader';
 import { NavigationTabs } from './NavigationTabs';
 import { OverviewSection } from './OverviewSection';
@@ -8,37 +7,43 @@ import { CharacterSection } from '../character-section/CharacterSection';
 import { SceneSection } from '../scene-section/SceneSection';
 import { WritingSection } from '../writing-section/WritingSection';
 import { ResourcesSection } from '../resources-section/ResourcesSection';
-
-interface StoryParams {
-  storyId: string;
-}
+import { Toast } from '../ui/Toast';
+import { Skeleton } from '../ui/Skeleton';
+import { ErrorBoundary } from '../ui/ErrorBoundary';
 
 export const UnifiedStoryDashboard: React.FC = () => {
-  const { storyId } = useParams<StoryParams>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { 
+    story, characters, scenes, conflicts, resources, writingSession,
+    loading, error, refetch, 
+    updateStory, updateWorldSettings, updateWriting,
+    addCharacter, updateCharacter, deleteCharacter,
+    addScene, updateScene, deleteScene, reorderScenes,
+    addConflict, updateConflict, deleteConflict,
+    addResource, updateResource, deleteResource
+  } = useStory();
 
-  const {
-    story,
-    characters,
-    scenes,
-    conflicts,
-    resources,
-    writingSession,
-    loading: dataLoading,
-    error: dataError,
-    refetch
-  } = useStoryManager(storyId || '');
-
-  useEffect(() => {
-    if (dataLoading || dataError) {
-      setLoading(dataLoading);
-      setError(dataError ? dataError.message : null);
-    }
-  }, [dataLoading, dataError]);
+  const [activeTab, setActiveTab] = useState<'overview' | 'characters' | 'scenes' | 'writing' | 'resources'>('overview');
 
   if (loading && !story) {
-    return <div className="flex h-full items-center justify-center">Loading dashboard...</div>;
+    return (
+      <div className="flex h-full bg-[#0a000f]">
+        <div className="w-64 border-r border-purple-900/20 p-6 space-y-6">
+          <Skeleton className="h-10 w-full mb-8" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+        <div className="flex-1 p-8 space-y-8">
+          <Skeleton className="h-12 w-1/3 mb-12" />
+          <div className="grid grid-cols-2 gap-8">
+            <Skeleton.Card />
+            <Skeleton.Card />
+          </div>
+          <Skeleton.Text lines={10} className="pt-8" />
+        </div>
+      </div>
+    );
   }
 
   if (error || !story) {
@@ -64,8 +69,8 @@ export const UnifiedStoryDashboard: React.FC = () => {
       <div className="w-64 bg-[#1a001f] border-r border-purple-900/30 flex flex-col">
         <DashboardHeader story={story} />
         <NavigationTabs 
-          activeTab="overview" 
-          onTabChange={(tab) => console.log('Switch to tab:', tab)}
+          activeTab={activeTab} 
+          onTabChange={(tab) => setActiveTab(tab as any)}
         />
       </div>
 
@@ -74,17 +79,74 @@ export const UnifiedStoryDashboard: React.FC = () => {
         <div className="flex flex-col h-full">
           {/* Section Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            {/* In a real implementation, this would switch based on active tab */}
-            <OverviewSection 
-              story={story} 
-              worldSettings={story.world_settings}
-              onWorldSettingsUpdate={(settings) => 
-                console.log('Updating world settings:', settings)
-              }
-            />
+            {activeTab === 'overview' && (
+              <ErrorBoundary>
+                <OverviewSection 
+                  story={story} 
+                  characters={characters}
+                  conflicts={conflicts}
+                  worldSettings={story.world_settings}
+                  onWorldSettingsUpdate={updateWorldSettings}
+                  onStoryUpdate={updateStory}
+                  onConflictAdd={addConflict}
+                  onConflictUpdate={updateConflict}
+                  onConflictDelete={deleteConflict}
+                />
+              </ErrorBoundary>
+            )}
+            
+            {activeTab === 'characters' && (
+              <ErrorBoundary>
+                <CharacterSection 
+                  characters={characters}
+                  onCharacterAdd={addCharacter}
+                  onCharacterUpdate={updateCharacter}
+                  onCharacterDelete={deleteCharacter}
+                />
+              </ErrorBoundary>
+            )}
+            
+            {activeTab === 'scenes' && (
+              <ErrorBoundary>
+                <SceneSection 
+                  scenes={scenes}
+                  characters={characters}
+                  conflicts={conflicts}
+                  onSceneAdd={addScene}
+                  onSceneUpdate={updateScene}
+                  onSceneDelete={deleteScene}
+                  onReorderScenes={reorderScenes}
+                />
+              </ErrorBoundary>
+            )}
+            
+            {activeTab === 'writing' && (
+              <ErrorBoundary>
+                <WritingSection 
+                  writingSession={writingSession}
+                  characters={characters}
+                  scenes={scenes}
+                  onWritingUpdate={updateWriting}
+                />
+              </ErrorBoundary>
+            )}
+            
+            {activeTab === 'resources' && (
+              <ErrorBoundary>
+                <ResourcesSection 
+                  resources={resources}
+                  onResourceAdd={addResource}
+                  onResourceUpdate={updateResource}
+                  onResourceDelete={deleteResource}
+                />
+              </ErrorBoundary>
+            )}
           </div>
         </div>
       </div>
+      
+      {/* Global Modals & Notifications */}
+      <Toast />
     </div>
   );
 };
