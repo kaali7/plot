@@ -44,51 +44,62 @@ export const ReferencePanel: React.FC<ReferencePanelProps> = ({
         </button>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Characters */}
-        <div className="space-y-3">
-          <h4 className="text-purple-300 font-medium mb-2">Characters</h4>
-          {characters.length > 0 ? (
-            <div className="space-y-1">
-              {characters.map(char => (
-                <div 
-                  key={char.id} 
-                  className="flex items-center justify-between p-2 bg-[#2a003f] rounded hover:bg-[#2a003f]/50 transition-colors cursor-pointer"
-                  onClick={() => onInsertReference('character', char.id)}
-                >
-                  <span className="text-gray-300">{char.name}</span>
-                  <span className={`text-purple-300 px-2 py-0.5 rounded text-xs`}>
-                    {char.role}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-2">No characters defined</p>
-          )}
+    <div className="flex-1 overflow-y-auto space-y-12">
+      {/* Characters */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b border-editor-border pb-2">
+          <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.2em] font-bold">Forge: Identities</h4>
+          <span className="text-[8px] font-mono text-editor-text-muted/40 uppercase tracking-widest">{characters.length} Count</span>
         </div>
-        
-        {/* Scenes */}
-        <div className="space-y-3">
-          <h4 className="text-purple-300 font-medium mb-2">Scenes</h4>
-          {scenes.length > 0 ? (
-            <div className="space-y-1">
-              {scenes.map(scene => (
-                <div 
-                  key={scene.id} 
-                  className="flex items-center justify-between p-2 bg-[#2a003f] rounded hover:bg-[#2a003f]/50 transition-colors cursor-pointer"
-                  onClick={() => onInsertReference('scene', scene.id)}
-                >
-                  <span className="text-gray-300">{scene.title}</span>
-                  <span className="text-xs text-purple-400">#{scene.order + 1}</span>
+        {characters.length > 0 ? (
+          <div className="space-y-2">
+            {characters.map(char => (
+              <div 
+                key={char.id} 
+                className="group flex flex-col p-4 bg-white/[0.02] border border-editor-border hover:border-editor-magenta transition-all cursor-pointer rounded-sm"
+                onClick={() => onInsertReference('character', char.id)}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-serif font-bold text-editor-text group-hover:text-white transition-colors">{char.name}</span>
+                  <div className="w-1 h-1 rounded-full bg-editor-magenta shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-2">No scenes defined</p>
-          )}
-        </div>
+                <span className="text-[8px] font-mono text-editor-text-muted uppercase tracking-widest italic group-hover:text-editor-magenta/60 transition-colors">
+                  {char.role}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[10px] font-mono text-editor-text-muted text-center py-8 uppercase tracking-widest italic opacity-40">No identities forged</p>
+        )}
       </div>
+      
+      {/* Scenes */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b border-editor-border pb-2">
+          <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.2em] font-bold">Chronicle: Events</h4>
+          <span className="text-[8px] font-mono text-editor-text-muted/40 uppercase tracking-widest">{scenes.length} Count</span>
+        </div>
+        {scenes.length > 0 ? (
+          <div className="space-y-2">
+            {scenes.map((scene, i) => (
+              <div 
+                key={scene.id} 
+                className="group flex items-center space-x-4 p-4 bg-white/[0.02] border border-editor-border hover:border-editor-magenta transition-all cursor-pointer rounded-sm"
+                onClick={() => onInsertReference('scene', scene.id)}
+              >
+                <span className="text-xs font-mono font-bold text-editor-magenta/40 group-hover:text-editor-magenta transition-colors">
+                  {(i + 1).toString().padStart(2, '0')}
+                </span>
+                <span className="text-sm font-serif font-bold text-editor-text group-hover:text-white transition-colors truncate">{scene.title}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[10px] font-mono text-editor-text-muted text-center py-8 uppercase tracking-widest italic opacity-40">No chronicle events</p>
+        )}
+      </div>
+    </div>
     </div>
   );
 };
