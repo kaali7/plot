@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { storySchema } from '../../lib/schemas';
 
 interface StoryModalProps {
   isOpen: boolean;
@@ -17,12 +18,22 @@ export const StoryModal: React.FC<StoryModalProps> = ({
 
   if (!isOpen) return null;
 
+  const [error, setError] = useState<string | null>(null);
+
+  if (!isOpen) return null;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (title.trim()) {
-      onSave(title);
-      setTitle('');
+    
+    const result = storySchema.safeParse({ name: title });
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      return;
     }
+
+    onSave(title);
+    setTitle('');
+    setError(null);
   };
 
   return (
@@ -32,41 +43,45 @@ export const StoryModal: React.FC<StoryModalProps> = ({
         onClick={onClose} 
       />
       
-      <div className="relative bg-[#1a001f] border border-purple-900/30 rounded-2xl w-full max-w-md shadow-[0_0_50px_rgba(138,0,194,0.3)] overflow-hidden">
-        <div className="p-6 border-b border-purple-900/20 bg-gradient-to-r from-purple-900/20 to-transparent">
-          <h2 className="text-xl font-bold text-white">Create New Story</h2>
-          <p className="text-purple-300/60 text-sm mt-1">Every great narrative begins with a title.</p>
+      <div className="relative bg-surface border border-editor-border rounded-sm w-full max-w-md shadow-magenta-glow overflow-hidden animate-slide-up">
+        <div className="p-8 border-b border-editor-border">
+          <h2 className="text-3xl font-serif font-bold text-white tracking-tight">New Manuscript</h2>
+          <p className="text-editor-text-muted font-mono text-[10px] uppercase tracking-widest mt-2 italic">Begin your journey here.</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
           <div>
-            <label className="block text-sm font-medium text-purple-300 mb-2 uppercase tracking-wider">
-              Story Title
+            <label className="block text-[10px] font-mono text-editor-text-muted mb-3 uppercase tracking-widest">
+              Manuscript Title
             </label>
             <input
               autoFocus
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. The Last Nebula"
-              className="w-full bg-black/40 border border-purple-900/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all placeholder:text-purple-900/50"
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (error) setError(null);
+              }}
+              placeholder="e.g. The Silent Echo"
+              className={`w-full input-tactile text-lg font-serif ${error ? 'border-red-500/50' : ''}`}
             />
+            {error && <p className="text-red-500 text-[10px] font-mono uppercase mt-2 tracking-wider">{error}</p>}
           </div>
           
-          <div className="flex justify-end space-x-3 pt-2">
+          <div className="flex justify-end space-x-6 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-purple-300 hover:bg-purple-900/20 transition-colors"
+              className="text-editor-text-muted hover:text-white transition-all font-mono text-[10px] uppercase tracking-widest"
             >
-              Cancel
+              Discard
             </button>
             <button
               type="submit"
               disabled={!title.trim()}
-              className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(138,0,194,0.4)]"
+              className="btn-magenta px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
             >
-              Create Story
+              Initialize
             </button>
           </div>
         </form>

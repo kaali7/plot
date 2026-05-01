@@ -29,10 +29,13 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
   onConflictDelete
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       {/* Story Basics */}
-      <div className="bg-[#1a001f] rounded-xl p-6 border border-purple-900/30 shadow-[0_0_20px_rgba(138,0,194,0.2)]">
-        <h2 className="text-xl font-bold text-white mb-4">Story Foundation</h2>
+      <div className="card-tactile p-8">
+        <div className="mb-6">
+          <h2 className="text-2xl font-serif font-bold text-white tracking-tight">Story Foundation</h2>
+          <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] mt-1 italic">Core Identity & Premise</p>
+        </div>
         <BasicInfoPanel 
           story={story}
           onUpdate={onStoryUpdate}
@@ -40,7 +43,11 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
       </div>
 
       {/* Unified Story Overview (Rich Narrative View) */}
-      <div className="bg-[#1a001f] rounded-xl p-6 border border-purple-900/30 shadow-[0_0_20px_rgba(138,0,194,0.2)]">
+      <div className="card-tactile p-8">
+        <div className="mb-6">
+          <h2 className="text-2xl font-serif font-bold text-white tracking-tight">Narrative Compass</h2>
+          <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] mt-1 italic">The Living Story Document</p>
+        </div>
         <UnifiedStoryOverview 
           overviewData={story.description || ''}
           charactersData={characters}
@@ -48,25 +55,33 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
         />
       </div>
 
-      {/* World Settings */}
-      <div className="bg-[#1a001f] rounded-xl p-6 border border-purple-900/30 shadow-[0_0_20px_rgba(138,0,194,0.2)]">
-        <h2 className="text-xl font-bold text-white mb-4">World Settings</h2>
-        <WorldSettingsPanel 
-          worldSettings={worldSettings}
-          onUpdate={onWorldSettingsUpdate}
-        />
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* World Settings */}
+        <div className="card-tactile p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-serif font-bold text-white tracking-tight">World Settings</h2>
+            <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] mt-1 italic">Environment & Atmosphere</p>
+          </div>
+          <WorldSettingsPanel 
+            worldSettings={worldSettings}
+            onUpdate={onWorldSettingsUpdate}
+          />
+        </div>
 
-      {/* Conflicts */}
-      <div className="bg-[#1a001f] rounded-xl p-6 border border-purple-900/30 shadow-[0_0_20px_rgba(138,0,194,0.2)]">
-        <h2 className="text-xl font-bold text-white mb-4">Story Conflicts</h2>
-        <ConflictBuilder 
-          storyId={story.id}
-          conflicts={conflicts}
-          onConflictAdd={onConflictAdd}
-          onConflictUpdate={onConflictUpdate}
-          onConflictDelete={onConflictDelete}
-        />
+        {/* Conflicts */}
+        <div className="card-tactile p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-serif font-bold text-white tracking-tight">Story Conflicts</h2>
+            <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] mt-1 italic">The Engine of Change</p>
+          </div>
+          <ConflictBuilder 
+            storyId={story.id}
+            conflicts={conflicts}
+            onConflictAdd={onConflictAdd}
+            onConflictUpdate={onConflictUpdate}
+            onConflictDelete={onConflictDelete}
+          />
+        </div>
       </div>
     </div>
   );

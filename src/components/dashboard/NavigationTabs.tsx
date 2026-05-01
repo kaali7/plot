@@ -55,31 +55,36 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
   ];
 
   return (
-    <div className="flex-1 px-4 py-8 space-y-2 overflow-y-auto custom-scrollbar">
+    <div className="flex-1 px-6 py-12 space-y-4 overflow-y-auto custom-scrollbar">
       {tabs.map(tab => {
         const isActive = activeTab === tab.id;
         return (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`w-full group relative flex items-center space-x-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
+            className={`w-full group relative flex items-center space-x-6 px-6 py-5 transition-all duration-500 border-l-2 ${
               isActive 
-                ? 'bg-gradient-to-r from-purple-600/20 to-purple-800/5 text-white shadow-lg border border-purple-500/20' 
-                : 'text-gray-500 hover:text-purple-300 hover:bg-purple-900/10'
+                ? 'bg-white/[0.03] border-editor-magenta text-white shadow-magenta-glow' 
+                : 'border-transparent text-editor-text-muted hover:text-white hover:bg-white/[0.01]'
             }`}
           >
-            {/* Active Glow Indicator */}
-            {isActive && (
-              <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-purple-500 rounded-full shadow-[0_0_15px_rgba(168,85,247,0.8)]" />
-            )}
-            
-            <div className={`transition-colors duration-300 ${isActive ? 'text-purple-400' : 'group-hover:text-purple-400'}`}>
+            <div className={`transition-all duration-500 transform ${isActive ? 'text-editor-magenta scale-110' : 'group-hover:text-white opacity-40 group-hover:opacity-100'}`}>
               {tab.icon}
             </div>
             
-            <span className={`text-sm font-bold tracking-tight transition-all duration-300 ${isActive ? 'translate-x-1' : 'group-hover:translate-x-1'}`}>
-              {tab.label}
-            </span>
+            <div className="flex flex-col items-start">
+              <span className={`text-[10px] font-mono uppercase tracking-[0.2em] transition-all duration-500 ${isActive ? 'text-white' : 'text-editor-text-muted group-hover:text-white'}`}>
+                {tab.label}
+              </span>
+              {isActive && (
+                <span className="text-[8px] font-mono text-editor-magenta uppercase tracking-widest mt-1 animate-pulse">Active Workspace</span>
+              )}
+            </div>
+
+            {/* Micro-indicator */}
+            {isActive && (
+              <div className="absolute right-6 w-1 h-1 rounded-full bg-editor-magenta shadow-magenta-glow" />
+            )}
           </button>
         );
       })}

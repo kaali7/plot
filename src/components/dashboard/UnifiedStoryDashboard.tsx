@@ -26,21 +26,19 @@ export const UnifiedStoryDashboard: React.FC = () => {
 
   if (loading && !story) {
     return (
-      <div className="flex h-full bg-[#0a000f]">
-        <div className="w-64 border-r border-purple-900/20 p-6 space-y-6">
-          <Skeleton className="h-10 w-full mb-8" />
-          <Skeleton className="h-4 w-full" />
+      <div className="flex h-full bg-background">
+        <div className="w-72 border-r border-editor-border p-8 space-y-8">
+          <Skeleton className="h-10 w-full mb-12" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
         </div>
-        <div className="flex-1 p-8 space-y-8">
-          <Skeleton className="h-12 w-1/3 mb-12" />
-          <div className="grid grid-cols-2 gap-8">
+        <div className="flex-1 p-12 space-y-12">
+          <Skeleton className="h-12 w-1/3 mb-16" />
+          <div className="grid grid-cols-2 gap-12">
             <Skeleton.Card />
             <Skeleton.Card />
           </div>
-          <Skeleton.Text lines={10} className="pt-8" />
         </div>
       </div>
     );
@@ -48,15 +46,15 @@ export const UnifiedStoryDashboard: React.FC = () => {
 
   if (error || !story) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center p-6 bg-red-900/50 rounded-xl border border-red-700/30">
-          <h2 className="text-red-300 mb-4">Error Loading Dashboard</h2>
-          <p className="text-red-400">{error || 'Unknown error'}</p>
+      <div className="flex h-full items-center justify-center bg-background">
+        <div className="text-center p-12 card-tactile max-w-md">
+          <h2 className="text-red-400 font-serif text-2xl mb-4">Archive Retrieval Failed</h2>
+          <p className="text-editor-text-muted font-mono text-xs uppercase tracking-widest mb-8">{error || 'Unknown error'}</p>
           <button 
             onClick={() => refetch()}
-            className="mt-4 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors"
+            className="btn-magenta px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
           >
-            Retry
+            Re-Initialize
           </button>
         </div>
       </div>
@@ -64,9 +62,9 @@ export const UnifiedStoryDashboard: React.FC = () => {
   }
 
   return (
-    <div className="flex h-full bg-gradient-to-r from-black to-[#2a003f]">
+    <div className="flex h-full bg-background">
       {/* Sidebar Navigation */}
-      <div className="w-64 bg-[#1a001f] border-r border-purple-900/30 flex flex-col">
+      <div className="w-72 bg-surface border-r border-editor-border flex flex-col">
         <DashboardHeader story={story} />
         <NavigationTabs 
           activeTab={activeTab} 
@@ -75,10 +73,10 @@ export const UnifiedStoryDashboard: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden bg-background">
         <div className="flex flex-col h-full">
           {/* Section Content */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-8 lg:p-12">
             {activeTab === 'overview' && (
               <ErrorBoundary>
                 <OverviewSection 
