@@ -4,7 +4,7 @@
 export interface Story {
   id: string;
   user_id: string;
-  title: string;
+  name: string;
   theme?: string;
   description?: string;
   world_settings: WorldSettings;
@@ -37,9 +37,9 @@ export interface Character {
   role: 'main' | 'sub-main' | 'supporting' | 'antagonist';
   description?: string;
   motivation: {
-    goal?: string;
-    fear?: string;
-    desire?: string;
+    goal?: string | null;
+    fear?: string | null;
+    desire?: string | null;
   };
   traits: {
     strengths: string[];
@@ -47,13 +47,13 @@ export interface Character {
     personality: string[];
   };
   conflicts: {
-    internal?: string;
-    external?: string;
+    internal?: string | null;
+    external?: string | null;
   };
   relationships: Relationship[];
   arc: {
-    start?: string;
-    end?: string;
+    start?: string | null;
+    end?: string | null;
   };
   resources: string[];
   created_at: string;
@@ -75,18 +75,18 @@ export interface Scene {
   pov_character_id?: string;
   goal?: string;
   setting: {
-    location?: string;
-    time?: string;
-    environment?: string;
+    location?: string | null;
+    time?: string | null;
+    environment?: string | null;
   };
   characters: SceneCharacter[];
   events: {
-    main?: string;
-    turningPoint?: string;
+    main?: string | null;
+    turningPoint?: string | null;
   };
   conflicts: {
-    internal?: string;
-    external?: string;
+    internal?: string | null;
+    external?: string | null;
   };
   dialogue: Dialogue[];
   background?: string;
@@ -104,6 +104,7 @@ export interface Dialogue {
   characterId: string;
   content: string;
   order: number;
+  type?: 'dialogue' | 'action';
 }
 
 export interface Resource {

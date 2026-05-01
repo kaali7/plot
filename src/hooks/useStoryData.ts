@@ -58,13 +58,14 @@ export const useStoryManager = (storyId: string): StoryManager => {
       }
       
       if (response.data) {
+        const resData = response.data as any;
         setData({
-          story: response.data,
-          characters: response.data.characters || [],
-          scenes: response.data.scenes || [],
-          conflicts: response.data.conflicts || [],
-          resources: response.data.resources || [],
-          writingSession: response.data.writingSession || null
+          story: resData,
+          characters: resData.characters || [],
+          scenes: resData.scenes || [],
+          conflicts: resData.conflicts || [],
+          resources: resData.resources || [],
+          writingSession: resData.writingSession || null
         });
       }
     } catch (err) {
@@ -119,6 +120,7 @@ export const useStoryManager = (storyId: string): StoryManager => {
       conflicts: characterData.conflicts || { internal: null, external: null },
       relationships: characterData.relationships || [],
       arc: characterData.arc || { start: null, end: null },
+      resources: [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -126,12 +128,12 @@ export const useStoryManager = (storyId: string): StoryManager => {
     setData(prev => ({ ...prev, characters: [...prev.characters, tempCharacter] }));
     
     try {
-      const response = await api.character.createCharacter(data.story.id, characterData);
+      const response = await api.character.createCharacter(data.story.id, characterData as Omit<Character, 'id' | 'created_at' | 'updated_at' | 'story_id'>);
       if (response.error) throw new Error(response.error);
       
       setData(prev => ({
         ...prev,
-        characters: optimisticUpdate(prev.characters, response.data!, tempId)
+        characters: optimisticUpdate(prev.characters, response.data! as Character, tempId)
       }));
     } catch (err) {
       setData(prev => ({
@@ -212,12 +214,12 @@ export const useStoryManager = (storyId: string): StoryManager => {
     setData(prev => ({ ...prev, scenes: [...prev.scenes, tempScene] }));
     
     try {
-      const response = await api.scene.createScene(data.story.id, sceneData);
+      const response = await api.scene.createScene(data.story.id, sceneData as Omit<Scene, 'id' | 'created_at' | 'updated_at' | 'story_id'>);
       if (response.error) throw new Error(response.error);
       
       setData(prev => ({
         ...prev,
-        scenes: optimisticUpdate(prev.scenes, response.data!, tempId)
+        scenes: optimisticUpdate(prev.scenes, response.data! as Scene, tempId)
       }));
     } catch (err) {
       setData(prev => ({
@@ -273,8 +275,6 @@ export const useStoryManager = (storyId: string): StoryManager => {
   }, [data.scenes]);
 
   const reorderScenes = useCallback(async (sceneIds: string[]) => {
-    const originalOrder = data.scenes.map(s => s.id);
-    
     // Optimistically update order
     const reorderedScenes = sceneIds.map((id, index) => {
       const scene = data.scenes.find(s => s.id === id);
@@ -326,6 +326,7 @@ export const useStoryManager = (storyId: string): StoryManager => {
      updateScene,
      deleteScene,
      reorderScenes,
+     updateWriting,
      addConflict: async (conflictData: Partial<Conflict>) => {
        if (!data.story) return;
        
@@ -343,12 +344,12 @@ export const useStoryManager = (storyId: string): StoryManager => {
        setData(prev => ({ ...prev, conflicts: [...prev.conflicts, tempConflict] }));
        
        try {
-         const response = await api.conflict.createConflict(data.story.id, conflictData);
+         const response = await api.conflict.createConflict(data.story.id, conflictData as Omit<Conflict, 'id' | 'created_at' | 'updated_at' | 'story_id'>);
          if (response.error) throw new Error(response.error);
          
          setData(prev => ({
            ...prev,
-           conflicts: optimisticUpdate(prev.conflicts, response.data!, tempId)
+           conflicts: optimisticUpdate(prev.conflicts, response.data! as Conflict, tempId)
          }));
        } catch (err) {
          setData(prev => ({
@@ -433,12 +434,12 @@ export const useStoryManager = (storyId: string): StoryManager => {
              conflicts: [],
              worldSettings: []
            }
-         });
+         } as Omit<Resource, 'id' | 'created_at' | 'updated_at' | 'story_id'>);
          if (response.error) throw new Error(response.error);
          
          setData(prev => ({
            ...prev,
-           resources: optimisticUpdate(prev.resources, response.data!, tempId)
+           resources: optimisticUpdate(prev.resources, response.data! as Resource, tempId)
          }));
        } catch (err) {
          setData(prev => ({

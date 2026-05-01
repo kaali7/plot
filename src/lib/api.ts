@@ -8,11 +8,9 @@ type Conflict = Database['public']['Tables']['conflicts']['Row'];
 type Character = Database['public']['Tables']['characters']['Row'];
 type Scene = Database['public']['Tables']['scenes']['Row'];
 type Resource = Database['public']['Tables']['resources']['Row'];
-type WritingSession = Database['public']['Tables']['writing_sessions']['Row'];
-type WritingVersion = Database['public']['Tables']['writing_versions']['Row'];
 
 // Helper function for API responses
-const handleResponse = async <T>(promise: Promise<any>): Promise<{ data: T | null; error: string | null }> => {
+const handleResponse = async <T>(promise: PromiseLike<any>): Promise<{ data: T | null; error: string | null }> => {
   try {
     const { data, error } = await promise;
     if (error) throw error;
@@ -38,7 +36,7 @@ export const storyAPI = {
       handleResponse(supabase.from('scenes').select('*').eq('story_id', storyId).order('order')),
       handleResponse(supabase.from('conflicts').select('*').eq('story_id', storyId)),
       handleResponse(supabase.from('resources').select('*').eq('story_id', storyId)),
-      handleResponse(supabase.from('writing_sessions').select('*').eq('story_id', storyId).single())
+      handleResponse(supabase.from('writing_sessions').select('*').eq('story_id', storyId).maybeSingle())
     ]);
     
     return {
@@ -55,7 +53,7 @@ export const storyAPI = {
   },
   
   // Update story basics
-  updateStoryBasics: async (storyId: string, updates: Partial<Pick<Story, 'title' | 'theme' | 'description'>>) => {
+  updateStoryBasics: async (storyId: string, updates: Partial<Pick<Story, 'name' | 'theme' | 'description'>>) => {
     return handleResponse(
       supabase.from('stories').update(updates).eq('id', storyId)
     );
@@ -86,7 +84,7 @@ export const conflictAPI = {
           ...conflictData,
           story_id: storyId
         }
-      ]).single()
+      ]).select().single()
     );
   },
   
@@ -123,13 +121,16 @@ export const characterAPI = {
   
   // Create character
   createCharacter: async (storyId: string, characterData: Omit<Character, 'id' | 'story_id' | 'created_at' | 'updated_at'>) => {
+    // Omit resources as it's not a column in the characters table
+    const { resources: _, ...data } = characterData as any;
+    
     return handleResponse(
       supabase.from('characters').insert([
         {
-          ...characterData,
+          ...data,
           story_id: storyId
         }
-      ]).single()
+      ]).select().single()
     );
   },
   
@@ -142,8 +143,11 @@ export const characterAPI = {
   
   // Update character
   updateCharacter: async (characterId: string, updates: Partial<Omit<Character, 'id' | 'story_id' | 'created_at'>>) => {
+    // Omit resources as it's not a column in the characters table
+    const { resources: _, ...data } = updates as any;
+    
     return handleResponse(
-      supabase.from('characters').update(updates).eq('id', characterId)
+      supabase.from('characters').update(data).eq('id', characterId)
     );
   },
   
@@ -166,13 +170,16 @@ export const sceneAPI = {
   
   // Create scene
   createScene: async (storyId: string, sceneData: Omit<Scene, 'id' | 'story_id' | 'created_at' | 'updated_at'>) => {
+    // Omit resources as it's not a column in the scenes table
+    const { resources: _, ...data } = sceneData as any;
+    
     return handleResponse(
       supabase.from('scenes').insert([
         {
-          ...sceneData,
+          ...data,
           story_id: storyId
         }
-      ]).single()
+      ]).select().single()
     );
   },
   
@@ -185,8 +192,11 @@ export const sceneAPI = {
   
   // Update scene
   updateScene: async (sceneId: string, updates: Partial<Omit<Scene, 'id' | 'story_id' | 'created_at'>>) => {
+    // Omit resources as it's not a column in the scenes table
+    const { resources: _, ...data } = updates as any;
+    
     return handleResponse(
-      supabase.from('scenes').update(updates).eq('id', sceneId)
+      supabase.from('scenes').update(data).eq('id', sceneId)
     );
   },
   
@@ -198,21 +208,9 @@ export const sceneAPI = {
   },
   
   // Reorder scenes
-  reorderScenes: async (storyId: string, sceneIds: string[]) => {
-    const updates = sceneIds.map((id, index) => ({
-      id,
-      order: index
-    }));
-    
-    // Using Supabase's update with filter
-    const { data, error } = await supabase
-      .from('scenes')
-      .update({ order: 0 }) // Reset first
-      .eq('story_id', storyId);
-    
-    if (error) return { data: null, error: error.message };
-    
-    // Then update each scene with correct order
+  reorderScenes: async (_storyId: string, sceneIds: string[]) => {
+    // Update each scene with correct order in parallel
+    // We remove the reset to 0 to avoid temporary collisions and redundant writes
     const promises = sceneIds.map((id, index) =>
       supabase.from('scenes').update({ order: index }).eq('id', id)
     );
@@ -221,7 +219,7 @@ export const sceneAPI = {
     const errors = results.map(r => r.error).filter(Boolean);
     
     if (errors.length > 0) {
-      return { data: null, error: errors[0].message };
+      return { data: null, error: errors[0]?.message || 'Error reordering scenes' };
     }
     
     return { data: sceneIds, error: null };
@@ -251,7 +249,7 @@ export const resourceAPI = {
             worldSettings: []
           }
         }
-      ]).single()
+      ]).select().single()
     );
   },
   
@@ -304,7 +302,7 @@ export const writingAPI = {
   // Get writing session for a story
   getWritingSession: async (storyId: string) => {
     return handleResponse(
-      supabase.from('writing_sessions').select('*').eq('story_id', storyId).single()
+      supabase.from('writing_sessions').select('*').eq('story_id', storyId).maybeSingle()
     );
   },
   
@@ -324,7 +322,7 @@ export const writingAPI = {
           content: initialContent,
           version: 1
         }
-      ]).single()
+      ]).select().single()
     );
   },
   
