@@ -45,16 +45,18 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Characters ({characters.length})</h2>
+      <div className="flex items-end justify-between pb-8 border-b border-editor-border">
+        <div>
+          <h2 className="text-4xl font-serif font-bold text-white tracking-tight">Character Forge</h2>
+          <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] mt-2 italic">Architecture of Persona ({characters.length})</p>
+        </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+          className="btn-magenta px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
         >
-          <span>+</span>
-          <span>Add Character</span>
+          Forge Identity
         </button>
       </div>
 

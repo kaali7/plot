@@ -7,6 +7,7 @@ import { RelationshipsForm } from './forms/RelationshipsForm';
 import { ArcForm } from './forms/ArcForm';
 import { ResourcesForm } from './forms/ResourcesForm';
 import type { Character } from '../../types/story.types';
+import { characterSchema } from '../../lib/schemas';
 
 type TabId = 'basic' | 'motivation' | 'traits' | 'conflicts' | 'relationships' | 'arc' | 'resources';
 
@@ -25,11 +26,11 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
     name: character?.name || '',
     role: character?.role || 'supporting',
     description: character?.description || '',
-    motivation: character?.motivation || { goal: null, fear: null, desire: null },
+    motivation: character?.motivation || { goal: undefined, fear: undefined, desire: undefined },
     traits: character?.traits || { strengths: [], weaknesses: [], personality: [] },
-    conflicts: character?.conflicts || { internal: null, external: null },
+    conflicts: character?.conflicts || { internal: undefined, external: undefined },
     relationships: character?.relationships || [],
-    arc: character?.arc || { start: null, end: null },
+    arc: character?.arc || { start: undefined, end: undefined },
     resources: character?.resources || []
   });
 
@@ -44,8 +45,34 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
     }));
   };
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const handleSave = () => {
+    const result = characterSchema.safeParse(formData);
+    
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach(issue => {
+        const path = issue.path.join('.');
+        fieldErrors[path] = issue.message;
+      });
+      setErrors(fieldErrors);
+      
+      // Auto-switch to the first tab with an error if helpful
+      const firstErrorPath = result.error.issues[0]?.path[0] as string;
+      if (firstErrorPath === 'name' || firstErrorPath === 'role' || firstErrorPath === 'description') {
+        setActiveTab('basic');
+      } else if (firstErrorPath === 'motivation') {
+        setActiveTab('motivation');
+      } else if (firstErrorPath === 'traits') {
+        setActiveTab('traits');
+      }
+      
+      return;
+    }
+
     onSave(formData);
+    setErrors({});
     onClose();
   };
 
@@ -60,50 +87,56 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
    ];
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#1a001f] rounded-xl w-full max-w-2xl mx-4 p-6 border border-purple-900/30 shadow-[0_0_20px_rgba(138,0,194,0.2)]">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">
-            {character ? `Edit ${character.name}` : 'Add New Character'}
-          </h2>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-surface rounded-sm w-full max-w-3xl border border-editor-border shadow-2xl flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between p-8 border-b border-editor-border bg-white/[0.01]">
+          <div>
+            <h2 className="text-3xl font-serif font-bold text-white tracking-tight">
+              {character ? `Refine Identity` : 'Forge New Identity'}
+            </h2>
+            <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] mt-1 italic">
+              {character ? `Editing: ${character.name}` : 'Beginning a new character lifecycle'}
+            </p>
+          </div>
           <button
             onClick={onClose}
-            className="text-purple-400 hover:text-purple-300"
+            className="text-editor-text-muted hover:text-white transition-all p-2"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-4 mb-6 pb-2 border-b border-purple-900/30">
-           {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id)}
-            className={`flex-1 text-center py-2 rounded-t-lg 
-            ${activeTab === tab.id 
-              ? 'bg-purple-800/50 border-b-2 border-purple-500 text-purple-200' 
-              : 'hover:bg-[#1a001f]/50 text-purple-300'}`}
-          >
-               <span className="mr-1">{tab.icon}</span>
-               <span>{tab.label}</span>
-             </button>
-           ))}
+        <div className="flex px-8 border-b border-editor-border bg-white/[0.01] overflow-x-auto whitespace-nowrap scrollbar-hide">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`flex-shrink-0 px-6 py-4 transition-all border-b-2
+              ${activeTab === tab.id 
+                ? 'border-editor-magenta text-white bg-white/[0.02]' 
+                : 'border-transparent text-editor-text-muted hover:text-white'}`}
+            >
+              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.15em]">{tab.label}</span>
+            </button>
+          ))}
         </div>
 
         {/* Form Content */}
-        <div className="space-y-6">
-           {activeTab === 'basic' && (
-             <BasicInfoForm
-               data={formData}
-               onUpdate={(data) => setFormData(prev => ({ ...prev, ...data }))}
-             />
-           )}
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
+            {activeTab === 'basic' && (
+              <BasicInfoForm
+                data={formData}
+                onUpdate={(data) => setFormData(prev => ({ ...prev, ...data } as Partial<Character>))}
+                errors={errors}
+              />
+            )}
            {activeTab === 'motivation' && (
              <MotivationForm
-               data={formData.motivation || { goal: null, fear: null, desire: null }}
+               data={formData.motivation || { goal: undefined, fear: undefined, desire: undefined }}
                onUpdate={(data) => handleFormUpdate('motivation', data)}
              />
            )}
@@ -115,7 +148,7 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
            )}
            {activeTab === 'conflicts' && (
              <ConflictsForm
-               data={formData.conflicts || { internal: null, external: null }}
+               data={formData.conflicts || { internal: undefined, external: undefined }}
                onUpdate={(data) => handleFormUpdate('conflicts', data)}
              />
            )}
@@ -127,7 +160,7 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
            )}
            {activeTab === 'arc' && (
              <ArcForm
-               data={formData.arc || { start: null, end: null }}
+               data={formData.arc || { start: undefined, end: undefined }}
                onUpdate={(data) => handleFormUpdate('arc', data)}
              />
            )}
@@ -140,20 +173,30 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-8 flex justify-end space-x-4">
-          <button
-            onClick={onDelete}
-            disabled={!character}
-            className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded transition-colors"
-          >
-            {character ? 'Delete Character' : 'Discard'}
-          </button>
-          <button
-            onClick={handleSave}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded transition-colors"
-          >
-            Save Character
-          </button>
+        <div className="p-8 border-t border-editor-border bg-white/[0.01] flex justify-between items-center">
+          <div>
+            <button
+              onClick={onDelete}
+              disabled={!character}
+              className="text-[10px] font-mono text-red-500/50 hover:text-red-500 uppercase tracking-widest transition-all disabled:opacity-0"
+            >
+              {character ? 'Deconstruct Identity' : 'Discard Forge'}
+            </button>
+          </div>
+          <div className="flex space-x-6">
+            <button
+              onClick={onClose}
+              className="text-[10px] font-mono text-editor-text-muted hover:text-white uppercase tracking-widest transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="btn-magenta px-10 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
+            >
+              Commit to Forge
+            </button>
+          </div>
         </div>
       </div>
     </div>
