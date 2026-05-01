@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Conflict } from '../../types/story.types';
 import { ConflictCard } from './ConflictCard';
+import { conflictSchema } from '../../lib/schemas';
 
 interface ConflictBuilderProps {
   storyId: string;
@@ -27,68 +28,83 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
     description: ''
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const handleAddConflict = () => {
-    if (!newConflict.title.trim()) return;
+    const result = conflictSchema.safeParse(newConflict);
+    
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach(issue => {
+        if (issue.path[0]) fieldErrors[issue.path[0] as string] = issue.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
     
     onConflictAdd(newConflict);
     setNewConflict({ title: '', type: 'internal', description: '' });
+    setErrors({});
     setShowAddForm(false);
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Add Conflict Button */}
       {!showAddForm && (
         <button
           onClick={() => setShowAddForm(true)}
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg transition-colors flex items-center justify-center space-x-2"
+          className="w-full btn-magenta px-4 py-4 text-[10px] font-bold tracking-widest uppercase rounded-sm"
         >
-          <span>+</span>
-          <span>Add New Conflict</span>
+          Add New Conflict
         </button>
       )}
 
       {/* Add Conflict Form */}
       {showAddForm && (
-        <div className="bg-[#2a003f] border border-purple-700/30 rounded-lg p-4 space-y-3">
+        <div className="card-tactile p-6 space-y-6">
            <div>
-             <label className="block text-purple-300 mb-2">Conflict Title</label>
+             <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Conflict Title</label>
              <input
                type="text"
                value={newConflict.title}
                onChange={(e) => setNewConflict({ ...newConflict, title: e.target.value })}
-               className="w-full bg-[#1a001f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
+               className={`w-full input-tactile font-serif ${errors.title ? 'border-red-500/50' : ''}`}
                placeholder="e.g., Internal struggle with morality"
+               maxLength={200}
              />
+             {errors.title && <p className="text-red-500 text-[10px] font-mono mt-1 uppercase tracking-wider">{errors.title}</p>}
            </div>
 
            <div>
-             <label className="block text-purple-300 mb-2">Conflict Type</label>
+             <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Conflict Nature</label>
              <select
                value={newConflict.type}
                onChange={(e) => setNewConflict({ ...newConflict, type: e.target.value as Conflict['type'] })}
-               className="w-full bg-[#1a001f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
+               className="w-full input-tactile font-mono text-xs uppercase tracking-widest"
              >
-               <option value="internal">Internal</option>
-               <option value="external">External</option>
-               <option value="society">Society</option>
+               <option value="internal">Internal Tension</option>
+               <option value="external">External Obstacle</option>
+               <option value="society">Societal Pressure</option>
              </select>
            </div>
 
            <div>
-             <label className="block text-purple-300 mb-2">Description</label>
+             <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Description</label>
              <textarea
                value={newConflict.description}
                onChange={(e) => setNewConflict({ ...newConflict, description: e.target.value })}
-               className="w-full bg-[#1a001f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[80px]"
-               placeholder="Describe the conflict"
+               className={`w-full input-tactile font-serif min-h-[100px] leading-relaxed ${errors.description ? 'border-red-500/50' : ''}`}
+               placeholder="Describe the tension..."
+               maxLength={3000}
              />
+             {errors.description && <p className="text-red-500 text-[10px] font-mono mt-1 uppercase tracking-wider">{errors.description}</p>}
            </div>
 
-          <div className="flex space-x-3">
+          <div className="flex space-x-4 pt-4 border-t border-editor-border">
             <button
               onClick={handleAddConflict}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors"
+              className="btn-magenta px-6 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-sm disabled:opacity-50"
               disabled={!newConflict.title.trim()}
             >
               Add Conflict
@@ -98,7 +114,7 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
                 setShowAddForm(false);
                 setNewConflict({ title: '', type: 'internal', description: '' });
               }}
-              className="bg-purple-800 hover:bg-purple-900 text-white px-4 py-2 rounded transition-colors"
+              className="text-editor-text-muted hover:text-white transition-all font-mono text-[10px] uppercase tracking-widest"
             >
               Cancel
             </button>
@@ -108,11 +124,11 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
 
       {/* Conflict List */}
       {conflicts.length === 0 && !showAddForm ? (
-        <div className="text-center py-8 text-purple-400">
-          No conflicts added yet. Click "Add New Conflict" to get started.
+        <div className="text-center py-12 card-tactile border-dashed opacity-50">
+          <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em]">No conflicts added yet.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {conflicts.map(conflict => conflict && (
             <ConflictCard
               key={conflict.id}
