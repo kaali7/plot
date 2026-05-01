@@ -8,38 +8,26 @@ interface ResourceManagerProps {
 }
 
 export const ResourceManager: React.FC<ResourceManagerProps> = ({ resources, onResourceClick }) => {
-  const getResourceTypeColor = (type: Resource['type']) => {
-    switch (type) {
-      case 'url': return 'bg-blue-900/50 text-blue-300 border-blue-700/30';
-      case 'note': return 'bg-green-900/50 text-green-300 border-green-700/30';
-      case 'image': return 'bg-purple-900/50 text-purple-300 border-purple-700/30';
-      case 'reference': return 'bg-orange-900/50 text-orange-300 border-orange-700/30';
-      case 'inspiration': return 'bg-pink-900/50 text-pink-300 border-pink-700/30';
-      default: return 'bg-gray-900/50 text-gray-300 border-gray-700/30';
-    }
-  };
-
   if (resources.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-purple-400 mb-4">
-          <svg className="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm2-5a9 9 0 110 18 9 9 0 010-18z" clipRule="evenodd" />
+      <div className="text-center py-20 card-tactile border-dashed opacity-50">
+        <div className="text-editor-magenta/30 mb-6">
+          <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">No Resources Yet</h3>
-        <p className="text-purple-300">Add your first resource to get started</p>
+        <h3 className="text-xl font-serif font-bold text-white mb-2">No Archives Found</h3>
+        <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-widest italic">The library remains empty. Begin your collection.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {resources.map(resource => (
         <ResourceCard
           key={resource.id}
           resource={resource}
-          typeColor={getResourceTypeColor(resource.type)}
           onClick={() => onResourceClick(resource)}
         />
       ))}

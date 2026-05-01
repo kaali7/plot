@@ -3,84 +3,60 @@ import type { Resource } from '../../types/story.types';
 
 interface ResourceCardProps {
   resource: Resource;
-  typeColor: string;
   onClick: (resource: Resource) => void;
 }
 
-export const ResourceCard: React.FC<ResourceCardProps> = ({ resource, typeColor, onClick }) => {
-
-
+export const ResourceCard: React.FC<ResourceCardProps> = ({ resource, onClick }) => {
   return (
     <div 
-      className={`p-4 rounded-lg border ${typeColor} cursor-pointer hover:border-purple-700/40 transition-colors`}
+      className="card-tactile group p-6 cursor-pointer flex flex-col justify-between min-h-[280px]"
       onClick={() => onClick(resource)}
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-start justify-between mb-6">
         <div className="flex-1">
-          <h3 className="font-semibold text-white">{resource.title}</h3>
-          <div className="flex items-center space-x-2 mt-1">
-            <span className={`${typeColor.replace('border-', '').replace('text-', '')} text-xs px-2 py-0.5 rounded`}>
+          <div className="flex items-center space-x-3 mb-2">
+            <span className="text-[9px] font-mono text-editor-magenta uppercase tracking-tighter border border-editor-magenta/30 px-2 py-0.5">
               {resource.type}
             </span>
+            <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-tighter italic">REF #{resource.id.slice(0, 4)}</span>
           </div>
+          <h3 className="text-2xl font-serif font-bold text-editor-text group-hover:text-white transition-colors line-clamp-2 leading-tight">{resource.title}</h3>
         </div>
-        <div className="text-right text-xs">
-          <span className="text-purple-400">#{resource.id.substring(0, 8)}...</span>
-        </div>
+        <div className="w-1.5 h-1.5 rounded-full bg-editor-magenta shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
 
       {resource.content && (
-        <div className="space-y-2">
-          <h4 className="text-purple-300 font-medium mb-1">Content</h4>
-          <p className="text-gray-300 text-sm line-clamp-2">{resource.content}</p>
+        <p className="text-editor-text-muted font-serif italic text-base leading-relaxed mb-8 line-clamp-3 opacity-80">"{resource.content}"</p>
+      )}
+
+      {resource.url && !resource.content && (
+        <div className="mb-8">
+          <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-widest mb-1 italic">External Source</p>
+          <p className="text-editor-magenta font-mono text-xs truncate underline">{resource.url}</p>
         </div>
       )}
 
-      {resource.url && (
-        <div className="space-y-2">
-          <h4 className="text-purple-300 font-medium mb-1">URL</h4>
-          <a 
-            href={resource.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-purple-300 hover:text-purple-200 break-all text-sm"
-          >
-            {resource.url}
-          </a>
-        </div>
-      )}
-
-      {resource.file_path && (
-        <div className="space-y-2">
-          <h4 className="text-purple-300 font-medium mb-1">File</h4>
-          <p className="text-gray-300 text-sm truncate">{resource.file_path}</p>
-        </div>
-      )}
-
-      {/* Linked Entities Summary */}
-      <div className="mt-4">
-        <h4 className="text-purple-300 font-medium mb-2">Linked To</h4>
-        <div className="flex flex-wrap gap-2">
-          {resource.linked_entities.characters.length > 0 && (
-            <span className="bg-blue-900/50 text-blue-300 text-xs px-2 py-1 rounded">
-              {resource.linked_entities.characters.length} Characters
-            </span>
-          )}
-          {resource.linked_entities.scenes.length > 0 && (
-            <span className="bg-green-900/50 text-green-300 text-xs px-2 py-1 rounded">
-              {resource.linked_entities.scenes.length} Scenes
-            </span>
-          )}
-          {resource.linked_entities.conflicts.length > 0 && (
-            <span className="bg-red-900/50 text-red-300 text-xs px-2 py-1 rounded">
-              {resource.linked_entities.conflicts.length} Conflicts
-            </span>
-          )}
-          {resource.linked_entities.worldSettings.length > 0 && (
-            <span className="bg-purple-900/50 text-purple-300 text-xs px-2 py-1 rounded">
-              World Settings
-            </span>
-          )}
+      <div className="pt-6 border-t border-editor-border mt-auto">
+        <div className="flex justify-between items-center">
+          <div className="flex space-x-2">
+            {Object.entries(resource.linked_entities).map(([key, value]) => {
+              if (Array.isArray(value) && value.length > 0) {
+                return (
+                  <span key={key} className="text-[8px] font-mono text-editor-text-muted/60 uppercase tracking-tighter border border-editor-border/30 px-1.5 py-0.5">
+                    {value.length} {key.slice(0, 3)}
+                  </span>
+                );
+              }
+              if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                 // Handle worldSettings if it's an object with array props or just a flag
+                 // Based on types, it's string[]
+              }
+              return null;
+            })}
+          </div>
+          <button className="text-[9px] font-mono text-editor-text-muted hover:text-white uppercase tracking-widest transition-all opacity-0 group-hover:opacity-100">
+            Examine
+          </button>
         </div>
       </div>
     </div>
