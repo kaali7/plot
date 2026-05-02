@@ -26,6 +26,7 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
     name: character?.name || '',
     role: character?.role || 'supporting',
     description: character?.description || '',
+    image_url: character?.image_url || '',
     motivation: character?.motivation || { goal: undefined, fear: undefined, desire: undefined },
     traits: character?.traits || { strengths: [], weaknesses: [], personality: [] },
     conflicts: character?.conflicts || { internal: undefined, external: undefined },

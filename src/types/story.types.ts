@@ -36,6 +36,7 @@ export interface Character {
   name: string;
   role: 'protagonist' | 'antagonist' | 'supporting' | 'minor';
   description?: string;
+  image_url?: string;
   motivation: {
     goal?: string;
     fear?: string;
@@ -246,6 +247,7 @@ export interface CharacterFormData {
   name: string;
   role: Character['role'];
   description?: string;
+  image_url?: string;
   motivation: Character['motivation'];
   traits: Character['traits'];
   conflicts: Character['conflicts'];

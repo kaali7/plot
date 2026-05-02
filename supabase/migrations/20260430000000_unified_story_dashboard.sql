@@ -135,8 +135,9 @@ BEGIN
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       story_id UUID REFERENCES stories ON DELETE CASCADE,
       name TEXT NOT NULL CHECK (char_length(name) > 0),
-      role TEXT NOT NULL DEFAULT 'supporting' CHECK (role IN ('main', 'sub-main', 'supporting', 'antagonist')),
+      role TEXT NOT NULL DEFAULT 'supporting' CHECK (role IN ('protagonist', 'antagonist', 'supporting', 'minor')),
       description TEXT,
+      image_url TEXT,
       
       -- Structured fields as JSONB
       motivation JSONB DEFAULT '{"goal": null, "fear": null, "desire": null}',
@@ -151,6 +152,7 @@ BEGIN
   ELSE
     -- Enhance existing characters table with JSONB fields
     ALTER TABLE characters 
+    ADD COLUMN IF NOT EXISTS image_url TEXT,
     ADD COLUMN IF NOT EXISTS motivation JSONB DEFAULT '{"goal": null, "fear": null, "desire": null}',
     ADD COLUMN IF NOT EXISTS traits JSONB DEFAULT '{"strengths": [], "weaknesses": [], "personality": []}',
     ADD COLUMN IF NOT EXISTS conflicts JSONB DEFAULT '{"internal": null, "external": null}',

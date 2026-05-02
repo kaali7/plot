@@ -14,14 +14,25 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({ character, roleCol
       onClick={() => onClick(character)}
     >
       <div className="flex items-start justify-between mb-6">
-        <div className="flex-1">
-          <div className="flex items-center space-x-3 mb-2">
-            <span className={`text-[10px] font-mono uppercase tracking-tighter border px-2 py-0.5 ${roleColor.replace('bg-', 'border-').replace('/50', '/30')} ${roleColor.replace('bg-', 'text-')}`}>
-              {character.role}
-            </span>
-            <span className="text-[10px] font-mono text-editor-text-muted uppercase tracking-tighter italic">ID #{character.id.slice(0, 4)}</span>
+        <div className="flex-1 flex items-start space-x-6">
+          {character.image_url && (
+            <div className="w-24 h-24 rounded-sm overflow-hidden border border-editor-border bg-surface-dark shadow-magenta-glow group-hover:shadow-magenta-glow-lg transition-all duration-500 flex-shrink-0">
+              <img 
+                src={character.image_url} 
+                alt={character.name} 
+                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+              />
+            </div>
+          )}
+          <div className="flex-1">
+            <div className="flex items-center space-x-3 mb-2">
+              <span className={`text-[10px] font-mono uppercase tracking-tighter border px-2 py-0.5 ${roleColor.replace('bg-', 'border-').replace('/50', '/30')} ${roleColor.replace('bg-', 'text-')}`}>
+                {character.role}
+              </span>
+              <span className="text-[10px] font-mono text-editor-text-muted uppercase tracking-tighter italic">ID #{character.id.slice(0, 4)}</span>
+            </div>
+            <h3 className="text-3xl font-serif font-bold text-editor-text group-hover:text-white transition-colors">{character.name}</h3>
           </div>
-          <h3 className="text-3xl font-serif font-bold text-editor-text group-hover:text-white transition-colors">{character.name}</h3>
         </div>
         <div className="w-2 h-2 rounded-full bg-editor-magenta shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
