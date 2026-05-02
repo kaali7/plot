@@ -55,35 +55,27 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
   ];
 
   return (
-    <div className="flex-1 px-6 py-12 space-y-4 overflow-y-auto custom-scrollbar">
+    <div className="flex flex-col items-center py-12 space-y-6 overflow-y-auto custom-scrollbar w-full">
       {tabs.map(tab => {
         const isActive = activeTab === tab.id;
         return (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`w-full group relative flex items-center space-x-6 px-6 py-5 transition-all duration-500 border-l-2 ${
+            title={tab.label}
+            className={`group relative flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-500 ${
               isActive 
-                ? 'bg-white/[0.03] border-editor-magenta text-white shadow-magenta-glow' 
-                : 'border-transparent text-editor-text-muted hover:text-white hover:bg-white/[0.01]'
+                ? 'bg-primary/20 text-primary shadow-glass scale-110' 
+                : 'bg-surface-dark text-editor-text-muted hover:text-white hover:bg-white/[0.05]'
             }`}
           >
-            <div className={`transition-all duration-500 transform ${isActive ? 'text-editor-magenta scale-110' : 'group-hover:text-white opacity-40 group-hover:opacity-100'}`}>
+            <div className={`transition-transform duration-500 transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
               {tab.icon}
-            </div>
-            
-            <div className="flex flex-col items-start">
-              <span className={`text-[10px] font-mono uppercase tracking-[0.2em] transition-all duration-500 ${isActive ? 'text-white' : 'text-editor-text-muted group-hover:text-white'}`}>
-                {tab.label}
-              </span>
-              {isActive && (
-                <span className="text-[8px] font-mono text-editor-magenta uppercase tracking-widest mt-1 animate-pulse">Active Workspace</span>
-              )}
             </div>
 
             {/* Micro-indicator */}
             {isActive && (
-              <div className="absolute right-6 w-1 h-1 rounded-full bg-editor-magenta shadow-magenta-glow" />
+              <div className="absolute -right-2 w-1.5 h-1.5 rounded-full bg-primary shadow-magenta-glow" />
             )}
           </button>
         );

@@ -64,7 +64,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
   return (
     <div className="flex h-full bg-background">
       {/* Sidebar Navigation */}
-      <div className="w-72 bg-surface border-r border-editor-border flex flex-col">
+      <div className="w-20 bg-surface border-r border-editor-border flex flex-col items-center">
         <DashboardHeader story={story} />
         <NavigationTabs 
           activeTab={activeTab} 
