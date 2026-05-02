@@ -15,9 +15,6 @@ export const StoryModal: React.FC<StoryModalProps> = ({
   initialTitle = ''
 }) => {
   const [title, setTitle] = useState(initialTitle);
-
-  if (!isOpen) return null;
-
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -39,19 +36,19 @@ export const StoryModal: React.FC<StoryModalProps> = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+        className="absolute inset-0 bg-black/40 backdrop-blur-md" 
         onClick={onClose} 
       />
       
-      <div className="relative bg-surface border border-editor-border rounded-sm w-full max-w-md shadow-magenta-glow overflow-hidden animate-slide-up">
-        <div className="p-8 border-b border-editor-border">
-          <h2 className="text-3xl font-serif font-bold text-white tracking-tight">New Manuscript</h2>
-          <p className="text-editor-text-muted font-mono text-[10px] uppercase tracking-widest mt-2 italic">Begin your journey here.</p>
+      <div className="relative bg-surface-dark backdrop-blur-2xl border border-white/10 rounded-card w-full max-w-md shadow-glass overflow-hidden animate-slide-up">
+        <div className="p-8 border-b border-white/5 bg-white/[0.02]">
+          <h2 className="text-3xl font-sans font-bold text-white tracking-tight">New Manuscript</h2>
+          <p className="text-editor-text-muted font-sans text-sm font-medium mt-2">Begin your journey here.</p>
         </div>
         
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
           <div>
-            <label className="block text-[10px] font-mono text-editor-text-muted mb-3 uppercase tracking-widest">
+            <label className="block text-sm font-sans font-medium text-editor-text-muted mb-3">
               Manuscript Title
             </label>
             <input
@@ -63,23 +60,23 @@ export const StoryModal: React.FC<StoryModalProps> = ({
                 if (error) setError(null);
               }}
               placeholder="e.g. The Silent Echo"
-              className={`w-full input-tactile text-lg font-serif ${error ? 'border-red-500/50' : ''}`}
+              className={`w-full input-tactile text-lg ${error ? 'border-primary/50 ring-1 ring-primary/50' : ''}`}
             />
-            {error && <p className="text-red-500 text-[10px] font-mono uppercase mt-2 tracking-wider">{error}</p>}
+            {error && <p className="text-primary text-xs font-sans mt-2 font-medium">{error}</p>}
           </div>
           
-          <div className="flex justify-end space-x-6 pt-4">
+          <div className="flex justify-end space-x-4 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="text-editor-text-muted hover:text-white transition-all font-mono text-[10px] uppercase tracking-widest"
+              className="text-editor-text-muted hover:text-white transition-all font-sans text-sm font-medium px-4 py-2"
             >
               Discard
             </button>
             <button
               type="submit"
               disabled={!title.trim()}
-              className="btn-magenta px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
+              className="btn-magenta px-8 py-3 rounded-full"
             >
               Initialize
             </button>
