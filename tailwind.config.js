@@ -7,33 +7,41 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#000000',
-        primary: '#ff00ff', // Magenta accent
-        accent: '#ff00ff',
-        surface: '#0a0a0a',
-        'editor-bg': '#050505',
-        'editor-card': '#0a0a0a',
-        'editor-border': '#1a1a1a',
-        'editor-text': '#e0e0e0',
-        'editor-text-muted': '#666666',
-        'editor-magenta': '#ff00ff',
+        background: '#0a0a0f',
+        primary: '#FF3366', // Vibrant Pink
+        accent: '#8000FF',  // Deep Purple
+        surface: 'rgba(255, 255, 255, 0.03)',
+        'surface-light': 'rgba(255, 255, 255, 0.05)',
+        'surface-dark': 'rgba(0, 0, 0, 0.2)',
+        'editor-bg': '#0f0f15',
+        'editor-card': 'rgba(255, 255, 255, 0.02)',
+        'editor-border': 'rgba(255, 255, 255, 0.08)',
+        'editor-text': '#f0f0f0',
+        'editor-text-muted': '#888899',
+        'editor-magenta': '#FF3366',
       },
       fontFamily: {
-        serif: ['EB Garamond', 'serif'],
+        serif: ['Plus Jakarta Sans', 'sans-serif'], // Replacing serif with modern sans
         mono: ['JetBrains Mono', 'monospace'],
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'sans-serif'],
       },
       borderRadius: {
-        DEFAULT: '0px', // Sharper edges for tactile feel
-        card: '4px',
+        none: '0px',
+        sm: '8px',
+        DEFAULT: '16px',
+        card: '24px',
         pill: '999px',
       },
       boxShadow: {
-        'magenta-glow': '0 0 20px rgba(255, 0, 255, 0.15)',
+        'magenta-glow': '0 8px 32px rgba(255, 51, 102, 0.15)',
+        'magenta-glow-lg': '0 12px 48px rgba(255, 51, 102, 0.25)',
         'thin-border': 'inset 0 0 0 1px rgba(255, 255, 255, 0.05)',
+        'magenta-border': '0 0 0 1px rgba(255, 51, 102, 0.2)',
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
       },
       backgroundImage: {
-        'magenta-gradient': 'linear-gradient(135deg, #ff00ff 0%, #800080 100%)',
+        'magenta-gradient': 'linear-gradient(135deg, #FF3366 0%, #a855f7 50%, #8000FF 100%)',
+        'surface-gradient': 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%)',
       }
     },
   },
