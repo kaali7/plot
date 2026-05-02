@@ -15,12 +15,23 @@ export const WritingEditor: React.FC<WritingEditorProps> = ({
 }) => {
   return (
     <div className="relative w-full h-full">
-      <textarea
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full h-full min-h-[600px] bg-transparent text-editor-text font-serif text-xl leading-relaxed resize-none focus:outline-none selection:bg-editor-magenta/20 selection:text-white"
+      <div
+        contentEditable
+        onInput={(e) => {
+          // Create a synthetic event matching the expected onChange signature
+          const target = e.target as HTMLDivElement;
+          onChange({ target: { value: target.innerHTML } } as any);
+        }}
+        onPaste={(e) => {
+          e.preventDefault();
+          const text = e.clipboardData.getData('text/plain');
+          document.execCommand('insertText', false, text);
+        }}
+        dangerouslySetInnerHTML={{ __html: value || '' }}
+        className="w-full h-full min-h-[600px] bg-transparent text-editor-text font-serif text-xl leading-relaxed focus:outline-none selection:bg-primary/20 selection:text-white"
         spellCheck="true"
+        data-placeholder={placeholder}
+        style={{ outline: 'none' }}
       />
       
       {/* Editorial Guidelines / Margin Line */}
