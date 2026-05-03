@@ -11,6 +11,8 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({ data, characte
   const [selectedCharacterId, setSelectedCharacterId] = useState('');
   const [content, setContent] = useState('');
 
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
   const addEntry = (type: 'dialogue' | 'action') => {
     if (content.trim()) {
       const newEntry: Dialogue = {
@@ -21,7 +23,27 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({ data, characte
       };
       onUpdate([...data, newEntry]);
       setContent('');
-      // Keep the character selected for ease of use
+      textareaRef.current?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (selectedCharacterId) {
+        addEntry('dialogue');
+      } else {
+        addEntry('action');
+      }
+    }
+    
+    if (e.key === 'Tab' && !e.shiftKey) {
+      e.preventDefault();
+      // Cycle characters
+      const charIds = ['', ...characters.map(c => c.id)];
+      const currentIndex = charIds.indexOf(selectedCharacterId);
+      const nextIndex = (currentIndex + 1) % charIds.length;
+      setSelectedCharacterId(charIds[nextIndex]);
     }
   };
 
@@ -30,54 +52,9 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({ data, characte
   };
 
   return (
-    <div className="space-y-8">
-      {/* Input Area */}
-      <div className="bg-[#0a000f]/60 p-6 rounded-2xl border border-purple-900/30 shadow-inner">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <div className="md:col-span-1">
-            <label className="block text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-2">Character</label>
-            <select
-              value={selectedCharacterId}
-              onChange={(e) => setSelectedCharacterId(e.target.value)}
-              className="w-full bg-[#1a001f] border border-purple-900/30 rounded-xl px-3 py-2.5 text-white text-sm focus:border-purple-500 outline-none transition-all"
-            >
-              <option value="">Environment / Narrator</option>
-              {characters.map(char => (
-                <option key={char.id} value={char.id}>{char.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="md:col-span-3">
-            <label className="block text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-2">Speech or Action</label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full bg-[#1a001f] border border-purple-900/30 rounded-xl px-4 py-2.5 text-white text-sm focus:border-purple-500 outline-none transition-all resize-none min-h-[46px]"
-              placeholder="Type dialogue or describe an action..."
-            />
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-end space-x-3">
-          <button
-            onClick={() => addEntry('action')}
-            disabled={!content.trim()}
-            className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border border-purple-500/30 text-purple-300 hover:bg-purple-500/10 disabled:opacity-30"
-          >
-            🎬 Add as Action
-          </button>
-          <button
-            onClick={() => addEntry('dialogue')}
-            disabled={!content.trim() || !selectedCharacterId}
-            className="px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-900/20 disabled:opacity-30"
-          >
-            💬 Add as Dialogue
-          </button>
-        </div>
-      </div>
-
-      {/* Script List */}
-      <div className="space-y-2 font-mono">
+    <div className="h-full flex flex-col max-w-5xl mx-auto overflow-hidden">
+      {/* Script History - Now takes up remaining space */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 px-4 pb-12">
         {data.length > 0 ? (
           data.map((entry, index) => {
             const character = characters.find(c => c.id === entry.characterId);
@@ -86,27 +63,29 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({ data, characte
             return (
               <div 
                 key={index} 
-                className={`group flex items-start py-1.5 px-3 rounded hover:bg-purple-900/10 transition-all border-l-2 ${
-                  isAction ? 'border-purple-500/50' : 'border-purple-300/30'
+                className={`group relative py-6 px-12 transition-all border-b border-white/[0.03] hover:bg-white/[0.01] ${
+                  isAction ? 'italic opacity-50' : ''
                 }`}
               >
-                <div className="flex-1 flex items-start space-x-2 overflow-hidden">
-                  <span className={`flex-shrink-0 font-bold uppercase tracking-tighter text-xs min-w-[100px] text-right pt-0.5 ${
-                    isAction ? 'text-purple-400' : 'text-purple-300'
-                  }`}>
-                    {isAction ? 'Background' : (character?.name || 'Narrator')}:
-                  </span>
-                  
-                  <p className={`text-sm leading-relaxed ${isAction ? 'text-gray-400 italic' : 'text-gray-200'}`}>
+                {!isAction && (
+                  <div className="mb-2">
+                    <span className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold">
+                      {character?.name || 'Narrator'}
+                    </span>
+                  </div>
+                )}
+                
+                <div className={`${isAction ? 'pl-8 border-l border-white/10' : ''}`}>
+                  <p className={`text-base font-serif leading-relaxed ${isAction ? 'text-editor-text-muted italic' : 'text-white/90'}`}>
                     {isAction ? entry.content : `"${entry.content}"`}
                   </p>
                 </div>
 
                 <button
                   onClick={() => removeEntry(index)}
-                  className="opacity-0 group-hover:opacity-100 ml-4 p-1 text-red-500/60 hover:text-red-400 transition-all"
+                  className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-2 text-editor-text-muted hover:text-red-500 transition-all"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -114,10 +93,60 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({ data, characte
             );
           })
         ) : (
-          <div className="text-center py-12 border-2 border-dashed border-purple-900/10 rounded-3xl">
-            <p className="text-gray-500 text-sm italic font-sans">Start your scene script by adding dialogues and actions above.</p>
+          <div className="text-center py-20 border border-dashed border-white/10 rounded-xl bg-white/[0.01]">
+            <p className="text-editor-text-muted text-[11px] font-mono uppercase tracking-[0.3em] italic opacity-40">The scene's dialogue has not yet been forged.</p>
           </div>
         )}
+      </div>
+
+      {/* Ultra-Compact Speed-Script Bar - Now Fixed at Bottom */}
+      <div className="mt-auto pt-6 border-t border-white/5 bg-surface-dark/50 backdrop-blur-md sticky bottom-0 z-10 p-6 rounded-b-xl">
+        <div className="flex items-center space-x-3">
+          {/* Character Anchor */}
+          <div className="w-48 relative">
+            <select
+              value={selectedCharacterId}
+              onChange={(e) => setSelectedCharacterId(e.target.value)}
+              className="w-full bg-black/20 border border-white/5 rounded-md px-3 py-2 text-[11px] font-mono font-bold text-white/70 uppercase tracking-widest focus:border-editor-magenta outline-none transition-all appearance-none cursor-pointer hover:bg-black/40"
+            >
+              <option value="">Background</option>
+              {characters.map(char => (
+                <option key={char.id} value={char.id}>{char.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Drafting Field */}
+          <div className="flex-1 relative">
+            <textarea
+              ref={textareaRef}
+              rows={1}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="w-full bg-black/10 border border-white/5 rounded-md px-4 py-2 text-sm font-serif text-white/90 focus:border-editor-magenta outline-none transition-all resize-none placeholder:text-white/10"
+              placeholder={selectedCharacterId ? `Enter ${characters.find(c => c.id === selectedCharacterId)?.name}'s dialogue...` : "Describe the movement..."}
+            />
+          </div>
+
+          {/* Commit Action */}
+          <button
+            onClick={() => addEntry(selectedCharacterId ? 'dialogue' : 'action')}
+            disabled={!content.trim()}
+            className={`flex-shrink-0 px-6 py-2 rounded-md text-[10px] font-mono font-bold uppercase tracking-widest transition-all
+              ${content.trim() 
+                ? 'bg-editor-magenta text-white shadow-magenta-glow hover:scale-105 active:scale-95' 
+                : 'bg-white/5 text-white/20 border border-white/5'}`}
+          >
+            {selectedCharacterId ? 'Add Dialogue' : 'Add Action'}
+          </button>
+        </div>
+        
+        {/* Quick Keyboard Hints */}
+        <div className="flex items-center space-x-3 mt-2 px-1 opacity-40">
+          <span className="text-[8px] font-mono text-editor-text-muted uppercase tracking-widest">[Tab] Next Cast</span>
+          <span className="text-[8px] font-mono text-editor-text-muted uppercase tracking-widest">[Enter] Commit</span>
+        </div>
       </div>
     </div>
   );
