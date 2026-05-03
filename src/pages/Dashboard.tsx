@@ -107,7 +107,7 @@ const Dashboard: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-r from-black to-[#2a003f] pt-16 px-6">
         <div className="pt-8 pb-4">
           <Skeleton className="h-8 w-48 mb-12" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 px-4 sm:px-0">
             <Skeleton.Card />
             <Skeleton.Card />
             <Skeleton.Card />
@@ -168,7 +168,7 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 px-4 sm:px-0">
             {stories.map(story => (
               <div 
                 key={story.id} 

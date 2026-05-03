@@ -77,6 +77,11 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
             {isActive && (
               <div className="absolute -bottom-1 lg:bottom-auto lg:-right-2 w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-primary shadow-magenta-glow" />
             )}
+
+            {/* Custom Tooltip visible only on md+ screens */}
+            <span className="hidden lg:group-hover:block absolute left-14 bg-[#0a0a0f] border border-white/10 text-white text-xs px-3 py-1.5 rounded-md shadow-xl whitespace-nowrap z-50 animate-in fade-in duration-200">
+              {tab.label}
+            </span>
           </button>
         );
       })}

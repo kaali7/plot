@@ -110,7 +110,7 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
         </div>
 
         {/* Tabs */}
-        <div className="flex px-4 border-b border-editor-border bg-white/[0.01] overflow-x-auto whitespace-nowrap scrollbar-hide justify-center">
+        <div className="flex px-4 border-b border-editor-border bg-white/[0.01] overflow-x-auto whitespace-nowrap scrollbar-hide md:justify-center touch-pan-x">
           {tabs.map(tab => (
             <button
               key={tab.id}

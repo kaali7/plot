@@ -62,9 +62,9 @@ export const UnifiedStoryDashboard: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col-reverse lg:flex-row h-screen overflow-hidden bg-background">
+    <div className="flex flex-col h-screen overflow-hidden bg-background">
       {/* Sidebar/Bottom Navigation */}
-      <div className="w-full lg:w-20 bg-surface border-t lg:border-t-0 lg:border-r border-editor-border flex flex-row lg:flex-col items-center">
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:static w-full lg:w-20 bg-surface border-t lg:border-t-0 lg:border-r border-editor-border flex flex-row lg:flex-col items-center pb-safe lg:pb-0">
         <div className="hidden lg:block w-full">
           <DashboardHeader story={story} />
         </div>
@@ -75,7 +75,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden bg-background relative">
+      <div className="flex-1 overflow-hidden bg-background relative pb-20 lg:pb-0">
         {/* Mobile Header (Only shown when not on desktop) */}
         <div className="lg:hidden p-4 border-b border-editor-border bg-surface flex items-center justify-between">
            <DashboardHeader story={story} />

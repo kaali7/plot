@@ -141,7 +141,8 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
 
       {/* Detail Panel Area */}
       <div className={`flex-1 h-full bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden
-        ${viewingResourceId ? 'translate-x-0' : 'translate-x-full'}`}>
+        fixed inset-0 z-50 md:static md:inset-auto md:z-auto
+        ${viewingResourceId ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:translate-x-full'}`}>
         {selectedResource && (
           <ResourceDetailView 
             resource={selectedResource}

@@ -29,6 +29,24 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
 
   const PAGE_LIMIT_HEIGHT = 1050;
 
+  // Auto-collapse sidebars on smaller screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setReferencePanelOpen(false);
+        setPagesPanelOpen(false);
+      } else {
+        setReferencePanelOpen(true);
+        setPagesPanelOpen(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Sync initial content
   useEffect(() => {
     if (writingSession?.content && contentChunks.length <= 1 && contentChunks[0] === '') {
@@ -303,14 +321,14 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
       </div>
 
       {/* Formatting Toolbar */}
-      <div className="flex items-center justify-between px-6 py-2 border-b border-white/5 bg-surface-light backdrop-blur-xl sticky top-[73px] z-20 select-none">
-        <div className="flex items-center min-w-[40px]">
+      <div className="flex items-center justify-between px-6 py-2 border-b border-white/5 bg-surface-light backdrop-blur-xl sticky top-[73px] z-20 select-none overflow-x-auto whitespace-nowrap scrollbar-hide">
+        <div className="flex items-center min-w-[40px] flex-shrink-0">
           <button onClick={() => setReferencePanelOpen(!referencePanelOpen)} className={`p-2 rounded-lg transition-all ${referencePanelOpen ? 'text-primary bg-primary/10 shadow-magenta-glow' : 'text-editor-text-muted hover:text-white hover:bg-white/10'}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
           </button>
         </div>
 
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center justify-center space-x-2 flex-shrink-0">
           {/* Find Interface */}
           <div className="flex items-center border-r border-white/10 pr-4 mr-2">
             {!findPanelOpen ? (
