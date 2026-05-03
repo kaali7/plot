@@ -99,9 +99,9 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   };
 
   return (
-    <div className="space-y-12">
-      {/* Header with Reorder Controls */}
-      <div className="flex items-end justify-between pb-8 border-b border-editor-border">
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="flex items-end justify-between pb-8 border-b border-editor-border mb-12">
         <div>
           <h2 className="text-4xl font-serif font-bold text-white tracking-tight">Chronicle Grid</h2>
           <div className="flex items-center space-x-3 mt-2">
@@ -121,84 +121,85 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
         </button>
       </div>
 
-      <div className="space-y-4">
-        {[...scenes].sort((a, b) => {
-          if (a.order !== b.order) return a.order - b.order;
-          return a.id.localeCompare(b.id);
-        }).map((scene, index) => (
-          <div
-            key={scene.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, scene.id)}
-            onDragOver={(e) => handleDragOver(e, scene.id)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, scene.id)}
-            className={`cursor-move card-tactile p-6 transition-all duration-200 flex items-center space-x-8 group ${
-              draggedSceneId === scene.id 
-              ? 'opacity-30 scale-[0.98]' 
-              : dragOverId === scene.id
-              ? 'border-t-2 border-editor-magenta bg-white/[0.02]'
-              : 'hover:bg-white/[0.01]'
-            }`}
-          >
-            {/* Big Scene Number */}
-            <div className="flex-shrink-0 w-12 h-12 bg-surface border border-editor-border flex flex-col items-center justify-center">
-              <span className="text-[8px] font-mono text-editor-text-muted uppercase tracking-tighter mb-0.5">SCN</span>
-              <span className="text-xl font-mono font-bold text-editor-magenta tracking-tighter">
-                {(index + 1).toString().padStart(2, '0')}
-              </span>
-            </div>
-
-            <div className="flex-1 min-w-0" onClick={() => handleSceneClick(scene)}>
-              <div className="flex items-center space-x-3 mb-1">
-                <h3 className="text-2xl font-serif font-bold text-editor-text group-hover:text-white transition-colors truncate">
-                  {scene.title}
-                </h3>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-[10px] font-mono text-editor-magenta uppercase tracking-widest border border-editor-magenta/20 px-2 py-0.5">
-                  {scene.type}
-                </span>
-                 {scene.pov_character_id && (
-                   <div className="flex items-center space-x-2">
-                     <span className="text-editor-text-muted text-[10px]">/</span>
-                     <span className="text-editor-text-muted text-[10px] font-mono uppercase tracking-widest italic">
-                       POV: {characters.find(c => c.id === scene.pov_character_id)?.name || 'Unknown'}
-                     </span>
-                   </div>
-                 )}
-              </div>
-            </div>
-
-            <div className="flex-shrink-0 flex items-center space-x-4">
-              <button
+      <div className="flex-1 flex space-x-12 min-h-0">
+        {/* Left Column: High-Fidelity Sequence Dock */}
+        <div className={`transition-all duration-700 flex flex-col items-center py-8 ${viewingSceneId ? 'w-28' : 'w-full max-w-[420px]'}`}>
+          <div className="space-y-8 overflow-y-auto no-scrollbar flex flex-col items-center w-full">
+            {[...scenes].sort((a, b) => {
+              if (a.order !== b.order) return a.order - b.order;
+              return a.id.localeCompare(b.id);
+            }).map((scene, index) => (
+              <div
+                key={scene.id}
                 onClick={() => handleSceneClick(scene)}
-                className="text-[10px] font-mono text-editor-text-muted hover:text-white uppercase tracking-widest transition-all opacity-0 group-hover:opacity-100"
+                className="relative group flex flex-col items-center"
               >
-                Inspect
-              </button>
-              <div className="w-1.5 h-1.5 rounded-full bg-editor-magenta shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
+                {/* Visual Connector - Thin Ghost Line */}
+                {index > 0 && (
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-px h-8 bg-white/[0.03] group-hover:bg-editor-magenta/10 transition-all" />
+                )}
+
+                <div className="relative cursor-pointer transition-all duration-500 hover:scale-110 flex flex-col items-center">
+                  <span className="text-[7px] font-mono uppercase tracking-[0.2em] text-editor-text-muted mb-2 opacity-30 group-hover:opacity-60 transition-opacity">
+                    Folio
+                  </span>
+                  
+                  <div className={`w-14 h-14 rounded-[1.2rem] flex items-center justify-center transition-all duration-500 shadow-lg relative
+                    ${viewingSceneId === scene.id 
+                      ? 'bg-editor-magenta text-white shadow-[0_0_30px_rgba(255,51,102,0.4)] ring-2 ring-white/20' 
+                      : 'bg-white/[0.02] border border-white/5 text-editor-text-muted opacity-40 hover:opacity-100 hover:border-white/10'}`}>
+                    
+                    <span className="text-xl font-mono font-bold tracking-tighter">
+                      {(index + 1).toString().padStart(2, '0')}
+                    </span>
+
+                    {/* Corner Indicator Dot */}
+                    {viewingSceneId === scene.id && (
+                      <div className="absolute -right-1 -top-1 w-2.5 h-2.5 bg-editor-magenta rounded-full border-2 border-surface-dark animate-pulse" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Ghost Label */}
+                {!viewingSceneId && (
+                  <div className="mt-4 px-4 py-1.5 bg-surface-dark border border-white/5 rounded-full backdrop-blur-xl opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 pointer-events-none whitespace-nowrap z-50 shadow-2xl">
+                    <span className="text-[10px] font-mono font-bold text-white uppercase tracking-widest">{scene.title}</span>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+
+        {/* Right Column: Integrated Scene Detail (Non-Popup) */}
+        {viewingScene ? (
+          <div className="flex-1 bg-surface-dark border border-white/5 shadow-glass overflow-hidden flex flex-col rounded-sm animate-in fade-in slide-in-from-right-8 duration-500">
+            <SceneDetailView 
+              scene={viewingScene}
+              characters={characters}
+              conflicts={conflicts}
+              onClose={() => setViewingSceneId(null)}
+              onEdit={() => {
+                setSelectedScene(viewingScene);
+                setViewingSceneId(null);
+              }}
+              onUpdate={(updates) => onSceneUpdate(viewingScene.id, updates)}
+              isIntegrated={true} // New prop for integrated view
+            />
+          </div>
+        ) : (
+          !viewingSceneId && scenes.length === 0 && (
+            <div className="flex-1 flex items-center justify-center opacity-20 select-none">
+              <div className="text-center">
+                <div className="text-6xl mb-4 text-editor-magenta">✦</div>
+                <p className="font-mono text-xs uppercase tracking-[0.4em]">No Narrative Nodes Detected</p>
+              </div>
+            </div>
+          )
+        )}
       </div>
 
-      {/* Scene Detail Viewer */}
-      {viewingScene && (
-        <SceneDetailView 
-          scene={viewingScene}
-          characters={characters}
-          conflicts={conflicts}
-          onClose={() => setViewingSceneId(null)}
-          onEdit={() => {
-            setSelectedScene(viewingScene);
-            setViewingSceneId(null);
-          }}
-          onUpdate={(updates) => onSceneUpdate(viewingScene.id, updates)}
-        />
-      )}
-
-      {/* Scene Modal (Edit/Add) */}
+      {/* Keep the Add Modal separate as it's a global action */}
       {(selectedScene || showAddModal) && (
         <SceneModal
           scene={selectedScene}
