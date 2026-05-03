@@ -13,7 +13,7 @@ export const CharacterGrid: React.FC<CharacterGridProps> = ({ characters, onChar
       case 'protagonist': return 'bg-purple-600/50 border-purple-500/30';
       case 'supporting': return 'bg-purple-500/50 border-purple-400/30';
       case 'antagonist': return 'bg-red-600/50 border-red-500/30';
-      case 'supporting': return 'bg-blue-600/50 border-blue-500/30';
+      case 'minor': return 'bg-blue-600/50 border-blue-500/30';
       default: return 'bg-gray-600/50 border-gray-500/30';
     }
   };

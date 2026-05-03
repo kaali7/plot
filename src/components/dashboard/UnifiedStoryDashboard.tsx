@@ -17,7 +17,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
     loading, error, refetch, 
     updateStory, updateWorldSettings, updateWriting,
     addCharacter, updateCharacter, deleteCharacter,
-    addScene, updateScene, deleteScene, reorderScenes,
+    addScene, updateScene, deleteScene,
     addConflict, updateConflict, deleteConflict,
     addResource, updateResource, deleteResource
   } = useStory();
