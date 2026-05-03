@@ -20,9 +20,11 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   const [contentChunks, setContentChunks] = useState<string[]>(writingSession?.content ? [writingSession.content] : ['']);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(writingSession?.updated_at ? new Date(writingSession.updated_at) : null);
-  const [referencePanelOpen, setReferencePanelOpen] = useState(false);
+  const [referencePanelOpen, setReferencePanelOpen] = useState(true);
   const [pagesPanelOpen, setPagesPanelOpen] = useState(true);
+  const [detailsPanelOpen, setDetailsPanelOpen] = useState(false);
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [examineEntity, setExamineEntity] = useState<{ type: 'character' | 'scene' | 'conflict' | 'resource', id: string } | null>(null);
 
   const PAGE_LIMIT_HEIGHT = 1050;
 
@@ -92,17 +94,61 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   };
 
   const insertReference = useCallback((type: 'character' | 'scene', id: string) => {
-    const reference = type === 'character' 
-      ? characters.find(c => c.id === id)?.name
-      : scenes.find(s => s.id === id)?.title;
+    const character = characters.find(c => c.id === id);
+    const scene = scenes.find(s => s.id === id);
     
-    if (reference) {
-      const refText = `[${type.toUpperCase()}: ${reference}]`;
-      const newChunks = [...contentChunks];
-      newChunks[currentPageIndex] += refText;
-      setContentChunks(newChunks);
+    let htmlToInsert = '';
+
+    if (type === 'character' && character) {
+      htmlToInsert = `<span class="text-editor-magenta font-bold">${character.name}</span>&nbsp;`;
+    } else if (type === 'scene' && scene) {
+      htmlToInsert = `
+        <div class="my-6 p-6 bg-white/[0.02] border-l-4 border-primary rounded-r-xl font-sans">
+          <div class="text-[10px] font-mono text-primary uppercase tracking-[0.2em] mb-2">Scene Forge</div>
+          <h4 class="text-xl font-bold text-white mb-3">${scene.title}</h4>
+          ${scene.goal ? `<div class="text-xs text-white/60 mb-2"><span class="text-white/40 uppercase mr-2">Goal:</span>${scene.goal}</div>` : ''}
+          ${scene.events?.main ? `<div class="text-sm text-editor-text-muted italic leading-relaxed">"${scene.events.main}"</div>` : ''}
+        </div>
+        <p>&nbsp;</p>
+      `;
+    } else if (type === ('all_scenes' as any)) {
+      htmlToInsert = `
+        <div class="my-12 p-8 border border-white/10 rounded-2xl bg-white/[0.01]">
+          <h3 className="text-2xl font-serif font-bold text-white mb-8 border-b border-white/5 pb-4">Manuscript Outline</h3>
+          <div class="space-y-6">
+            ${scenes.map((s, i) => `
+              <div class="flex items-start space-x-6">
+                <span class="text-[10px] font-mono text-primary pt-1">#${(i+1).toString().padStart(2, '0')}</span>
+                <div>
+                  <h4 class="text-white font-bold mb-1">${s.title}</h4>
+                  ${s.goal ? `<p class="text-[10px] text-white/40 italic">${s.goal}</p>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <p>&nbsp;</p>
+      `;
+    }
+    
+    if (htmlToInsert) {
+      // Use execCommand for better integration with undo/redo and selection
+      const editor = document.activeElement;
+      if (editor?.getAttribute('contenteditable') === 'true') {
+        document.execCommand('insertHTML', false, htmlToInsert);
+      } else {
+        // Fallback to manual chunk update if no focus
+        const newChunks = [...contentChunks];
+        newChunks[currentPageIndex] += htmlToInsert;
+        setContentChunks(newChunks);
+      }
     }
   }, [characters, scenes, contentChunks, currentPageIndex]);
+
+  const examineReference = (type: 'character' | 'scene' | 'conflict' | 'resource', id: string) => {
+    setExamineEntity({ type, id });
+    setDetailsPanelOpen(true);
+  };
 
   const [selectionState, setSelectionState] = useState({
     bold: false,
@@ -111,7 +157,8 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
     alignLeft: true,
     alignCenter: false,
     alignRight: false,
-    alignJustify: false
+    alignJustify: false,
+    blockType: 'p'
   });
 
   const updateSelectionState = useCallback(() => {
@@ -123,6 +170,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
       alignCenter: document.queryCommandState('justifyCenter'),
       alignRight: document.queryCommandState('justifyRight'),
       alignJustify: document.queryCommandState('justifyFull'),
+      blockType: document.queryCommandValue('formatBlock') || 'p'
     });
   }, []);
 
@@ -168,6 +216,28 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   const applyStyle = (tag: string) => {
     executeCommand('formatBlock', tag);
     setIsStyleMenuOpen(false);
+    // Force immediate update
+    setTimeout(updateSelectionState, 50);
+  };
+
+  const handleFind = (next = true) => {
+    if (!findQuery) return;
+    // window.find is a non-standard but widely supported way to search in contentEditable
+    // (text, caseSensitive, backwards, wrapAround, wholeWord, searchInFrames, showDialog)
+    const found = (window as any).find(findQuery, false, false, true, false, false, false);
+    if (!found && next) {
+      // If not found and we were going forward, try wrapping around manually if the browser didn't
+      // This is a bit tricky with window.find, but usually it works with wrapAround=true
+    }
+  };
+
+  const getBlockTypeName = (type: string) => {
+    switch(type.toLowerCase()) {
+      case 'h1': return 'Title';
+      case 'h2': return 'Subtitle';
+      case 'blockquote': return 'Quote';
+      default: return 'Normal text';
+    }
   };
 
   const scrollToPage = (index: number) => {
@@ -265,8 +335,14 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
                   onChange={(e) => setFindQuery(e.target.value)}
                   placeholder="Find in manuscript..."
                   className="bg-transparent border-none outline-none text-xs text-white w-40 font-mono"
-                  onKeyDown={(e) => e.key === 'Escape' && setFindPanelOpen(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setFindPanelOpen(false);
+                    if (e.key === 'Enter') handleFind();
+                  }}
                 />
+                <button onClick={() => handleFind()} className="ml-2 text-editor-magenta hover:text-white transition-colors">
+                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
                 <button onClick={() => setFindPanelOpen(false)} className="ml-2 text-editor-text-muted hover:text-white">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
@@ -281,7 +357,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
               className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all text-sm font-sans group
                 ${isStyleMenuOpen ? 'bg-primary/10 text-white' : 'text-editor-text hover:bg-white/5'}`}
             >
-              <span className="font-bold tracking-tight">Normal text</span>
+              <span className="font-bold tracking-tight">{getBlockTypeName(selectionState.blockType)}</span>
               <svg className={`w-3 h-3 transition-transform duration-300 ${isStyleMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
             </button>
 
@@ -335,16 +411,29 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
         </div>
       </div>
       
-      <div className="flex-1 relative overflow-hidden flex">
-        {/* Divided Folio Layout - GOOGLE DOCS STYLE */}
-        <div id="manuscript-scroll-container" className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-500 bg-background ${pagesPanelOpen ? 'pr-[300px]' : ''} ${referencePanelOpen ? 'pl-[400px]' : ''}`}>
-          <div className="max-w-5xl mx-auto px-12 py-16 flex flex-col items-center space-y-16">
+      <div className="flex-1 relative overflow-hidden flex bg-[#050505]">
+        {/* Dynamic Reference Sidebar (Compass) - Left */}
+        <div className={`relative flex flex-col bg-[#080808] border-r border-white/5 transition-all duration-700 ease-in-out ${referencePanelOpen ? 'w-[260px]' : 'w-0 opacity-0'} overflow-hidden z-20`}>
+          <div className="p-6 h-full flex flex-col min-w-[260px]">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-base font-sans font-bold text-white uppercase tracking-[0.1em]">Story Compass</h3>
+              <button onClick={() => setReferencePanelOpen(false)} className="text-white/20 hover:text-white p-1 transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+              <ReferencePanel characters={characters} scenes={scenes} onInsertReference={insertReference} onExamineReference={examineReference} isOpen={true} onToggle={() => {}} />
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Area - Manuscript Folios */}
+        <div id="manuscript-scroll-container" className="flex-1 overflow-y-auto custom-scrollbar transition-all duration-500 bg-[#050505] relative flex flex-col items-center">
+          <div className="w-full max-w-5xl py-20 flex flex-col items-center space-y-24">
             
             {contentChunks.map((chunk, index) => (
               <div 
                 key={index}
                 id={`folio-container-${index}`}
-                className={`w-full max-w-[850px] min-h-[1100px] bg-surface-dark backdrop-blur-md border border-white/10 p-20 shadow-2xl rounded-sm relative transition-all duration-500 ${currentPageIndex === index ? 'ring-2 ring-primary/30 ring-offset-8 ring-offset-background' : 'opacity-80'}`}
+                className={`w-full max-w-[800px] min-h-[1050px] bg-[#0a0a0a] border border-white/[0.03] p-16 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] rounded-sm relative transition-all duration-700 ${currentPageIndex === index ? 'ring-1 ring-primary/20 scale-[1.01]' : 'opacity-60 scale-[0.98]'}`}
                 onClick={() => setCurrentPageIndex(index)}
               >
                 <div id={`editor-page-${index}`} className="relative h-full">
@@ -352,7 +441,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
                     value={chunk}
                     onChange={(e) => handlePageChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e as any)}
-                    placeholder={index === 0 ? "The narrative unfolds here..." : ""}
+                    placeholder={index === 0 ? "The narrative unfolds..." : ""}
                     isSaving={isSaving}
                   />
                 </div>
@@ -361,41 +450,86 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
 
             <button 
               onClick={() => setContentChunks([...contentChunks, ''])}
-              className="w-full max-w-[850px] py-12 border border-dashed border-white/10 rounded-sm flex flex-col items-center justify-center group hover:border-white/30 transition-all opacity-40 hover:opacity-100"
+              className="w-full max-w-[800px] py-16 border border-dashed border-white/5 rounded-sm flex flex-col items-center justify-center group hover:border-white/10 transition-all opacity-20 hover:opacity-100"
             >
-              <span className="text-2xl text-white/30 group-hover:text-white/60 mb-2">+</span>
-              <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.3em] font-bold">Forge New Folio</span>
+              <span className="text-xl text-white/30 group-hover:text-white/60 mb-2">+</span>
+              <span className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">Forge Folio</span>
             </button>
           </div>
         </div>
 
-        {/* Dynamic Pages Sidebar (Right) */}
-        <div className={`absolute right-0 top-0 bottom-0 w-[300px] bg-surface-dark/90 backdrop-blur-2xl border-l border-white/5 transition-all duration-500 transform ${pagesPanelOpen ? 'translate-x-0' : 'translate-x-full'} shadow-[-20px_0_50px_rgba(0,0,0,0.5)] z-20 flex flex-col`}>
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8 flex flex-col items-center">
-            {contentChunks.map((_, index) => (
-              <div key={index} onClick={() => scrollToPage(index)} className="flex flex-col items-center group cursor-pointer">
-                <div className={`w-[160px] h-[220px] bg-white/[0.02] transition-all duration-300 rounded-sm flex flex-col p-4 relative overflow-hidden backdrop-blur-sm border
-                  ${currentPageIndex === index ? 'border-primary shadow-[0_0_20px_rgba(255,0,85,0.2)] scale-105 bg-white/[0.05]' : 'border-white/10 opacity-60 group-hover:opacity-100 group-hover:border-white/30 group-hover:scale-105'}`}>
-                  <div className="w-full h-1 bg-white/10 mb-2 mt-2 rounded-full"></div>
-                  <div className="w-5/6 h-1 bg-white/10 mb-2 rounded-full"></div>
-                  <div className="w-full h-1 bg-white/5 mb-1.5 rounded-full mt-4"></div>
+        {/* Dynamic Pages Sidebar */}
+        <div className={`relative flex flex-col bg-[#080808] border-l border-white/5 transition-all duration-500 ease-in-out ${pagesPanelOpen ? 'w-[140px]' : 'w-0 opacity-0'} overflow-hidden z-10`}>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col min-w-[140px] items-center">
+            <div className="w-full flex items-center justify-between mb-8 border-b border-white/5 pb-2">
+              <h3 className="text-[8px] font-mono font-bold text-white/30 uppercase tracking-[0.1em]">Folios</h3>
+              <span className="text-[8px] font-mono text-primary font-bold">{contentChunks.length}</span>
+            </div>
+            <div className="space-y-8">
+              {contentChunks.map((_, index) => (
+                <div key={index} onClick={() => scrollToPage(index)} className="flex flex-col items-center group cursor-pointer">
+                  <div className={`w-[80px] h-[110px] bg-white/[0.01] transition-all duration-500 rounded-sm flex flex-col p-2 relative overflow-hidden border
+                    ${currentPageIndex === index ? 'border-primary/40 bg-white/[0.03] scale-110 shadow-lg' : 'border-white/5 opacity-30 group-hover:opacity-100 group-hover:border-white/10 group-hover:scale-105'}`}>
+                    <div className="w-full h-[1px] bg-white/10 mb-1 rounded-full"></div>
+                    <div className="w-3/4 h-[1px] bg-white/10 mb-1 rounded-full"></div>
+                    <div className="w-full h-[1px] bg-white/5 mb-1 rounded-full mt-2"></div>
+                  </div>
+                  <span className={`mt-3 font-mono text-[8px] font-bold ${currentPageIndex === index ? 'text-primary' : 'text-white/20'}`}>{index + 1}</span>
                 </div>
-                <span className={`mt-3 font-mono text-[10px] font-bold tracking-widest ${currentPageIndex === index ? 'text-primary' : 'text-editor-text-muted'}`}>{index + 1}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Dynamic Reference Sidebar (Compass) - Left */}
-        <div className={`absolute left-0 top-0 bottom-0 w-[400px] bg-surface-dark/95 backdrop-blur-2xl border-r border-white/5 transition-all duration-700 transform ${referencePanelOpen ? 'translate-x-0' : '-translate-x-full'} shadow-[20px_0_50px_rgba(0,0,0,0.5)] z-20`}>
-          <div className="p-8 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-8">
-              <div className="relative"><h3 className="text-2xl font-sans font-bold text-white uppercase tracking-[0.05em]">Story Compass</h3></div>
-              <button onClick={() => setReferencePanelOpen(false)} className="text-editor-text-muted hover:text-white p-2 rounded-full"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+        {/* Dynamic Details Sidebar (Codex) */}
+        <div className={`relative flex flex-col bg-[#0a0a0a] border-l border-white/5 transition-all duration-700 ease-in-out ${detailsPanelOpen ? 'w-[340px]' : 'w-0 opacity-0'} overflow-hidden z-20`}>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-8 flex flex-col min-w-[340px]">
+            {/* Detail View Header */}
+            <div className="flex items-center justify-between mb-10 pb-4 border-b border-white/5">
+              <span className="text-[9px] font-mono text-primary font-bold uppercase tracking-[0.4em]">{examineEntity?.type} Codex</span>
+              <button onClick={() => setDetailsPanelOpen(false)} className="text-white/10 hover:text-white p-1 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
-              <ReferencePanel characters={characters} scenes={scenes} onInsertReference={insertReference} isOpen={true} onToggle={() => {}} />
-            </div>
+
+            {/* Detail Content */}
+            {examineEntity?.type === 'character' && characters.find(c => c.id === examineEntity.id) && (() => {
+              const char = characters.find(c => c.id === examineEntity.id);
+              return (
+                <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-700">
+                  <div>
+                    <h4 className="text-4xl font-sans font-bold text-white mb-1 tracking-tight">{char.name}</h4>
+                    <p className="text-editor-magenta font-mono text-[10px] uppercase tracking-[0.4em] font-bold">{char.role}</p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h5 className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] font-bold">Biography</h5>
+                    <p className="text-sm font-serif text-white/60 leading-relaxed italic border-l border-white/5 pl-6 py-1">
+                      {char.description || 'No biography forged.'}
+                    </p>
+                  </div>
+
+                  <div className="space-y-8">
+                    <div className="p-5 bg-white/[0.01] border border-white/5 rounded-xl">
+                      <h5 className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] mb-4 font-bold">Motivation</h5>
+                      <p className="text-xs text-white/80 font-sans leading-relaxed italic">
+                        "{char.motivation?.goal || 'Survive.'}"
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h5 className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] font-bold">Traits</h5>
+                      <div className="flex flex-wrap gap-2">
+                        {char.traits?.personality?.map((t: string, i: number) => (
+                          <span key={i} className="px-2.5 py-1.5 bg-primary/[0.03] border border-primary/10 rounded text-[9px] font-mono text-primary uppercase font-bold tracking-widest">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+            {/* Scene details would go here similarly... */}
           </div>
         </div>
       </div>
