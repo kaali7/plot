@@ -122,7 +122,6 @@ export const UnifiedStoryDashboard: React.FC = () => {
                   onSceneAdd={addScene}
                   onSceneUpdate={updateScene}
                   onSceneDelete={deleteScene}
-                  onReorderScenes={reorderScenes}
                 />
               </ErrorBoundary>
             )}
