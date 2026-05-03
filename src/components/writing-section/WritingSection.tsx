@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { escapeHtml } from '../../lib/sanitize';
 import { WritingEditor } from './WritingEditor';
 import { ReferencePanel } from './ReferencePanel';
 import { EditorToolbar } from './EditorToolbar';
@@ -100,14 +101,14 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
     let htmlToInsert = '';
 
     if (type === 'character' && character) {
-      htmlToInsert = `<span class="text-editor-magenta font-bold">${character.name}</span>&nbsp;`;
+      htmlToInsert = `<span class="text-editor-magenta font-bold">${escapeHtml(character.name)}</span>&nbsp;`;
     } else if (type === 'scene' && scene) {
       htmlToInsert = `
         <div class="my-6 p-6 bg-white/[0.02] border-l-4 border-primary rounded-r-xl font-sans">
           <div class="text-[10px] font-mono text-primary uppercase tracking-[0.2em] mb-2">Scene Forge</div>
-          <h4 class="text-xl font-bold text-white mb-3">${scene.title}</h4>
-          ${scene.goal ? `<div class="text-xs text-white/60 mb-2"><span class="text-white/40 uppercase mr-2">Goal:</span>${scene.goal}</div>` : ''}
-          ${scene.events?.main ? `<div class="text-sm text-editor-text-muted italic leading-relaxed">"${scene.events.main}"</div>` : ''}
+          <h4 class="text-xl font-bold text-white mb-3">${escapeHtml(scene.title)}</h4>
+          ${scene.goal ? `<div class="text-xs text-white/60 mb-2"><span class="text-white/40 uppercase mr-2">Goal:</span>${escapeHtml(scene.goal)}</div>` : ''}
+          ${scene.events?.main ? `<div class="text-sm text-editor-text-muted italic leading-relaxed">"${escapeHtml(scene.events.main)}"</div>` : ''}
         </div>
         <p>&nbsp;</p>
       `;
@@ -120,8 +121,8 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
               <div class="flex items-start space-x-6">
                 <span class="text-[10px] font-mono text-primary pt-1">#${(i+1).toString().padStart(2, '0')}</span>
                 <div>
-                  <h4 class="text-white font-bold mb-1">${s.title}</h4>
-                  ${s.goal ? `<p class="text-[10px] text-white/40 italic">${s.goal}</p>` : ''}
+                  <h4 class="text-white font-bold mb-1">${escapeHtml(s.title)}</h4>
+                  ${s.goal ? `<p class="text-[10px] text-white/40 italic">${escapeHtml(s.goal)}</p>` : ''}
                 </div>
               </div>
             `).join('')}
