@@ -55,7 +55,7 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
   ];
 
   return (
-    <div className="flex flex-col items-center py-12 space-y-6 overflow-y-auto custom-scrollbar w-full">
+    <div className="flex flex-row lg:flex-col items-center justify-center lg:justify-start py-4 lg:py-12 px-4 lg:px-0 space-x-6 lg:space-x-0 lg:space-y-6 overflow-x-auto lg:overflow-y-auto custom-scrollbar w-full no-scrollbar">
       {tabs.map(tab => {
         const isActive = activeTab === tab.id;
         return (
@@ -63,7 +63,7 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             title={tab.label}
-            className={`group relative flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-500 ${
+            className={`group relative flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl transition-all duration-500 flex-shrink-0 ${
               isActive 
                 ? 'bg-primary/20 text-primary shadow-glass scale-110' 
                 : 'bg-surface-dark text-editor-text-muted hover:text-white hover:bg-white/[0.05]'
@@ -75,7 +75,7 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
 
             {/* Micro-indicator */}
             {isActive && (
-              <div className="absolute -right-2 w-1.5 h-1.5 rounded-full bg-primary shadow-magenta-glow" />
+              <div className="absolute -bottom-1 lg:bottom-auto lg:-right-2 w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-primary shadow-magenta-glow" />
             )}
           </button>
         );

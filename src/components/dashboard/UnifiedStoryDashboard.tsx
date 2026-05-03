@@ -62,10 +62,12 @@ export const UnifiedStoryDashboard: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar Navigation */}
-      <div className="w-20 bg-surface border-r border-editor-border flex flex-col items-center">
-        <DashboardHeader story={story} />
+    <div className="flex flex-col-reverse lg:flex-row h-screen overflow-hidden bg-background">
+      {/* Sidebar/Bottom Navigation */}
+      <div className="w-full lg:w-20 bg-surface border-t lg:border-t-0 lg:border-r border-editor-border flex flex-row lg:flex-col items-center">
+        <div className="hidden lg:block w-full">
+          <DashboardHeader story={story} />
+        </div>
         <NavigationTabs 
           activeTab={activeTab} 
           onTabChange={(tab) => setActiveTab(tab as any)}
@@ -73,23 +75,30 @@ export const UnifiedStoryDashboard: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden bg-background">
+      <div className="flex-1 overflow-hidden bg-background relative">
+        {/* Mobile Header (Only shown when not on desktop) */}
+        <div className="lg:hidden p-4 border-b border-editor-border bg-surface flex items-center justify-between">
+           <DashboardHeader story={story} />
+        </div>
+
         <div className="flex flex-col h-full">
           {/* Section Content */}
-          <div className="flex-1 overflow-y-auto p-8 lg:p-12">
+          <div className="flex-1 overflow-hidden">
             {activeTab === 'overview' && (
               <ErrorBoundary>
-                <OverviewSection 
-                  story={story} 
-                  characters={characters}
-                  conflicts={conflicts}
-                  worldSettings={story.world_settings}
-                  onWorldSettingsUpdate={updateWorldSettings}
-                  onStoryUpdate={updateStory}
-                  onConflictAdd={addConflict}
-                  onConflictUpdate={updateConflict}
-                  onConflictDelete={deleteConflict}
-                />
+                <div className="h-full overflow-y-auto custom-scrollbar">
+                  <OverviewSection 
+                    story={story} 
+                    characters={characters}
+                    conflicts={conflicts}
+                    worldSettings={story.world_settings}
+                    onWorldSettingsUpdate={updateWorldSettings}
+                    onStoryUpdate={updateStory}
+                    onConflictAdd={addConflict}
+                    onConflictUpdate={updateConflict}
+                    onConflictDelete={deleteConflict}
+                  />
+                </div>
               </ErrorBoundary>
             )}
             
