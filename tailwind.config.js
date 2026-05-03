@@ -17,7 +17,7 @@ export default {
         'editor-card': 'rgba(255, 255, 255, 0.02)',
         'editor-border': 'rgba(255, 255, 255, 0.08)',
         'editor-text': '#f0f0f0',
-        'editor-text-muted': '#888899',
+        'editor-text-muted': 'rgba(255, 255, 255, 0.6)',
         'editor-magenta': '#FF3366',
       },
       fontFamily: {
