@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FiFileText, FiMapPin, FiUsers, FiZap, FiCrosshair, FiFlag } from 'react-icons/fi';
 import { SceneBasicInfoForm } from './forms/SceneBasicInfoForm';
 import { SceneSettingForm } from './forms/SceneSettingForm';
 import { SceneCharactersForm } from './forms/SceneCharactersForm';
@@ -17,10 +18,11 @@ interface SceneModalProps {
   onClose: () => void;
 }
 
+type TabId = 'basic' | 'setting' | 'characters' | 'events' | 'conflicts' | 'outcome';
+
 export const SceneModal: React.FC<SceneModalProps> = ({ scene, characters, conflicts, onSave, onDelete, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'basic' | 'setting' | 'characters' | 'events' | 'conflicts' | 'outcome'>('basic');
+  const [activeTab, setActiveTab] = useState<TabId>('basic');
   
-  // Initialize form data
   const [formData, setFormData] = useState<Partial<Scene>>({
     title: scene?.title || '',
     type: scene?.type || 'transition',
@@ -36,7 +38,7 @@ export const SceneModal: React.FC<SceneModalProps> = ({ scene, characters, confl
     outcome: scene?.outcome || ''
   });
 
-  const handleTabChange = (tab: typeof activeTab) => {
+  const handleTabChange = (tab: TabId) => {
     setActiveTab(tab);
   };
 
@@ -60,12 +62,11 @@ export const SceneModal: React.FC<SceneModalProps> = ({ scene, characters, confl
       });
       setErrors(fieldErrors);
       
-      // Auto-switch to the first tab with an error
       const firstErrorPath = result.error.issues[0]?.path[0] as string;
-      if (firstErrorPath === 'title' || firstErrorPath === 'type' || firstErrorPath === 'goal') {
+      if (['title', 'type', 'goal'].includes(firstErrorPath)) {
         setActiveTab('basic');
       } else if (firstErrorPath === 'background') {
-        setActiveTab('basic'); // Background is in basic info form currently
+        setActiveTab('basic');
       } else if (firstErrorPath === 'outcome') {
         setActiveTab('outcome');
       }
@@ -78,18 +79,18 @@ export const SceneModal: React.FC<SceneModalProps> = ({ scene, characters, confl
     onClose();
   };
 
-  const tabs: { id: typeof activeTab; label: string; icon: string }[] = [
-    { id: 'basic', label: 'Basic Info', icon: '📋' },
-    { id: 'setting', label: 'Setting', icon: '📍' },
-    { id: 'characters', label: 'Characters', icon: '👥' },
-    { id: 'events', label: 'Events', icon: '⚡' },
-    { id: 'conflicts', label: 'Conflicts', icon: '⚔️' },
-    { id: 'outcome', label: 'Outcome', icon: '🏁' }
+  const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
+    { id: 'basic', label: 'Basic Info', icon: <FiFileText size={18} /> },
+    { id: 'setting', label: 'Setting', icon: <FiMapPin size={18} /> },
+    { id: 'characters', label: 'Characters', icon: <FiUsers size={18} /> },
+    { id: 'events', label: 'Events', icon: <FiZap size={18} /> },
+    { id: 'conflicts', label: 'Conflicts', icon: <FiCrosshair size={18} /> },
+    { id: 'outcome', label: 'Outcome', icon: <FiFlag size={18} /> }
   ];
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-surface rounded-sm w-full max-w-3xl border border-editor-border shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="bg-surface rounded-sm w-full max-w-4xl border border-editor-border shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between p-8 border-b border-editor-border bg-white/[0.01]">
           <div>
@@ -105,23 +106,26 @@ export const SceneModal: React.FC<SceneModalProps> = ({ scene, characters, confl
             className="text-editor-text-muted hover:text-white transition-all p-2"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex px-8 border-b border-editor-border bg-white/[0.01] overflow-x-auto whitespace-nowrap scrollbar-hide">
+        <div className="flex px-4 border-b border-editor-border bg-white/[0.01] overflow-x-auto whitespace-nowrap scrollbar-hide justify-center">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
-              className={`flex-shrink-0 px-6 py-4 transition-all border-b-2
+              className={`flex-shrink-0 flex flex-col items-center px-6 py-4 transition-all border-b-2 gap-2 group
               ${activeTab === tab.id 
                 ? 'border-editor-magenta text-white bg-white/[0.02]' 
                 : 'border-transparent text-editor-text-muted hover:text-white'}`}
             >
-              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.15em]">{tab.label}</span>
+              <div className={`${activeTab === tab.id ? 'text-editor-magenta drop-shadow-[0_0_8px_rgba(255,0,85,0.5)]' : 'text-current opacity-40 group-hover:opacity-100'} transition-all`}>
+                {tab.icon}
+              </div>
+              <span className="text-[9px] font-mono font-bold uppercase tracking-[0.2em]">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -191,7 +195,7 @@ export const SceneModal: React.FC<SceneModalProps> = ({ scene, characters, confl
             </button>
             <button
               onClick={handleSave}
-              className="btn-magenta px-10 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
+              className="btn-magenta px-10 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm shadow-lg shadow-magenta-glow/20"
             >
               Commit to Chronicle
             </button>

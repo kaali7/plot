@@ -30,21 +30,27 @@ const VisualsSection = ({ id }: VisualsSectionProps) => {
   ];
 
   return (
-    <section id={id} className="py-20 bg-surface">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-white">
-          See Plot in Action
+    <section id={id} className="py-32 bg-background relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <h2 className="text-4xl md:text-5xl font-sans font-bold text-center mb-16 text-white tracking-tight">
+          See <span className="text-primary font-serif italic">Plot</span> in Action
         </h2>
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           {visuals.map((visual, index) => (
-            <div key={index} className="bg-white/5 rounded-xl p-6 backdrop-blur-sm">
-              <img 
-                src={visual.imageUrl} 
-                alt={visual.title} 
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
-              <h3 className="text-xl font-semibold mb-3 text-white">{visual.title}</h3>
-              <p className="text-gray-300">{visual.description}</p>
+            <div key={index} className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 transition-all duration-500 hover:bg-white/[0.04] hover:-translate-y-2 shadow-glass hover:shadow-[0_20px_40px_rgba(128,0,255,0.1)]">
+              {/* Subtle top border glow on hover */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[2rem]"></div>
+              
+              <div className="rounded-[1.5rem] overflow-hidden mb-6 relative">
+                 <div className="absolute inset-0 bg-primary/20 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500 z-10"></div>
+                 <img 
+                   src={visual.imageUrl} 
+                   alt={visual.title} 
+                   className="w-full h-48 object-cover transform group-hover:scale-105 transition-transform duration-700"
+                 />
+              </div>
+              <h3 className="text-xl font-sans font-bold mb-3 text-white group-hover:text-blue-400 transition-colors duration-300 tracking-tight">{visual.title}</h3>
+              <p className="text-editor-text-muted font-sans text-sm leading-relaxed">{visual.description}</p>
             </div>
           ))}
         </div>

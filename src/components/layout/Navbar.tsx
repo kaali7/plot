@@ -15,56 +15,81 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-editor-border shadow-magenta-glow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 bg-surface-dark/60 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.37)]">
+      <div className="px-6 sm:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex-shrink-0 flex items-center">
-            <span className="text-editor-magenta font-serif font-bold text-2xl tracking-tight">Plot</span>
+          <div className="flex-shrink-0 flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
+            <span className="w-2.5 h-2.5 rounded-full bg-primary shadow-magenta-glow animate-pulse"></span>
+            <span className="text-white font-serif font-bold text-2xl tracking-tight italic">Plot</span>
           </div>
           
-          <div className="hidden md:flex md:items-center md:space-x-8">
-            <nav className="flex space-x-8">
+          <div className="hidden md:flex md:items-center">
+            <nav className="flex space-x-1">
               <a 
                 href="/"
-                className="text-editor-text-muted hover:text-white transition-colors text-sm font-medium tracking-wide uppercase"
+                className="px-4 py-2 rounded-full text-editor-text-muted hover:text-white hover:bg-white/5 transition-all text-sm font-sans font-medium tracking-wide"
               >
-                Stories
+                Overview
               </a>
               <a 
                 href="/#features"
-                className="text-editor-text-muted hover:text-white transition-colors text-sm font-medium tracking-wide uppercase"
+                className="px-4 py-2 rounded-full text-editor-text-muted hover:text-white hover:bg-white/5 transition-all text-sm font-sans font-medium tracking-wide"
               >
-                How it Works
+                Features
+              </a>
+              <a 
+                href="/#visuals"
+                className="px-4 py-2 rounded-full text-editor-text-muted hover:text-white hover:bg-white/5 transition-all text-sm font-sans font-medium tracking-wide"
+              >
+                Interface
+              </a>
+              <a 
+                href="/#pricing"
+                className="px-4 py-2 rounded-full text-editor-text-muted hover:text-white hover:bg-white/5 transition-all text-sm font-sans font-medium tracking-wide"
+              >
+                Pricing
+              </a>
+              <a 
+                href="/#community"
+                className="px-4 py-2 rounded-full text-editor-text-muted hover:text-white hover:bg-white/5 transition-all text-sm font-sans font-medium tracking-wide"
+              >
+                Community
               </a>
             </nav>
           </div>
           
-          <div className="hidden md:flex md:items-center md:space-x-4">
+          <div className="hidden md:flex md:items-center space-x-3">
             {!user ? (
               <>
                 <button 
                   onClick={handleLogin}
-                  className="px-5 py-2 text-editor-text-muted hover:text-white transition-all text-sm font-medium tracking-wide uppercase"
+                  className="px-5 py-2 text-editor-text-muted hover:text-white hover:bg-white/5 rounded-full transition-all text-sm font-sans font-bold tracking-wide"
                 >
-                  Login
+                  Sign In
                 </button>
                 <button 
                   onClick={handleRegister}
-                  className="btn-magenta px-6 py-2 text-sm font-bold tracking-widest uppercase rounded-sm"
+                  className="bg-primary hover:bg-white text-white hover:text-black shadow-magenta-glow px-6 py-2 text-sm font-sans font-bold tracking-wide rounded-full transition-all duration-300"
                 >
-                  Register
+                  Start Writing
                 </button>
               </>
             ) : (
               <>
-                <span className="text-editor-text-muted text-sm font-mono mr-4 italic">
-                  {session?.user?.email?.split('@')[0] ?? 'User'}
+                <span className="text-editor-text-muted text-sm font-sans mr-4 bg-white/5 px-3 py-1 rounded-full border border-white/5 hidden lg:block">
+                  {session?.user?.email?.split('@')[0] ?? 'Writer'}
                 </span>
                 <button 
-                  onClick={signOut}
-                  className="px-5 py-2 border border-editor-border text-editor-text hover:bg-white/5 transition-all text-sm font-medium tracking-wide uppercase rounded-sm"
+                  onClick={() => navigate('/dashboard')}
+                  className="bg-primary hover:bg-white text-white hover:text-black shadow-magenta-glow px-5 py-2 text-sm font-sans font-bold tracking-wide rounded-full transition-all duration-300 mr-2"
                 >
-                  Logout
+                  Open Workspace
+                </button>
+                <button 
+                  onClick={signOut}
+                  className="px-5 py-2 border border-white/10 text-editor-text-muted hover:text-white hover:bg-white/10 transition-all text-sm font-sans font-bold tracking-wide rounded-full"
+                >
+                  Log Out
                 </button>
               </>
             )}

@@ -1,6 +1,7 @@
 import * as React from 'react';
 const { useState, useEffect } = React;
 import Card from '../ui/Card';
+import { Modal } from '../ui/Modal';
 
 interface CharacterSummary {
   name: string;
@@ -29,7 +30,7 @@ interface UnifiedStoryOverviewProps {
 }
 
 const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewData, charactersData, onSave }) => {
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [data, setData] = useState<StructuredOverview>({
     premise: '',
     characters: [],
@@ -37,10 +38,8 @@ const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewDat
     acts: { setup: '', confrontation: '', resolution: '' }
   });
 
-  // Convert characters data to CharacterSummary format
   const convertCharactersData = (characters: any[]): CharacterSummary[] => {
     if (!characters || !Array.isArray(characters)) return [];
-    
     return characters.slice(0, 4).map(char => ({
       name: char.name || 'Unknown',
       role: char.role || 'Character',
@@ -57,16 +56,13 @@ const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewDat
         acts: { setup: '', confrontation: '', resolution: '' }
       };
 
-      // Try to parse existing JSON data
       if (overviewData && overviewData.startsWith('{')) {
         const parsed = JSON.parse(overviewData);
         parsedData = { ...parsedData, ...parsed };
       } else if (overviewData) {
-        // Fallback: use plain text as premise
         parsedData.premise = overviewData;
       }
 
-      // Sync characters from characters data
       const convertedCharacters = convertCharactersData(charactersData);
       if (convertedCharacters.length > 0) {
         parsedData.characters = convertedCharacters;
@@ -74,7 +70,6 @@ const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewDat
 
       setData(parsedData);
     } catch (error) {
-      console.error('Error parsing overview data:', error);
       setData({
         premise: overviewData || '',
         characters: convertCharactersData(charactersData),
@@ -83,12 +78,6 @@ const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewDat
       });
     }
   }, [overviewData, charactersData]);
-
-  const handleChange = (field: keyof StructuredOverview, value: any) => {
-    const newData = { ...data, [field]: value };
-    setData(newData);
-    onSave(JSON.stringify(newData));
-  };
 
   const handleNestedChange = (parent: keyof StructuredOverview, field: string, value: string) => {
     const newData = { 
@@ -102,202 +91,132 @@ const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewDat
     onSave(JSON.stringify(newData));
   };
 
-  const validateCharacterLimit = (text: string, limit: number): boolean => {
-    return text.length <= limit;
-  };
-
-  const getCharacterLimitWarning = (text: string, limit: number): string => {
-    const remaining = limit - text.length;
-    if (remaining < 0) {
-      return `❌ ${Math.abs(remaining)} characters over limit`;
-    } else if (remaining < 50) {
-      return `⚠️ ${remaining} characters remaining`;
-    }
-    return '';
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Header with Edit Toggle */}
+    <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-white">Story Overview</h2>
+        <h3 className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.3em] font-bold">Narrative Dashboard</h3>
         <button
-          onClick={() => setIsEditMode(!isEditMode)}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-xl transition-colors"
+          onClick={() => setIsEditModalOpen(true)}
+          className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] uppercase tracking-widest py-2 px-4 rounded-sm transition-all shadow-lg shadow-purple-900/20"
         >
-          {isEditMode ? 'View Mode' : 'Edit Mode'}
+          Open Narrative Editor
         </button>
       </div>
 
-      {/* Premise Section */}
-      <Card className="border border-purple-500/20 bg-black/40">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-accent text-xs font-bold uppercase tracking-widest">Premise</h3>
-          {isEditMode && (
-            <span className="text-xs text-gray-400">
-              {getCharacterLimitWarning(data.premise, 200)}
-            </span>
-          )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Conflicts Summary */}
+        <div className="space-y-4">
+          <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-widest font-bold">Core Engine</h4>
+          <div className="grid grid-cols-1 gap-4">
+            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+              <span className="text-[9px] font-mono text-editor-text-muted uppercase mb-2 block tracking-widest">Internal Conflict</span>
+              <p className="text-sm font-serif italic text-white/80 leading-relaxed">
+                {data.conflicts.internal || "Undiscovered..."}
+              </p>
+            </div>
+            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
+              <span className="text-[9px] font-mono text-editor-text-muted uppercase mb-2 block tracking-widest">External Conflict</span>
+              <p className="text-sm font-serif italic text-white/80 leading-relaxed">
+                {data.conflicts.external || "Undiscovered..."}
+              </p>
+            </div>
+          </div>
         </div>
-        {isEditMode ? (
-          <textarea
-            value={data.premise}
-            onChange={(e) => handleChange('premise', e.target.value)}
-            placeholder="What is the soul of your story? (e.g., A space pirate finds an ancient map to a forgotten garden planet.)"
-            className={`w-full bg-[#1a001f] border border-purple-900/30 rounded-xl p-3 text-gray-200 focus:border-purple-600 outline-none transition-colors resize-none min-h-[80px] ${
-              !validateCharacterLimit(data.premise, 200) ? 'border-red-500' : ''
-            }`}
-            maxLength={200}
-          />
-        ) : (
-          <p className="text-gray-300 bg-[#1a001f] rounded-xl p-3 min-h-[80px]">
-            {data.premise || <span className="text-gray-500 italic">No premise defined yet...</span>}
-          </p>
-        )}
-      </Card>
 
-      {/* Characters Section */}
-      <Card className="border border-purple-500/20 bg-black/40">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-accent text-xs font-bold uppercase tracking-widest">Key Characters</h3>
-          <span className="text-xs text-gray-400">
-            Synced from Personas tab
-          </span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {data.characters.slice(0, 4).map((character, index) => (
-            <div key={index} className="bg-[#1a001f] rounded-xl p-3 border border-purple-900/20">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-white font-medium">{character.name}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  character.role === 'Protagonist' ? 'bg-green-900/50 text-green-300' :
-                  character.role === 'Antagonist' ? 'bg-red-900/50 text-red-300' :
-                  'bg-purple-900/50 text-purple-300'
-                }`}>
-                  {character.role}
+        {/* Acts Summary */}
+        <div className="space-y-4">
+          <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-widest font-bold">Narrative Arc</h4>
+          <div className="space-y-3">
+            {[
+              { key: 'setup', label: 'Act I', color: 'bg-purple-500/20 text-purple-400' },
+              { key: 'confrontation', label: 'Act II', color: 'bg-indigo-500/20 text-indigo-400' },
+              { key: 'resolution', label: 'Act III', color: 'bg-red-500/20 text-red-400' }
+            ].map((act) => (
+              <div key={act.key} className="flex items-start space-x-4 p-3 bg-white/[0.01] hover:bg-white/[0.03] transition-colors rounded-lg border border-white/5">
+                <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase mt-1 ${act.color}`}>
+                  {act.label}
                 </span>
-              </div>
-              {isEditMode ? (
-                <input
-                  value={character.goal}
-                  onChange={(e) => {
-                    const newCharacters = [...data.characters];
-                    newCharacters[index] = { ...character, goal: e.target.value };
-                    handleChange('characters', newCharacters);
-                  }}
-                  placeholder="Character's goal or motivation..."
-                  className="w-full bg-[#22002a] border border-purple-900/20 rounded-lg px-2 py-1 text-sm text-gray-300 focus:border-purple-600 outline-none"
-                  maxLength={150}
-                />
-              ) : (
-                <p className="text-gray-400 text-sm">
-                  {character.goal || <span className="italic text-gray-500">No goal defined</span>}
+                <p className="text-xs font-serif text-white/60 line-clamp-2">
+                  {data.acts[act.key as keyof typeof data.acts] || "Drafting..."}
                 </p>
-              )}
-            </div>
-          ))}
-          {data.characters.length === 0 && (
-            <div className="col-span-2 text-center py-6 text-gray-500">
-              No characters defined in Personas tab yet...
-            </div>
-          )}
-        </div>
-      </Card>
-
-      {/* Conflicts Section */}
-      <Card className="border border-purple-500/20 bg-black/40">
-        <h3 className="text-accent text-xs font-bold uppercase tracking-widest mb-3">Core Conflicts</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-gray-500 text-[10px] uppercase font-bold block mb-2">Internal Conflict</label>
-            {isEditMode ? (
-              <div>
-                <textarea
-                  value={data.conflicts.internal}
-                  onChange={(e) => handleNestedChange('conflicts', 'internal', e.target.value)}
-                  placeholder="The inner struggle driving the protagonist..."
-                  className={`w-full bg-[#1a001f] border border-purple-900/30 rounded-xl p-3 text-gray-200 focus:border-purple-600 outline-none resize-none min-h-[60px] ${
-                    !validateCharacterLimit(data.conflicts.internal, 100) ? 'border-red-500' : ''
-                  }`}
-                  maxLength={100}
-                />
-                <span className="text-xs text-gray-400 mt-1 block">
-                  {getCharacterLimitWarning(data.conflicts.internal, 100)}
-                </span>
               </div>
-            ) : (
-              <p className="text-gray-300 bg-[#1a001f] rounded-xl p-3 min-h-[60px]">
-                {data.conflicts.internal || <span className="text-gray-500 italic">No internal conflict defined...</span>}
-              </p>
-            )}
-          </div>
-          <div>
-            <label className="text-gray-500 text-[10px] uppercase font-bold block mb-2">External Conflict</label>
-            {isEditMode ? (
-              <div>
-                <textarea
-                  value={data.conflicts.external}
-                  onChange={(e) => handleNestedChange('conflicts', 'external', e.target.value)}
-                  placeholder="The external obstacle or antagonist..."
-                  className={`w-full bg-[#1a001f] border border-purple-900/30 rounded-xl p-3 text-gray-200 focus:border-purple-600 outline-none resize-none min-h-[60px] ${
-                    !validateCharacterLimit(data.conflicts.external, 100) ? 'border-red-500' : ''
-                  }`}
-                  maxLength={100}
-                />
-                <span className="text-xs text-gray-400 mt-1 block">
-                  {getCharacterLimitWarning(data.conflicts.external, 100)}
-                </span>
-              </div>
-            ) : (
-              <p className="text-gray-300 bg-[#1a001f] rounded-xl p-3 min-h-[60px]">
-                {data.conflicts.external || <span className="text-gray-500 italic">No external conflict defined...</span>}
-              </p>
-            )}
+            ))}
           </div>
         </div>
-      </Card>
+      </div>
 
-      {/* Narrative Arc Section */}
-      <Card className="border border-purple-500/20 bg-black/40">
-        <h3 className="text-accent text-xs font-bold uppercase tracking-widest mb-3">Narrative Arc</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { key: 'setup', label: 'Act I: Setup', color: 'purple' },
-            { key: 'confrontation', label: 'Act II: Confrontation', color: 'indigo' },
-            { key: 'resolution', label: 'Act III: Resolution', color: 'red' }
-          ].map((act) => (
-            <div key={act.key} className="p-4 bg-[#1a001f] rounded-xl border border-purple-900/20">
-              <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${
-                act.color === 'purple' ? 'bg-purple-900/50 text-purple-300' :
-                act.color === 'indigo' ? 'bg-indigo-900/50 text-indigo-300' :
-                'bg-red-900/50 text-red-300'
-              }`}>
-                {act.label}
-              </span>
-              {isEditMode ? (
-                <div>
+      <Modal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        title="Narrative Compass Editor"
+      >
+        <div className="space-y-8 pb-4">
+          {/* Premise */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-mono text-editor-text-muted uppercase tracking-widest font-bold block">Premise</label>
+            <textarea
+              value={data.premise}
+              onChange={(e) => {
+                const newData = { ...data, premise: e.target.value };
+                setData(newData);
+                onSave(JSON.stringify(newData));
+              }}
+              placeholder="What is the soul of your story?"
+              className="w-full bg-white/[0.02] border border-white/10 rounded-xl p-4 text-white font-serif text-lg leading-relaxed focus:border-purple-500 outline-none transition-colors min-h-[100px]"
+            />
+          </div>
+
+          {/* Conflicts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <label className="text-[10px] font-mono text-editor-text-muted uppercase tracking-widest font-bold block">Internal Conflict</label>
+              <textarea
+                value={data.conflicts.internal}
+                onChange={(e) => handleNestedChange('conflicts', 'internal', e.target.value)}
+                className="w-full bg-white/[0.02] border border-white/10 rounded-xl p-4 text-white font-serif focus:border-purple-500 outline-none transition-colors min-h-[80px]"
+              />
+            </div>
+            <div className="space-y-3">
+              <label className="text-[10px] font-mono text-editor-text-muted uppercase tracking-widest font-bold block">External Conflict</label>
+              <textarea
+                value={data.conflicts.external}
+                onChange={(e) => handleNestedChange('conflicts', 'external', e.target.value)}
+                className="w-full bg-white/[0.02] border border-white/10 rounded-xl p-4 text-white font-serif focus:border-purple-500 outline-none transition-colors min-h-[80px]"
+              />
+            </div>
+          </div>
+
+          {/* Acts */}
+          <div className="space-y-4">
+            <label className="text-[10px] font-mono text-editor-text-muted uppercase tracking-widest font-bold block text-center">Three Act Structure</label>
+            <div className="grid grid-cols-1 gap-4">
+              {[
+                { key: 'setup', label: 'Act I: Setup' },
+                { key: 'confrontation', label: 'Act II: Confrontation' },
+                { key: 'resolution', label: 'Act III: Resolution' }
+              ].map((act) => (
+                <div key={act.key} className="space-y-2">
+                  <span className="text-[9px] font-bold text-white/40 uppercase pl-1">{act.label}</span>
                   <textarea
                     value={data.acts[act.key as keyof typeof data.acts]}
                     onChange={(e) => handleNestedChange('acts', act.key, e.target.value)}
-                    placeholder={`${act.label} description...`}
-                    className={`w-full bg-[#22002a] border border-purple-900/20 rounded-lg p-2 text-sm text-gray-300 mt-2 focus:border-purple-600 outline-none resize-none min-h-[60px] ${
-                      !validateCharacterLimit(data.acts[act.key as keyof typeof data.acts], 100) ? 'border-red-500' : ''
-                    }`}
-                    maxLength={100}
+                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl p-4 text-white font-serif focus:border-purple-500 outline-none transition-colors min-h-[80px]"
                   />
-                  <span className="text-xs text-gray-400 mt-1 block">
-                    {getCharacterLimitWarning(data.acts[act.key as keyof typeof data.acts], 100)}
-                  </span>
                 </div>
-              ) : (
-                <p className="text-gray-400 text-sm mt-2">
-                  {data.acts[act.key as keyof typeof data.acts] || <span className="italic text-gray-500">No description...</span>}
-                </p>
-              )}
+              ))}
             </div>
-          ))}
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={() => setIsEditModalOpen(false)}
+              className="px-10 py-3 btn-magenta text-[10px] font-bold tracking-widest uppercase rounded-sm"
+            >
+              Finish Editing
+            </button>
+          </div>
         </div>
-      </Card>
+      </Modal>
     </div>
   );
 };

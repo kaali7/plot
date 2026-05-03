@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FiUser, FiTarget, FiZap, FiTrendingUp, FiLink, FiBox, FiLayers } from 'react-icons/fi';
 import { BasicInfoForm } from './forms/BasicInfoForm';
 import { MotivationForm } from './forms/MotivationForm';
 import { TraitsForm } from './forms/TraitsForm';
@@ -19,9 +20,8 @@ interface CharacterModalProps {
 }
 
 export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSave, onDelete, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'basic' | 'motivation' | 'traits' | 'conflicts' | 'relationships' | 'arc' | 'resources'>('basic');
+  const [activeTab, setActiveTab] = useState<TabId>('basic');
   
-  // Initialize form data
   const [formData, setFormData] = useState<Partial<Character>>({
     name: character?.name || '',
     role: character?.role || 'supporting',
@@ -35,7 +35,7 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
     resources: character?.resources || []
   });
 
-  const handleTabChange = (tab: typeof activeTab) => {
+  const handleTabChange = (tab: TabId) => {
     setActiveTab(tab);
   };
 
@@ -59,9 +59,8 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
       });
       setErrors(fieldErrors);
       
-      // Auto-switch to the first tab with an error if helpful
       const firstErrorPath = result.error.issues[0]?.path[0] as string;
-      if (firstErrorPath === 'name' || firstErrorPath === 'role' || firstErrorPath === 'description') {
+      if (['name', 'role', 'description'].includes(firstErrorPath)) {
         setActiveTab('basic');
       } else if (firstErrorPath === 'motivation') {
         setActiveTab('motivation');
@@ -77,19 +76,19 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
     onClose();
   };
 
-   const tabs: { id: TabId; label: string; icon: string }[] = [
-     { id: 'basic', label: 'Basic Info', icon: '👤' },
-     { id: 'motivation', label: 'Motivation', icon: '💫' },
-     { id: 'traits', label: 'Traits', icon: '⚖️' },
-     { id: 'conflicts', label: 'Conflicts', icon: '⚔️' },
-     { id: 'relationships', label: 'Relationships', icon: '🔗' },
-     { id: 'arc', label: 'Character Arc', icon: '📈' },
-     { id: 'resources', label: 'Resources', icon: '📎' }
+   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
+     { id: 'basic', label: 'Basic Info', icon: <FiUser size={18} /> },
+     { id: 'motivation', label: 'Motivation', icon: <FiTarget size={18} /> },
+     { id: 'traits', label: 'Traits', icon: <FiLayers size={18} /> },
+     { id: 'conflicts', label: 'Conflicts', icon: <FiZap size={18} /> },
+     { id: 'relationships', label: 'Relationships', icon: <FiLink size={18} /> },
+     { id: 'arc', label: 'Character Arc', icon: <FiTrendingUp size={18} /> },
+     { id: 'resources', label: 'Resources', icon: <FiBox size={18} /> }
    ];
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-surface rounded-sm w-full max-w-3xl border border-editor-border shadow-2xl flex flex-col max-h-[90vh]">
+      <div className="bg-surface rounded-sm w-full max-w-4xl border border-editor-border shadow-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between p-8 border-b border-editor-border bg-white/[0.01]">
           <div>
@@ -111,17 +110,20 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
         </div>
 
         {/* Tabs */}
-        <div className="flex px-8 border-b border-editor-border bg-white/[0.01] overflow-x-auto whitespace-nowrap scrollbar-hide">
+        <div className="flex px-4 border-b border-editor-border bg-white/[0.01] overflow-x-auto whitespace-nowrap scrollbar-hide justify-center">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
-              className={`flex-shrink-0 px-6 py-4 transition-all border-b-2
+              className={`flex-shrink-0 flex flex-col items-center px-6 py-4 transition-all border-b-2 gap-2 group
               ${activeTab === tab.id 
                 ? 'border-editor-magenta text-white bg-white/[0.02]' 
                 : 'border-transparent text-editor-text-muted hover:text-white'}`}
             >
-              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.15em]">{tab.label}</span>
+              <div className={`${activeTab === tab.id ? 'text-editor-magenta drop-shadow-[0_0_8px_rgba(255,0,85,0.5)]' : 'text-current opacity-40 group-hover:opacity-100'} transition-all`}>
+                {tab.icon}
+              </div>
+              <span className="text-[9px] font-mono font-bold uppercase tracking-[0.2em]">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -193,7 +195,7 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
             </button>
             <button
               onClick={handleSave}
-              className="btn-magenta px-10 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
+              className="btn-magenta px-10 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm shadow-lg shadow-magenta-glow/20"
             >
               Commit to Forge
             </button>

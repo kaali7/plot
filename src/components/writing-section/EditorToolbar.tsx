@@ -27,72 +27,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
   return (
     <div className="flex items-center space-x-6">
-      {/* Quick Insert Actions */}
-      <div className="flex items-center bg-white/[0.03] border border-editor-border p-1 rounded-sm">
-        <div className="relative">
-          <button
-            onClick={() => setActiveRefType(activeRefType === 'character' ? null : 'character')}
-            className={`px-4 py-2 rounded-sm text-[10px] font-mono uppercase tracking-widest transition-all flex items-center space-x-2 ${
-              activeRefType === 'character' ? 'bg-editor-magenta text-white shadow-magenta-glow' : 'text-editor-text-muted hover:text-white'
-            }`}
-          >
-            <span>Character</span>
-          </button>
-          
-          {activeRefType === 'character' && (
-            <div className="absolute right-0 mt-4 w-64 bg-surface border border-editor-border rounded-sm shadow-2xl z-50 overflow-hidden">
-              <div className="p-2 max-h-80 overflow-y-auto custom-scrollbar">
-                {characters.length === 0 && <div className="p-6 text-[10px] font-mono text-editor-text-muted uppercase tracking-widest italic text-center">No identities forged</div>}
-                {characters.map(char => (
-                  <button
-                    key={char.id}
-                    onClick={() => handleInsert('character', char.id)}
-                    className="w-full text-left px-4 py-4 text-[10px] font-mono text-editor-text-muted hover:text-white hover:bg-white/[0.03] transition-colors flex items-center space-x-4 group border-b border-editor-border last:border-0"
-                  >
-                    <div className="w-8 h-8 bg-surface border border-editor-border flex items-center justify-center group-hover:border-editor-magenta group-hover:text-editor-magenta transition-colors">
-                      {char.name.charAt(0)}
-                    </div>
-                    <span className="uppercase tracking-widest">{char.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
 
-        <div className="relative">
-          <button
-            onClick={() => setActiveRefType(activeRefType === 'scene' ? null : 'scene')}
-            className={`px-4 py-2 rounded-sm text-[10px] font-mono uppercase tracking-widest transition-all flex items-center space-x-2 ${
-              activeRefType === 'scene' ? 'bg-editor-magenta text-white shadow-magenta-glow' : 'text-editor-text-muted hover:text-white'
-            }`}
-          >
-            <span>Scene</span>
-          </button>
-
-          {activeRefType === 'scene' && (
-            <div className="absolute right-0 mt-4 w-72 bg-surface border border-editor-border rounded-sm shadow-2xl z-50 overflow-hidden">
-              <div className="p-2 max-h-80 overflow-y-auto custom-scrollbar">
-                {scenes.length === 0 && <div className="p-6 text-[10px] font-mono text-editor-text-muted uppercase tracking-widest italic text-center">No chronicle events</div>}
-                {scenes.map((scene, i) => (
-                  <button
-                    key={scene.id}
-                    onClick={() => handleInsert('scene', scene.id)}
-                    className="w-full text-left px-4 py-4 text-[10px] font-mono text-editor-text-muted hover:text-white hover:bg-white/[0.03] transition-colors flex items-center space-x-4 group border-b border-editor-border last:border-0"
-                  >
-                    <div className="w-8 h-8 bg-surface border border-editor-border flex items-center justify-center font-bold group-hover:border-editor-magenta group-hover:text-editor-magenta transition-colors">
-                      {(i + 1).toString().padStart(2, '0')}
-                    </div>
-                    <span className="uppercase tracking-widest truncate">{scene.title}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="h-8 w-px bg-editor-border"></div>
 
       {/* Export & Save Menu */}
       <div className="flex items-center space-x-4">

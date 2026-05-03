@@ -34,19 +34,35 @@ interface FeaturesSectionProps {
 
 const FeaturesSection = ({ id }: FeaturesSectionProps) => {
   return (
-    <section id={id} className="py-20 bg-background">
-      <div className="max-w-7xl mx-auto px-6 space-y-16">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-white">
-          How Plot Works
-        </h2>
+    <section id={id} className="py-32 bg-surface-dark relative overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="absolute top-1/2 left-0 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none transform -translate-y-1/2 -translate-x-1/2"></div>
+      <div className="absolute top-1/2 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none transform -translate-y-1/2 translate-x-1/2"></div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 space-y-20">
+        <div className="text-center space-y-4">
+          <h2 className="text-4xl md:text-5xl font-sans font-bold text-white tracking-tight">
+            How <span className="text-primary font-serif italic pr-2">Plot</span> Works
+          </h2>
+          <p className="text-editor-text-muted font-sans text-lg max-w-2xl mx-auto">
+            Everything you need to turn chaotic inspiration into a perfectly structured manuscript.
+          </p>
+        </div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
-            <div key={index} className="text-center">
-              <div className="mb-6">
-                <span className="text-4xl">{feature.icon}</span>
+            <div 
+              key={index} 
+              className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 text-center transition-all duration-300 hover:bg-white/[0.04] hover:-translate-y-2 shadow-glass hover:shadow-[0_20px_40px_rgba(255,51,102,0.1)] overflow-hidden"
+            >
+              {/* Subtle top border glow on hover */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              <div className="mb-8 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-primary/10 group-hover:border-primary/20 transition-colors duration-300">
+                <span className="text-3xl group-hover:scale-110 transition-transform duration-300">{feature.icon}</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-white">{feature.title}</h3>
-              <p className="text-gray-400">{feature.description}</p>
+              <h3 className="text-xl font-sans font-bold mb-4 text-white group-hover:text-primary transition-colors duration-300 tracking-tight">{feature.title}</h3>
+              <p className="text-editor-text-muted font-sans text-sm leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
