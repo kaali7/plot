@@ -206,12 +206,6 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
     }
   };
 
-  const [fontSize, setFontSize] = useState(14);
-  const adjustFontSize = (delta: number) => {
-    const newSize = Math.max(8, Math.min(72, fontSize + delta));
-    setFontSize(newSize);
-    executeCommand('fontSize', newSize.toString()); 
-  };
 
   const applyStyle = (tag: string) => {
     executeCommand('formatBlock', tag);

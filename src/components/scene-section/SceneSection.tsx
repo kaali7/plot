@@ -11,7 +11,6 @@ interface SceneSectionProps {
   onSceneAdd: (sceneData: Partial<Scene>) => void;
   onSceneUpdate: (id: string, updates: Partial<Scene>) => void;
   onSceneDelete: (id: string) => void;
-  onReorderScenes: (sceneIds: string[]) => void;
 }
 
 export const SceneSection: React.FC<SceneSectionProps> = ({
@@ -20,13 +19,11 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   conflicts,
   onSceneAdd,
   onSceneUpdate,
-  onSceneDelete,
-  onReorderScenes
+  onSceneDelete
 }) => {
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [viewingSceneId, setViewingSceneId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [draggedSceneId, setDraggedSceneId] = useState<string | null>(null);
 
   const viewingScene = scenes.find(s => s.id === viewingSceneId) || null;
 
