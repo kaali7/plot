@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { checkRateLimit, resetRateLimit } from '@/lib/rate-limiter';
+import { sanitizeError } from '@/lib/error-mapper';
 
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,6 +12,7 @@ const SignupPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [tosAccepted, setTosAccepted] = useState(false);
    
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -18,6 +21,13 @@ const SignupPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    const { allowed, retryAfterMs } = checkRateLimit('signup');
+    if (!allowed) {
+      setError(`Too many signup attempts. Please try again in ${Math.ceil(retryAfterMs / 1000)} seconds.`);
+      return;
+    }
+
     setLoading(true);
     
     // Form validation
@@ -35,6 +45,18 @@ const SignupPage: React.FC = () => {
     
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
+      setLoading(false);
+      return;
+    }
+
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+      setLoading(false);
+      return;
+    }
+
+    if (!tosAccepted) {
+      setError('You must accept the Terms of Service to create an account');
       setLoading(false);
       return;
     }
@@ -61,8 +83,9 @@ const SignupPage: React.FC = () => {
           navigate('/dashboard', { replace: true });
         }, 3000);
       }
+      resetRateLimit('signup');
     } catch (err: any) {
-      setError(err.message || 'An error occurred during signup');
+      setError(sanitizeError(err));
     } finally {
       setLoading(false);
     }
@@ -150,6 +173,8 @@ return (
                  <input
                    id="agree-terms"
                    type="checkbox"
+                   checked={tosAccepted}
+                   onChange={(e) => setTosAccepted(e.target.checked)}
                    className="h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                  />
                </div>

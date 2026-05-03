@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { checkRateLimit, resetRateLimit } from '@/lib/rate-limiter';
+import { sanitizeError } from '@/lib/error-mapper';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -8,7 +10,6 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [rememberMe, setRememberMe] = useState(false);
   
   const { signIn } = useAuth();
   const navigate = useNavigate();
@@ -17,6 +18,13 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+
+    const { allowed, retryAfterMs } = checkRateLimit('login');
+    if (!allowed) {
+      setError(`Too many login attempts. Please try again in ${Math.ceil(retryAfterMs / 1000)} seconds.`);
+      return;
+    }
+
     setLoading(true);
     
     try {
@@ -26,10 +34,11 @@ const LoginPage: React.FC = () => {
         throw authError;
       }
       
+      resetRateLimit('login');
       // Redirect to dashboard or intended page
       navigate('/dashboard', { replace: true });
     } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
+      setError(sanitizeError(err));
     } finally {
       setLoading(false);
     }
@@ -87,16 +96,7 @@ const LoginPage: React.FC = () => {
             />
           </div>
           
-          <div className="flex justify-between items-center">
-            <label className="flex items-center text-sm text-gray-400">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked as unknown as boolean)}
-                className="h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
-              />
-              <span className="ml-2">Remember me</span>
-            </label>
+          <div className="flex justify-end items-center">
             
             <button
               type="button"
