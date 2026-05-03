@@ -99,32 +99,48 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-end justify-between pb-8 border-b border-editor-border mb-12">
-        <div>
-          <h2 className="text-4xl font-serif font-bold text-white tracking-tight">Chronicle Grid</h2>
-          <div className="flex items-center space-x-3 mt-2">
-            <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] italic">Sequence of Events ({scenes.length})</p>
-            {scenes.length > 0 && (
-              <div className="flex items-center text-[9px] font-mono text-editor-magenta uppercase tracking-widest border border-editor-magenta/20 px-2 py-0.5 rounded-sm">
-                Active Reorder: Enabled
+    <div className="flex h-full overflow-hidden relative">
+      {/* Sidebar Navigation - Scene List */}
+      <div className={`relative h-full flex flex-col border-r border-white/5 bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden z-20
+        ${viewingSceneId ? 'w-24' : 'w-full p-8'}`}>
+        
+        {/* Full Header - Only shown when no selection */}
+        {!viewingSceneId && (
+          <div className="flex items-end justify-between pb-8 border-b border-editor-border mb-12 animate-in fade-in slide-in-from-top duration-700">
+            <div>
+              <h2 className="text-4xl font-serif font-bold text-white tracking-tight">Chronicle Grid</h2>
+              <div className="flex items-center space-x-3 mt-2">
+                <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] italic">Sequence of Events ({scenes.length})</p>
+                {scenes.length > 0 && (
+                  <div className="flex items-center text-[9px] font-mono text-editor-magenta uppercase tracking-widest border border-editor-magenta/20 px-2 py-0.5 rounded-sm">
+                    Active Reorder: Enabled
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="btn-magenta px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
+            >
+              Draft New Scene
+            </button>
           </div>
-        </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="btn-magenta px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
-        >
-          Draft New Scene
-        </button>
-      </div>
+        )}
 
-      <div className="flex-1 flex space-x-12 min-h-0">
-        {/* Left Column: High-Fidelity Sequence Dock */}
-        <div className={`transition-all duration-700 flex flex-col items-center py-8 ${viewingSceneId ? 'w-28' : 'w-full max-w-[420px]'}`}>
-          <div className="space-y-8 overflow-y-auto no-scrollbar flex flex-col items-center w-full">
+        {/* Close Selection Button (Only in Narrow View) */}
+        {viewingSceneId && (
+          <button 
+            onClick={() => setViewingSceneId(null)}
+            className="absolute top-6 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/20 hover:bg-editor-magenta hover:text-white transition-all duration-300 z-30"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+
+        <div className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-700 ${viewingSceneId ? 'pt-20' : ''}`}>
+          <div className={`flex flex-col transition-all duration-700 ${viewingSceneId ? 'space-y-1' : 'space-y-2'}`}>
             {[...scenes].sort((a, b) => {
               if (a.order !== b.order) return a.order - b.order;
               return a.id.localeCompare(b.id);
@@ -132,70 +148,79 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
               <div
                 key={scene.id}
                 onClick={() => handleSceneClick(scene)}
-                className="relative group flex flex-col items-center"
+                className={`group relative h-20 w-full flex items-center transition-all duration-[800ms] cubic-bezier(0.4, 0, 0.2, 1)
+                  ${viewingSceneId === scene.id 
+                    ? 'bg-white text-black z-20 rounded-l-full translate-x-1' 
+                    : 'text-white/20 hover:text-white/60'}`}
               >
-                {/* Visual Connector - Thin Ghost Line */}
-                {index > 0 && (
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-px h-8 bg-white/[0.03] group-hover:bg-editor-magenta/10 transition-all" />
-                )}
-
-                <div className="relative cursor-pointer transition-all duration-500 hover:scale-110 flex flex-col items-center">
-                  <span className="text-[7px] font-mono uppercase tracking-[0.2em] text-editor-text-muted mb-2 opacity-30 group-hover:opacity-60 transition-opacity">
-                    Folio
+                <div className={`flex items-center space-x-6 transition-all duration-[800ms] ${viewingSceneId ? 'justify-center w-full' : 'w-full'}`}>
+                  <span className={`text-sm font-mono font-bold tracking-tighter w-12 h-12 rounded-full flex items-center justify-center transition-all duration-700 flex-shrink-0 border
+                    ${viewingSceneId === scene.id 
+                      ? 'bg-black text-white border-black shadow-2xl scale-110' 
+                      : 'bg-white/[0.02] border-white/5 group-hover:border-white/20 group-hover:bg-white/10'}`}>
+                    {(index + 1).toString().padStart(2, '0')}
                   </span>
                   
-                  <div className={`w-14 h-14 rounded-[1.2rem] flex items-center justify-center transition-all duration-500 shadow-lg relative
-                    ${viewingSceneId === scene.id 
-                      ? 'bg-editor-magenta text-white shadow-[0_0_30px_rgba(255,51,102,0.4)] ring-2 ring-white/20' 
-                      : 'bg-white/[0.02] border border-white/5 text-editor-text-muted opacity-40 hover:opacity-100 hover:border-white/10'}`}>
-                    
-                    <span className="text-xl font-mono font-bold tracking-tighter">
-                      {(index + 1).toString().padStart(2, '0')}
-                    </span>
-
-                    {/* Corner Indicator Dot */}
-                    {viewingSceneId === scene.id && (
-                      <div className="absolute -right-1 -top-1 w-2.5 h-2.5 bg-editor-magenta rounded-full border-2 border-surface-dark animate-pulse" />
-                    )}
-                  </div>
+                  {!viewingSceneId && (
+                    <div className="flex-1 truncate animate-in fade-in slide-in-from-left-4 duration-1000">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-serif font-bold tracking-tight truncate text-white/60 group-hover:text-white transition-colors">
+                          {scene.title}
+                        </h4>
+                        <div className="flex items-center space-x-4">
+                          <span className="text-[9px] font-mono text-white/10 uppercase tracking-widest">{scene.type}</span>
+                          <div className="w-1.5 h-1.5 rounded-full bg-editor-magenta/20 group-hover:bg-editor-magenta group-hover:shadow-magenta-glow transition-all" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Ghost Label */}
-                {!viewingSceneId && (
-                  <div className="mt-4 px-4 py-1.5 bg-surface-dark border border-white/5 rounded-full backdrop-blur-xl opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 pointer-events-none whitespace-nowrap z-50 shadow-2xl">
-                    <span className="text-[10px] font-mono font-bold text-white uppercase tracking-widest">{scene.title}</span>
-                  </div>
+                {/* Liquid Curve Elements - Top and Bottom Concave Corners */}
+                {viewingSceneId === scene.id && (
+                  <>
+                    <div className="absolute -top-[48px] right-0 w-[48px] h-[48px] bg-transparent rounded-full pointer-events-none shadow-[24px_24px_0_0_#fff] transition-all duration-[800ms]" />
+                    <div className="absolute -bottom-[48px] right-0 w-[48px] h-[48px] bg-transparent rounded-full pointer-events-none shadow-[24px_-24px_0_0_#fff] transition-all duration-[800ms]" />
+                  </>
                 )}
               </div>
             ))}
+
+            </div>
+
+            {/* Ghost Slot for New Scene - Persistent at the bottom */}
+            <div className={`mt-8 flex transition-all duration-700 ${viewingSceneId ? 'justify-center pb-12' : 'px-8 pb-32'}`}>
+              <button 
+                onClick={() => setShowAddModal(true)}
+                className={`border border-dashed border-white/10 rounded-full flex items-center justify-center group hover:border-editor-magenta/50 hover:bg-editor-magenta/5 transition-all duration-500
+                  ${viewingSceneId ? 'w-12 h-12' : 'w-full py-6 space-x-4'}`}
+                title="Forge New Folio"
+              >
+                <span className={`text-white/20 group-hover:text-editor-magenta transition-colors ${viewingSceneId ? 'text-xl' : 'text-2xl'}`}>+</span>
+                {!viewingSceneId && (
+                  <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.3em] font-bold group-hover:text-white transition-colors">Forge New Folio</span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Right Column: Integrated Scene Detail (Non-Popup) */}
-        {viewingScene ? (
-          <div className="flex-1 bg-surface-dark border border-white/5 shadow-glass overflow-hidden flex flex-col rounded-sm animate-in fade-in slide-in-from-right-8 duration-500">
-            <SceneDetailView 
-              scene={viewingScene}
-              characters={characters}
-              conflicts={conflicts}
-              onClose={() => setViewingSceneId(null)}
-              onEdit={() => {
-                setSelectedScene(viewingScene);
-                setViewingSceneId(null);
-              }}
-              onUpdate={(updates) => onSceneUpdate(viewingScene.id, updates)}
-              isIntegrated={true} // New prop for integrated view
-            />
-          </div>
-        ) : (
-          !viewingSceneId && scenes.length === 0 && (
-            <div className="flex-1 flex items-center justify-center opacity-20 select-none">
-              <div className="text-center">
-                <div className="text-6xl mb-4 text-editor-magenta">✦</div>
-                <p className="font-mono text-xs uppercase tracking-[0.4em]">No Narrative Nodes Detected</p>
-              </div>
-            </div>
-          )
+      {/* Integrated Scene Detail View */}
+      <div className={`flex-1 h-full bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden
+        ${viewingSceneId ? 'translate-x-0' : 'translate-x-full'}`}>
+        {viewingScene && (
+          <SceneDetailView 
+            scene={viewingScene}
+            characters={characters}
+            conflicts={conflicts}
+            onClose={() => setViewingSceneId(null)}
+            onEdit={() => {
+              setSelectedScene(viewingScene);
+              setViewingSceneId(null);
+            }}
+            onUpdate={(updates) => onSceneUpdate(viewingScene.id, updates)}
+            isIntegrated={true}
+          />
         )}
       </div>
 

@@ -59,37 +59,37 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ worldSet
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-6">
-        <div className="flex flex-col space-y-4">
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 gap-8">
+        <div className="flex flex-col space-y-6">
           {worldSettings.timePeriod && (
-            <div className="space-y-1">
-              <h4 className="text-[9px] font-mono text-editor-text-muted uppercase tracking-[0.2em] italic">Temporal Period</h4>
-              <p className="text-xl font-serif font-bold text-white tracking-tight">{worldSettings.timePeriod}</p>
+            <div className="space-y-2">
+              <h4 className="text-[9px] font-mono text-editor-text-muted uppercase tracking-[0.3em] font-bold opacity-40">Temporal Period</h4>
+              <p className="text-2xl font-serif font-bold text-white tracking-tight border-b border-white/5 pb-2">{worldSettings.timePeriod}</p>
             </div>
           )}
 
           {worldSettings.atmosphere && (
-            <div className="space-y-1">
-              <h4 className="text-[9px] font-mono text-editor-text-muted uppercase tracking-[0.2em] italic">Atmosphere</h4>
-              <p className="text-xl font-serif font-bold text-white tracking-tight">{worldSettings.atmosphere}</p>
+            <div className="space-y-2">
+              <h4 className="text-[9px] font-mono text-editor-text-muted uppercase tracking-[0.3em] font-bold opacity-40">Atmosphere</h4>
+              <p className="text-2xl font-serif font-bold text-white tracking-tight border-b border-white/5 pb-2">{worldSettings.atmosphere}</p>
             </div>
           )}
         </div>
 
         {worldSettings.environmentDescription && (
-          <div className="space-y-2 pt-4 border-t border-white/5">
-            <h4 className="text-[9px] font-mono text-editor-text-muted uppercase tracking-[0.2em] italic">Environment Codex</h4>
-            <p className="text-sm font-serif text-white/60 leading-relaxed italic border-l border-white/10 pl-4">"{worldSettings.environmentDescription}"</p>
+          <div className="space-y-3 pt-4">
+            <h4 className="text-[9px] font-mono text-editor-text-muted uppercase tracking-[0.3em] font-bold opacity-40">Environment Codex</h4>
+            <p className="text-sm font-serif text-white/70 leading-relaxed italic border-l border-green-500/30 pl-6 py-2 bg-white/[0.01] rounded-r-lg">"{worldSettings.environmentDescription}"</p>
           </div>
         )}
       </div>
 
       <button
         onClick={() => setIsModalOpen(true)}
-        className="btn-magenta px-8 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-sm shadow-lg shadow-magenta-glow/10"
+        className="w-fit px-8 py-3 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-editor-magenta hover:text-white hover:border-editor-magenta transition-all"
       >
-        Refine World Codex
+        Refine World
       </button>
 
       <Modal 

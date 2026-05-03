@@ -10,9 +10,21 @@ interface CharacterCardProps {
 export const CharacterCard: React.FC<CharacterCardProps> = ({ character, roleColor, onClick }) => {
   return (
     <div 
-      className="card-tactile group p-8 cursor-pointer flex flex-col justify-between min-h-[320px]"
+      className="card-tactile group p-8 cursor-pointer flex flex-col justify-between min-h-[320px] relative overflow-hidden"
       onClick={() => onClick(character)}
     >
+      {/* Quick Edit Action */}
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick(character); // This will trigger selection and opening
+        }}
+        className="absolute top-6 right-6 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/20 opacity-0 group-hover:opacity-100 hover:bg-editor-magenta hover:text-white hover:border-editor-magenta transition-all duration-300 z-20"
+        title="Edit Identity"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+      </button>
+
       <div className="flex items-start justify-between mb-6">
         <div className="flex-1 flex items-start space-x-6">
           {character.image_url && (

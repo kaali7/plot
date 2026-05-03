@@ -24,25 +24,26 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
   const [activeTab, setActiveTab] = useState<'script' | 'details'>('script');
 
   const viewContent = (
-    <div className={`flex flex-col h-full bg-surface-dark ${!isIntegrated ? 'relative w-full max-w-5xl h-[85vh] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-right duration-500 ease-out rounded-sm overflow-hidden' : 'w-full'}`}>
-      {/* Studio Focus Header */}
-      <div className="p-6 border-b border-white/[0.03] flex items-center justify-between bg-black/[0.1] sticky top-0 z-30 backdrop-blur-xl">
-        <div className="flex items-center space-x-4">
-          <div className="w-2 h-2 rounded-full bg-editor-magenta shadow-[0_0_15px_rgba(255,51,102,0.8)] animate-pulse" />
-          <h2 className="text-2xl font-serif font-bold text-white tracking-tight uppercase">
-            {scene.title}
-          </h2>
-          <span className="text-[9px] font-mono text-editor-magenta/60 uppercase tracking-[0.3em] font-bold">Active Session</span>
+    <div className={`flex flex-col h-full bg-[#050507] ${!isIntegrated ? 'relative w-full max-w-5xl h-[85vh] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-right duration-500 ease-out rounded-sm overflow-hidden' : 'w-full rounded-tl-[3rem] border-l border-t border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]'}`}>
+      {/* Streamlined Typographic Header */}
+      <div className="pt-16 px-12 pb-10 border-b border-white/[0.03] flex items-center justify-between z-30 relative">
+        {/* Folio Merge Point Decoration */}
+        {isIntegrated && (
+          <div className="absolute top-0 left-0 w-24 h-24 border-tl border-white/20 rounded-tl-[3rem] -translate-x-1 -translate-y-1 opacity-20 pointer-events-none" />
+        )}
+        <div className="flex items-center space-x-8">
+          <div className="w-2 h-2 rounded-full bg-editor-magenta shadow-magenta-glow" />
+          <div>
+            <h2 className="text-4xl font-serif font-bold text-white tracking-tight uppercase leading-none">
+              {scene.title}
+            </h2>
+            <div className="flex items-center space-x-3 mt-3">
+              <span className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold border border-editor-magenta/30 px-2 py-0.5 rounded-sm bg-editor-magenta/5">Active Folio</span>
+              <span className="w-1 h-1 rounded-full bg-white/10" />
+              <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] italic">{scene.type}</span>
+            </div>
+          </div>
         </div>
-        
-        <button
-          onClick={onClose}
-          className="text-white/20 hover:text-white transition-all p-2 hover:bg-white/5 rounded-full"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
 
       {/* Streamlined Action Tabs */}
@@ -68,132 +69,94 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
       </div>
 
       {/* Content Area - Improved Space Utilization */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar bg-black/[0.05]">
-        <div className="p-8">
-          {/* ... Tabs content kept same ... */}
-          {/* Script Tab */}
-          {activeTab === 'script' && (
-            <div className="animate-in fade-in duration-700">
-              <SceneScriptForm 
-                data={scene.dialogue || []}
-                characters={characters}
-                onUpdate={(newScript) => onUpdate({ dialogue: newScript })}
-              />
-            </div>
-          )}
+      <div className={`flex-1 overflow-hidden bg-black/[0.05] ${activeTab === 'details' ? 'overflow-y-auto custom-scrollbar p-8' : ''}`}>
+        {/* Script Tab */}
+        {activeTab === 'script' && (
+          <div className="h-full animate-in fade-in duration-700">
+            <SceneScriptForm 
+              data={scene.dialogue || []}
+              characters={characters}
+              onUpdate={(newScript) => onUpdate({ dialogue: newScript })}
+            />
+          </div>
+        )}
 
-          {/* Details Tab */}
-          {activeTab === 'details' && (
-            <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 space-y-16">
-              <div className="flex justify-between items-center pb-8 border-b border-white/5">
-                <div>
-                  <h3 className="text-xl font-serif font-bold text-white tracking-tight">Narrative Anchors</h3>
-                  <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] mt-1 italic">Structural metadata & world-building</p>
-                </div>
+        {/* Details Tab */}
+        {activeTab === 'details' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-4">
+              {/* Action Bar */}
+              <div className="flex justify-end mb-2">
                 <button
                   onClick={onEdit}
-                  className="flex items-center space-x-3 px-6 py-2.5 bg-white/[0.03] border border-white/10 rounded-sm text-[10px] font-mono text-white/80 uppercase tracking-widest hover:bg-white/5 hover:border-white/20 transition-all"
+                  className="flex items-center space-x-2 px-4 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-editor-magenta hover:text-white hover:border-editor-magenta transition-all"
                 >
-                  <span>Edit Foundation</span>
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                  <span>Edit Scene Foundation</span>
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 gap-16">
-                {/* Intention Section */}
-                <section>
-                  <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-6 flex items-center">
-                    <span className="w-8 h-px bg-editor-magenta/30 mr-4" />
-                    Scene Intention
-                  </h4>
-                  <p className="text-xl font-serif text-editor-text leading-relaxed italic border-l-2 border-editor-magenta/20 pl-8 py-1 opacity-90">
-                    "{scene.goal || 'No intention defined'}"
+              <div className="grid grid-cols-12 gap-4">
+                {/* 01. Scene Goal - Primary focus */}
+                <section className="col-span-12 p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                  <h4 className="text-[8px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-3 opacity-50">01. Narrative Goal</h4>
+                  <p className="text-xl font-serif text-white/90 italic leading-snug">
+                    "{scene.goal || 'Define the purpose of this folio...'}"
                   </p>
                 </section>
 
-                {/* Setting Grid */}
-                <section>
-                  <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-8 flex items-center">
-                    <span className="w-8 h-px bg-editor-magenta/30 mr-4" />
-                    Setting Codex
-                  </h4>
-                  <div className="grid grid-cols-3 gap-8">
-                    <div className="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
-                      <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-widest block mb-4">Location</span>
-                      <span className="text-sm font-serif text-white font-bold">{scene.setting?.location || 'Not mapped'}</span>
+                {/* 02. Setting - Environmental context */}
+                <section className="col-span-12 lg:col-span-8 p-6 bg-white/[0.02] border border-white/5 rounded-xl">
+                  <h4 className="text-[8px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-4 opacity-50">02. Setting & Atmosphere</h4>
+                  <div className="grid grid-cols-3 gap-6">
+                    <div>
+                      <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest block mb-1">Location</span>
+                      <span className="text-sm font-serif text-white/70">{scene.setting?.location || '---'}</span>
                     </div>
-                    <div className="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
-                      <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-widest block mb-4">Temporal</span>
-                      <span className="text-sm font-serif text-white font-bold">{scene.setting?.time || 'Not charted'}</span>
+                    <div>
+                      <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest block mb-1">Time</span>
+                      <span className="text-sm font-serif text-white/70">{scene.setting?.time || '---'}</span>
                     </div>
-                    <div className="p-6 bg-white/[0.02] border border-white/5 rounded-xl">
-                      <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-widest block mb-4">Atmosphere</span>
-                      <span className="text-sm font-serif text-white font-bold">{scene.setting?.environment || 'Not defined'}</span>
+                    <div>
+                      <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest block mb-1">Mood</span>
+                      <span className="text-sm font-serif text-white/70">{scene.setting?.environment || '---'}</span>
                     </div>
                   </div>
                 </section>
 
-                <div className="grid grid-cols-2 gap-16">
-                  {/* POV Section */}
-                  <section>
-                    <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-6">Perspective: POV</h4>
-                    <div className="flex items-center space-x-6 p-6 bg-white/[0.03] border border-white/10 rounded-xl">
-                      <div className="w-12 h-12 bg-black/40 border border-editor-magenta/30 flex items-center justify-center text-editor-magenta font-mono font-bold text-xl rounded-lg shadow-magenta-glow/10">
-                        {characters.find(c => c.id === scene.pov_character_id)?.name?.charAt(0) || '?'}
-                      </div>
-                      <div>
-                        <span className="text-sm font-serif font-bold text-white block">
-                          {characters.find(c => c.id === scene.pov_character_id)?.name || 'Narrator / Anonymous'}
-                        </span>
-                        <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-widest italic">Viewing Perspective</span>
-                      </div>
-                    </div>
-                  </section>
+                {/* 03. Perspective */}
+                <section className="col-span-12 lg:col-span-4 p-6 bg-white/[0.03] border border-white/10 rounded-xl flex items-center justify-between">
+                  <div>
+                    <h4 className="text-[8px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-3 opacity-50">03. Perspective</h4>
+                    <span className="text-sm font-serif font-bold text-white block">
+                      {characters.find(c => c.id === scene.pov_character_id)?.name || 'Narrator'}
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 bg-black/60 border border-editor-magenta/30 flex items-center justify-center text-editor-magenta font-mono font-bold text-lg rounded-lg shadow-magenta-glow/10">
+                    {characters.find(c => c.id === scene.pov_character_id)?.name?.charAt(0) || '?'}
+                  </div>
+                </section>
 
-                  {/* Active Cast */}
-                  <section>
-                    <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-6">Active Cast</h4>
-                    <div className="flex flex-wrap gap-3">
-                      {scene.characters && scene.characters.length > 0 ? (
-                        scene.characters.map((sc, i) => (
-                          <div key={i} className="flex items-center px-4 py-2 bg-black border border-white/10 rounded-full">
-                            <span className="text-[10px] font-serif font-bold text-white/90">{characters.find(c => c.id === sc.characterId)?.name}</span>
-                            <span className="w-1 h-1 rounded-full bg-white/20 mx-3" />
-                            <span className="text-[9px] font-mono text-editor-magenta uppercase tracking-widest opacity-60">{sc.role}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-widest italic opacity-40">No identities assigned</p>
-                      )}
-                    </div>
-                  </section>
-                </div>
-
-                {/* Tension Points */}
-                <section>
-                  <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-8 flex items-center">
-                    <span className="w-8 h-px bg-editor-magenta/30 mr-4" />
-                    Tension Points
-                  </h4>
-                  <div className="grid grid-cols-2 gap-8">
-                    <div className="p-8 bg-black border border-white/5 rounded-2xl relative overflow-hidden group hover:border-red-500/20 transition-all">
-                      <div className="absolute top-0 left-0 w-1 h-full bg-red-500/30 group-hover:bg-red-500/60 transition-all" />
-                      <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-widest block mb-4 opacity-60">Internal Pressure</span>
-                      <p className="text-sm font-serif text-editor-text italic leading-relaxed">{scene.conflicts?.internal || 'No internal tension recorded'}</p>
-                    </div>
-                    <div className="p-8 bg-black border border-white/5 rounded-2xl relative overflow-hidden group hover:border-orange-500/20 transition-all">
-                      <div className="absolute top-0 left-0 w-1 h-full bg-orange-500/30 group-hover:bg-orange-500/60 transition-all" />
-                      <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-widest block mb-4 opacity-60">External Obstacle</span>
-                      <p className="text-sm font-serif text-editor-text italic leading-relaxed">{scene.conflicts?.external || 'No external obstacle mapped'}</p>
-                    </div>
+                {/* 04. Cast */}
+                <section className="col-span-12 p-6 bg-black/20 border border-white/5 rounded-xl">
+                  <h4 className="text-[8px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-4 opacity-50">04. Active Cast</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {scene.characters && scene.characters.length > 0 ? (
+                      scene.characters.map((sc, i) => (
+                        <div key={i} className="flex items-center px-4 py-2 bg-black border border-white/5 rounded-full">
+                          <span className="text-[10px] font-serif font-bold text-white/80">{characters.find(c => c.id === sc.characterId)?.name}</span>
+                          <span className="w-0.5 h-0.5 rounded-full bg-white/20 mx-2" />
+                          <span className="text-[8px] font-mono text-editor-magenta/60 uppercase tracking-widest">{sc.role}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-[8px] font-mono text-white/20 uppercase tracking-widest italic">No identities assigned to this scene</p>
+                    )}
                   </div>
                 </section>
               </div>
             </div>
-          )}
-        </div>
+        )}
       </div>
-
     </div>
   );
 

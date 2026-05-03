@@ -60,7 +60,7 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
       {/* Add Conflict Button */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="w-full btn-magenta px-4 py-4 text-[10px] font-bold tracking-widest uppercase rounded-sm shadow-lg shadow-magenta-glow/10"
+        className="w-full px-8 py-4 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-editor-magenta hover:text-white hover:border-editor-magenta transition-all"
       >
         Add New Conflict
       </button>

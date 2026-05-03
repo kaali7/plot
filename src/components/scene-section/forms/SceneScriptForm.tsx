@@ -13,6 +13,17 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({ data, characte
 
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
+  // Auto-scroll to bottom on new data
+  React.useEffect(() => {
+    const history = document.getElementById('script-history');
+    if (history) {
+      history.scrollTo({
+        top: history.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [data]);
+
   const addEntry = (type: 'dialogue' | 'action') => {
     if (content.trim()) {
       const newEntry: Dialogue = {
@@ -54,7 +65,10 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({ data, characte
   return (
     <div className="h-full flex flex-col max-w-5xl mx-auto overflow-hidden">
       {/* Script History - Now takes up remaining space */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 px-4 pb-12">
+      <div 
+        id="script-history"
+        className="flex-1 overflow-y-auto custom-scrollbar space-y-4 px-4 pb-12 pt-4"
+      >
         {data.length > 0 ? (
           data.map((entry, index) => {
             const character = characters.find(c => c.id === entry.characterId);
@@ -63,7 +77,7 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({ data, characte
             return (
               <div 
                 key={index} 
-                className={`group relative py-6 px-12 transition-all border-b border-white/[0.03] hover:bg-white/[0.01] ${
+                className={`group relative py-6 px-12 transition-all border-b border-white/[0.03] hover:bg-white/[0.01] animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both ${
                   isAction ? 'italic opacity-50' : ''
                 }`}
               >
@@ -93,14 +107,14 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({ data, characte
             );
           })
         ) : (
-          <div className="text-center py-20 border border-dashed border-white/10 rounded-xl bg-white/[0.01]">
+          <div className="text-center py-20 border border-dashed border-white/10 rounded-xl bg-white/[0.01] animate-in fade-in duration-1000">
             <p className="text-editor-text-muted text-[11px] font-mono uppercase tracking-[0.3em] italic opacity-40">The scene's dialogue has not yet been forged.</p>
           </div>
         )}
       </div>
 
-      {/* Ultra-Compact Speed-Script Bar - Now Fixed at Bottom */}
-      <div className="mt-auto pt-6 border-t border-white/5 bg-surface-dark/50 backdrop-blur-md sticky bottom-0 z-10 p-6 rounded-b-xl">
+      {/* Ultra-Compact Speed-Script Bar - Glassmorphic Bottom Anchor */}
+      <div className="mt-auto pt-6 border-t border-white/10 bg-black/40 backdrop-blur-2xl z-10 p-6 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
         <div className="flex items-center space-x-3">
           {/* Character Anchor */}
           <div className="w-48 relative">

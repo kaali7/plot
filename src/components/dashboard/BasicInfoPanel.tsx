@@ -75,28 +75,30 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col">
-        <h3 className="text-4xl font-serif font-bold text-white tracking-tight mb-2">{story.name}</h3>
+        <h3 className="text-3xl font-serif font-bold text-white tracking-tight mb-3 leading-tight">{story.name}</h3>
         {story.theme && (
-          <p className="text-editor-magenta font-mono text-[10px] uppercase tracking-[0.3em] font-bold mb-4 italic">Theme: {story.theme}</p>
+          <p className="text-editor-magenta font-mono text-[9px] uppercase tracking-[0.4em] font-bold mb-6 italic opacity-80">
+            <span className="opacity-40 mr-2">Theme:</span>{story.theme}
+          </p>
         )}
         <div className="max-w-3xl">
           {displayDescription ? (
-            <p className="text-editor-text leading-relaxed font-serif text-lg italic opacity-70 border-l-2 border-editor-border/30 pl-6 py-1">
+            <p className="text-editor-text leading-relaxed font-serif text-lg italic opacity-80 border-l-2 border-editor-magenta/30 pl-8 py-2 bg-white/[0.01] rounded-r-lg">
               "{displayDescription}"
             </p>
           ) : (
-            <p className="text-editor-text-muted font-serif italic text-lg opacity-50">No core premise established yet.</p>
+            <p className="text-editor-text-muted font-serif italic text-lg opacity-40 py-4">No core premise established yet.</p>
           )}
         </div>
       </div>
       
       <button
         onClick={() => setIsModalOpen(true)}
-        className="btn-magenta px-6 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-sm shadow-lg shadow-magenta-glow/20"
+        className="w-fit px-8 py-3 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-editor-magenta hover:text-white hover:border-editor-magenta transition-all"
       >
-        Edit Manuscript Info
+        Edit Foundation
       </button>
 
       <Modal 
