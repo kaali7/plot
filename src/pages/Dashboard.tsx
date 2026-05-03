@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { sanitizeError } from '@/lib/error-mapper';
 import { useAuth } from '@/context/AuthContext';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StoryModal } from '@/components/dashboard/StoryModal';
@@ -31,7 +32,7 @@ const Dashboard: React.FC = () => {
       if (error) throw error;
       setStories(data || []);
     } catch (err: any) {
-      setError(err.message);
+      setError(sanitizeError(err));
       console.error('Error loading stories:', err);
     } finally {
       setLoading(false);
@@ -67,7 +68,7 @@ const Dashboard: React.FC = () => {
       // Redirect to story editor
       navigate(`/story/${data.id}`);
     } catch (err: any) {
-      alert(`Failed to create story: ${err.message}`);
+      alert(sanitizeError(err));
       console.error('Error creating story:', err);
     }
   };
@@ -88,7 +89,7 @@ const Dashboard: React.FC = () => {
       setStories(stories.filter(s => s.id !== storyToDelete.id));
       setStoryToDelete(null);
     } catch (err: any) {
-      alert(`Failed to delete story: ${err.message}`);
+      alert(sanitizeError(err));
       console.error('Error deleting story:', err);
     } finally {
       setIsDeleting(false);
