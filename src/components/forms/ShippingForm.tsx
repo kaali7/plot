@@ -1,4 +1,3 @@
-import React from 'react';
 import { FiUser, FiPhone, FiMapPin } from 'react-icons/fi';
 
 export const ShippingForm = () => {

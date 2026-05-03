@@ -12,18 +12,9 @@ interface EditorToolbarProps {
 export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onSave,
   onExport,
-  onInsertReference,
-  characters,
-  scenes,
   isSaving: _isSaving
 }) => {
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
-  const [activeRefType, setActiveRefType] = useState<'character' | 'scene' | null>(null);
-
-  const handleInsert = (type: 'character' | 'scene', id: string) => {
-    onInsertReference(type, id);
-    setActiveRefType(null);
-  };
 
   return (
     <div className="flex items-center space-x-6">

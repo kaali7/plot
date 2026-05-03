@@ -15,7 +15,6 @@ interface SceneDetailViewProps {
 export const SceneDetailView: React.FC<SceneDetailViewProps> = ({ 
   scene, 
   characters, 
-  conflicts, 
   onEdit, 
   onUpdate, 
   onClose,

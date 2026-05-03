@@ -1,4 +1,3 @@
-import Button from '@/components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 
 interface CTASectionProps {

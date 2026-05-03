@@ -1,6 +1,5 @@
 import * as React from 'react';
 const { useState, useEffect } = React;
-import Card from '../ui/Card';
 import { Modal } from '../ui/Modal';
 
 interface CharacterSummary {

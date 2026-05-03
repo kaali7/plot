@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 // import { SceneGrid } from './SceneGrid';
 import { SceneModal } from './SceneModal';
 import { SceneDetailView } from './SceneDetailView';
@@ -27,7 +27,6 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   const [viewingSceneId, setViewingSceneId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [draggedSceneId, setDraggedSceneId] = useState<string | null>(null);
-  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   const viewingScene = scenes.find(s => s.id === viewingSceneId) || null;
 
@@ -35,46 +34,6 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
     setViewingSceneId(scene.id);
   };
 
-  const handleDragStart = (e: React.DragEvent, sceneId: string) => {
-    setDraggedSceneId(sceneId);
-    e.dataTransfer.setData('sceneId', sceneId);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent, targetId: string) => {
-    e.preventDefault();
-    if (draggedSceneId !== targetId) {
-      setDragOverId(targetId);
-    }
-  };
-
-  const handleDragLeave = () => {
-    setDragOverId(null);
-  };
-
-  const handleDrop = (e: React.DragEvent, targetId: string) => {
-    e.preventDefault();
-    setDragOverId(null);
-    if (!draggedSceneId || draggedSceneId === targetId) return;
-
-    const currentScenes = [...scenes].sort((a, b) => {
-      if (a.order !== b.order) return a.order - b.order;
-      return a.id.localeCompare(b.id);
-    });
-    
-    const draggedIndex = currentScenes.findIndex(s => s.id === draggedSceneId);
-    const targetIndex = currentScenes.findIndex(s => s.id === targetId);
-
-    if (draggedIndex === -1 || targetIndex === -1) return;
-
-    const newScenesList = [...currentScenes];
-    const [removed] = newScenesList.splice(draggedIndex, 1);
-    newScenesList.splice(targetIndex, 0, removed);
-
-    // Call reorder with the new IDs in order
-    onReorderScenes(newScenesList.map(s => s.id));
-    setDraggedSceneId(null);
-  };
 
   const handleCloseModals = () => {
     setSelectedScene(null);
