@@ -266,15 +266,19 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
     command, 
     value, 
     active = false,
-    className = "" 
+    className = "",
+    ariaLabel
   }: { 
     icon: React.ReactNode, 
     command?: string, 
     value?: string, 
     active?: boolean,
-    className?: string 
+    className?: string,
+    ariaLabel?: string
   }) => (
     <button 
+      aria-label={ariaLabel || command || 'Formatting button'}
+
       onMouseDown={(e) => {
         e.preventDefault();
         if (command) executeCommand(command, value);
@@ -323,7 +327,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
       {/* Formatting Toolbar */}
       <div className="flex items-center justify-between px-6 py-2 border-b border-white/5 bg-surface-light backdrop-blur-xl sticky top-[73px] z-20 select-none overflow-x-auto whitespace-nowrap scrollbar-hide">
         <div className="flex items-center min-w-[40px] flex-shrink-0">
-          <button onClick={() => setReferencePanelOpen(!referencePanelOpen)} className={`p-2 rounded-lg transition-all ${referencePanelOpen ? 'text-primary bg-primary/10 shadow-magenta-glow' : 'text-editor-text-muted hover:text-white hover:bg-white/10'}`}>
+          <button aria-label="Toggle reference panel" onClick={() => setReferencePanelOpen(!referencePanelOpen)} className={`p-2 rounded-lg transition-all ${referencePanelOpen ? 'text-primary bg-primary/10 shadow-magenta-glow' : 'text-editor-text-muted hover:text-white hover:bg-white/10'}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
           </button>
         </div>
@@ -404,21 +408,21 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
 
 
           <div className="flex items-center space-x-1 px-3 border-r border-white/10">
-            <FormatButton command="bold" active={selectionState.bold} className="font-serif font-bold w-8 h-8" icon={<span>B</span>} />
-            <FormatButton command="italic" active={selectionState.italic} className="font-serif italic w-8 h-8" icon={<span>I</span>} />
-            <FormatButton command="underline" active={selectionState.underline} className="font-serif underline w-8 h-8" icon={<span>U</span>} />
+            <FormatButton ariaLabel="Bold" command="bold" active={selectionState.bold} className="font-serif font-bold w-8 h-8" icon={<span>B</span>} />
+            <FormatButton ariaLabel="Italic" command="italic" active={selectionState.italic} className="font-serif italic w-8 h-8" icon={<span>I</span>} />
+            <FormatButton ariaLabel="Underline" command="underline" active={selectionState.underline} className="font-serif underline w-8 h-8" icon={<span>U</span>} />
           </div>
 
           <div className="flex items-center space-x-1 px-3 border-r border-white/10">
-            <FormatButton command="justifyLeft" active={selectionState.alignLeft} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h10M4 18h16" /></svg>} />
-            <FormatButton command="justifyCenter" active={selectionState.alignCenter} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>} />
-            <FormatButton command="justifyRight" active={selectionState.alignRight} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M10 12h10M4 18h16" /></svg>} />
-            <FormatButton command="justifyFull" active={selectionState.alignJustify} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>} />
+            <FormatButton ariaLabel="Align Left" command="justifyLeft" active={selectionState.alignLeft} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h10M4 18h16" /></svg>} />
+            <FormatButton ariaLabel="Align Center" command="justifyCenter" active={selectionState.alignCenter} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>} />
+            <FormatButton ariaLabel="Align Right" command="justifyRight" active={selectionState.alignRight} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M10 12h10M4 18h16" /></svg>} />
+            <FormatButton ariaLabel="Justify" command="justifyFull" active={selectionState.alignJustify} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>} />
           </div>
         </div>
 
         <div className="flex items-center min-w-[40px] justify-end">
-          <button onClick={() => setPagesPanelOpen(!pagesPanelOpen)} className={`p-2 rounded-lg transition-all ${pagesPanelOpen ? 'text-primary bg-primary/10 shadow-magenta-glow' : 'text-editor-text-muted hover:text-white hover:bg-white/10'}`}>
+          <button aria-label="Toggle pages panel" onClick={() => setPagesPanelOpen(!pagesPanelOpen)} className={`p-2 rounded-lg transition-all ${pagesPanelOpen ? 'text-primary bg-primary/10 shadow-magenta-glow' : 'text-editor-text-muted hover:text-white hover:bg-white/10'}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           </button>
         </div>

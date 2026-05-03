@@ -141,3 +141,15 @@
 .prose-manuscript p {
   @apply mb-8 opacity-90;
 }
+
+/* Accessibility: Enforce minimum touch target sizes on mobile */
+@media (max-width: 768px) {
+  button, 
+  a, 
+  input[type="submit"], 
+  input[type="button"], 
+  [role="button"] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
