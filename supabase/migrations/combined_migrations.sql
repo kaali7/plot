@@ -1,5 +1,5 @@
--- Unified Story Dashboard - Complete Database Schema
--- This migration combines all previous migrations into a single comprehensive setup
+-- Combined Supabase Migrations (Fixed & Simplified)
+-- Generated on 2026-05-04
 
 -- 1. Create profiles table that extends auth.users
 CREATE TABLE IF NOT EXISTS profiles (
@@ -102,9 +102,6 @@ $$ LANGUAGE plpgsql;
 SELECT migrate_overview_to_json();
 
 -- 4. Phase 1: Unified Story Dashboard Schema Implementation
--- This migration creates all tables needed for the unified story dashboard
--- Based on the complete specification from unified-story-dashboard.md
-
 -- Update existing stories table with new schema
 ALTER TABLE stories 
 ADD COLUMN IF NOT EXISTS title TEXT CHECK (char_length(title) > 0),
@@ -130,27 +127,22 @@ CREATE TABLE IF NOT EXISTS conflicts (
 DO $$ 
 BEGIN 
   IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'characters') THEN
-    -- Create characters table with all PRD fields
     CREATE TABLE characters (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       story_id UUID REFERENCES stories ON DELETE CASCADE,
       name TEXT NOT NULL CHECK (char_length(name) > 0),
-      role TEXT NOT NULL DEFAULT 'supporting' CHECK (role IN ('protagonist', 'antagonist', 'supporting', 'minor')),
+      role TEXT NOT NULL DEFAULT 'supporting',
       description TEXT,
       image_url TEXT,
-      
-      -- Structured fields as JSONB
       motivation JSONB DEFAULT '{"goal": null, "fear": null, "desire": null}',
       traits JSONB DEFAULT '{"strengths": [], "weaknesses": [], "personality": []}',
       conflicts JSONB DEFAULT '{"internal": null, "external": null}',
       relationships JSONB DEFAULT '[]',
       arc JSONB DEFAULT '{"start": null, "end": null}',
-      
       created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
   ELSE
-    -- Enhance existing characters table with JSONB fields
     ALTER TABLE characters 
     ADD COLUMN IF NOT EXISTS image_url TEXT,
     ADD COLUMN IF NOT EXISTS motivation JSONB DEFAULT '{"goal": null, "fear": null, "desire": null}',
@@ -161,6 +153,13 @@ BEGIN
   END IF;
 END $$;
 
+-- Align character roles to PRD values
+ALTER TABLE characters DROP CONSTRAINT IF EXISTS characters_role_check;
+UPDATE characters SET role = 'main' WHERE role = 'protagonist';
+UPDATE characters SET role = 'sub-main' WHERE role = 'minor';
+ALTER TABLE characters ADD CONSTRAINT characters_role_check 
+  CHECK (role IN ('main', 'sub-main', 'supporting', 'antagonist'));
+
 -- Create scenes table
 CREATE TABLE IF NOT EXISTS scenes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -168,8 +167,6 @@ CREATE TABLE IF NOT EXISTS scenes (
   title TEXT NOT NULL CHECK (char_length(title) > 0),
   type TEXT NOT NULL DEFAULT 'transition' CHECK (type IN ('introduction', 'conflict', 'climax', 'resolution', 'transition')),
   "order" INTEGER NOT NULL DEFAULT 0,
-  
-  -- Scene components as JSONB
   pov_character_id UUID REFERENCES characters,
   goal TEXT,
   setting JSONB DEFAULT '{"location": null, "time": null, "environment": null}',
@@ -179,7 +176,7 @@ CREATE TABLE IF NOT EXISTS scenes (
   dialogue JSONB DEFAULT '[]',
   background TEXT,
   outcome TEXT,
-  
+  impact TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -188,18 +185,20 @@ CREATE TABLE IF NOT EXISTS scenes (
 CREATE TABLE IF NOT EXISTS resources (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   story_id UUID REFERENCES stories ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('url', 'note', 'image', 'reference', 'inspiration')),
+  type TEXT NOT NULL DEFAULT 'note',
   title TEXT NOT NULL CHECK (char_length(title) > 0),
   content TEXT,
   url TEXT,
   file_path TEXT,
-  
-  -- Tracking which entities use this resource
   linked_entities JSONB DEFAULT '{"characters": [], "scenes": [], "conflicts": [], "worldSettings": []}',
-  
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Set resource types constraint
+ALTER TABLE resources DROP CONSTRAINT IF EXISTS resources_type_check;
+ALTER TABLE resources ADD CONSTRAINT resources_type_check 
+  CHECK (type IN ('link', 'note', 'image', 'document', 'other'));
 
 -- Create writing sessions table
 CREATE TABLE IF NOT EXISTS writing_sessions (
@@ -222,7 +221,7 @@ CREATE TABLE IF NOT EXISTS writing_versions (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Enable Row Level Security for all tables
+-- Enable Row Level Security
 ALTER TABLE stories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE conflicts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE characters ENABLE ROW LEVEL SECURITY;
@@ -231,46 +230,34 @@ ALTER TABLE resources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE writing_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE writing_versions ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies
--- Conflicts policies
+-- RLS Policies
 DROP POLICY IF EXISTS "Users can only access own story conflicts" ON conflicts;
-CREATE POLICY "Users can only access own story conflicts" 
-ON conflicts FOR ALL USING (
+CREATE POLICY "Users can only access own story conflicts" ON conflicts FOR ALL USING (
    EXISTS (SELECT 1 FROM stories WHERE stories.id = conflicts.story_id AND stories.user_id = auth.uid())
 );
 
--- Characters policies
 DROP POLICY IF EXISTS "Users can only access own story characters" ON characters;
-CREATE POLICY "Users can only access own story characters" 
-ON characters FOR ALL USING (
+CREATE POLICY "Users can only access own story characters" ON characters FOR ALL USING (
    EXISTS (SELECT 1 FROM stories WHERE stories.id = characters.story_id AND stories.user_id = auth.uid())
 );
 
--- Scenes policies
 DROP POLICY IF EXISTS "Users can only access own story scenes" ON scenes;
-CREATE POLICY "Users can only access own story scenes" 
-ON scenes FOR ALL USING (
+CREATE POLICY "Users can only access own story scenes" ON scenes FOR ALL USING (
    EXISTS (SELECT 1 FROM stories WHERE stories.id = scenes.story_id AND stories.user_id = auth.uid())
 );
 
--- Resources policies
 DROP POLICY IF EXISTS "Users can only access own story resources" ON resources;
-CREATE POLICY "Users can only access own story resources" 
-ON resources FOR ALL USING (
+CREATE POLICY "Users can only access own story resources" ON resources FOR ALL USING (
    EXISTS (SELECT 1 FROM stories WHERE stories.id = resources.story_id AND stories.user_id = auth.uid())
 );
 
--- Writing sessions policies
 DROP POLICY IF EXISTS "Users can only access own writing sessions" ON writing_sessions;
-CREATE POLICY "Users can only access own writing sessions" 
-ON writing_sessions FOR ALL USING (
+CREATE POLICY "Users can only access own writing sessions" ON writing_sessions FOR ALL USING (
    EXISTS (SELECT 1 FROM stories WHERE stories.id = writing_sessions.story_id AND stories.user_id = auth.uid())
 );
 
--- Writing versions policies
 DROP POLICY IF EXISTS "Users can only access own writing versions" ON writing_versions;
-CREATE POLICY "Users can only access own writing versions" 
-ON writing_versions FOR ALL USING (
+CREATE POLICY "Users can only access own writing versions" ON writing_versions FOR ALL USING (
    EXISTS (
      SELECT 1 FROM writing_sessions ws
      JOIN stories s ON ws.story_id = s.id
@@ -278,7 +265,7 @@ ON writing_versions FOR ALL USING (
    )
 );
 
--- Performance optimization indexes
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_stories_user_id ON stories(user_id);
 CREATE INDEX IF NOT EXISTS idx_characters_story_id ON characters(story_id);
 CREATE INDEX IF NOT EXISTS idx_scenes_story_id ON scenes(story_id);
@@ -287,9 +274,8 @@ CREATE INDEX IF NOT EXISTS idx_conflicts_story_id ON conflicts(story_id);
 CREATE INDEX IF NOT EXISTS idx_resources_story_id ON resources(story_id);
 CREATE INDEX IF NOT EXISTS idx_writing_sessions_story_id ON writing_sessions(story_id);
 
--- Add triggers for updated_at timestamps
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+-- Updated_at triggers
+CREATE OR REPLACE FUNCTION update_updated_at_column() RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
@@ -309,136 +295,129 @@ CREATE TRIGGER update_resources_updated_at BEFORE UPDATE ON resources FOR EACH R
 DROP TRIGGER IF EXISTS update_writing_sessions_updated_at ON writing_sessions;
 CREATE TRIGGER update_writing_sessions_updated_at BEFORE UPDATE ON writing_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- 5. RPC Functions for Unified Story Dashboard
--- Function to link a resource to an entity
+-- RPC Functions (Hardened with Security Definer and Ownership Checks)
 CREATE OR REPLACE FUNCTION link_resource_to_entity(
-  resource_id UUID,
-  entity_type TEXT,
-  entity_id UUID
+  p_resource_id UUID,
+  p_entity_type TEXT,
+  p_entity_id UUID
 )
 RETURNS VOID AS $$
 DECLARE
-  current_links JSONB;
+  v_story_id UUID;
 BEGIN
-  -- Get current linked entities for the resource
-  SELECT linked_entities INTO current_links
-  FROM resources
-  WHERE id = resource_id;
-  
-  -- Update the appropriate entity array
-  IF entity_type = 'characters' THEN
+  SELECT r.story_id INTO v_story_id
+  FROM resources r
+  JOIN stories s ON r.story_id = s.id
+  WHERE r.id = p_resource_id AND s.user_id = auth.uid();
+
+  IF v_story_id IS NULL THEN
+    RAISE EXCEPTION 'Access denied: resource not found or not owned by current user';
+  END IF;
+
+  IF p_entity_type = 'characters' THEN
     UPDATE resources
     SET linked_entities = jsonb_set(
       linked_entities,
       '{characters}',
-      COALESCE(linked_entities->'characters', '[]'::jsonb) || to_jsonb(entity_id)
+      COALESCE(linked_entities->'characters', '[]'::jsonb) || to_jsonb(p_entity_id)
     )
-    WHERE id = resource_id;
-  ELSIF entity_type = 'scenes' THEN
+    WHERE id = p_resource_id;
+  ELSIF p_entity_type = 'scenes' THEN
     UPDATE resources
     SET linked_entities = jsonb_set(
       linked_entities,
       '{scenes}',
-      COALESCE(linked_entities->'scenes', '[]'::jsonb) || to_jsonb(entity_id)
+      COALESCE(linked_entities->'scenes', '[]'::jsonb) || to_jsonb(p_entity_id)
     )
-    WHERE id = resource_id;
-  ELSIF entity_type = 'conflicts' THEN
+    WHERE id = p_resource_id;
+  ELSIF p_entity_type = 'conflicts' THEN
     UPDATE resources
     SET linked_entities = jsonb_set(
       linked_entities,
       '{conflicts}',
-      COALESCE(linked_entities->'conflicts', '[]'::jsonb) || to_jsonb(entity_id)
+      COALESCE(linked_entities->'conflicts', '[]'::jsonb) || to_jsonb(p_entity_id)
     )
-    WHERE id = resource_id;
-  ELSIF entity_type = 'worldSettings' THEN
+    WHERE id = p_resource_id;
+  ELSIF p_entity_type = 'worldSettings' THEN
     UPDATE resources
     SET linked_entities = jsonb_set(
       linked_entities,
       '{worldSettings}',
-      COALESCE(linked_entities->'worldSettings', '[]'::jsonb) || to_jsonb(entity_id)
+      COALESCE(linked_entities->'worldSettings', '[]'::jsonb) || to_jsonb(p_entity_id)
     )
-    WHERE id = resource_id;
+    WHERE id = p_resource_id;
+  ELSE
+    RAISE EXCEPTION 'Invalid entity_type: %', p_entity_type;
   END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to unlink a resource from an entity
 CREATE OR REPLACE FUNCTION unlink_resource_from_entity(
-  resource_id UUID,
-  entity_type TEXT,
-  entity_id UUID
+  p_resource_id UUID,
+  p_entity_type TEXT,
+  p_entity_id UUID
 )
 RETURNS VOID AS $$
 DECLARE
+  v_story_id UUID;
   current_links JSONB;
   updated_links JSONB;
 BEGIN
-  -- Get current linked entities for the resource
-  SELECT linked_entities INTO current_links
-  FROM resources
-  WHERE id = resource_id;
-  
-  -- Remove the entity ID from the appropriate array
-  IF entity_type = 'characters' THEN
-    updated_links := current_links - 'characters' || 
-      jsonb_build_object('characters', 
-        (COALESCE(current_links->'characters', '[]'::jsonb) - to_jsonb(entity_id))
-      );
-    UPDATE resources
-    SET linked_entities = updated_links
-    WHERE id = resource_id;
-  ELSIF entity_type = 'scenes' THEN
-    updated_links := current_links - 'scenes' || 
-      jsonb_build_object('scenes', 
-        (COALESCE(current_links->'scenes', '[]'::jsonb) - to_jsonb(entity_id))
-      );
-    UPDATE resources
-    SET linked_entities = updated_links
-    WHERE id = resource_id;
-  ELSIF entity_type = 'conflicts' THEN
-    updated_links := current_links - 'conflicts' || 
-      jsonb_build_object('conflicts', 
-        (COALESCE(current_links->'conflicts', '[]'::jsonb) - to_jsonb(entity_id))
-      );
-    UPDATE resources
-    SET linked_entities = updated_links
-    WHERE id = resource_id;
-  ELSIF entity_type = 'worldSettings' THEN
-    updated_links := current_links - 'worldSettings' || 
-      jsonb_build_object('worldSettings', 
-        (COALESCE(current_links->'worldSettings', '[]'::jsonb) - to_jsonb(entity_id))
-      );
-    UPDATE resources
-    SET linked_entities = updated_links
-    WHERE id = resource_id;
+  SELECT r.story_id INTO v_story_id
+  FROM resources r
+  JOIN stories s ON r.story_id = s.id
+  WHERE r.id = p_resource_id AND s.user_id = auth.uid();
+
+  IF v_story_id IS NULL THEN
+    RAISE EXCEPTION 'Access denied: resource not found or not owned by current user';
   END IF;
+
+  SELECT linked_entities INTO current_links FROM resources WHERE id = p_resource_id;
+
+  IF p_entity_type = 'characters' THEN
+    updated_links := current_links - 'characters' ||
+      jsonb_build_object('characters', (COALESCE(current_links->'characters', '[]'::jsonb) - to_jsonb(p_entity_id)));
+  ELSIF p_entity_type = 'scenes' THEN
+    updated_links := current_links - 'scenes' ||
+      jsonb_build_object('scenes', (COALESCE(current_links->'scenes', '[]'::jsonb) - to_jsonb(p_entity_id)));
+  ELSIF p_entity_type = 'conflicts' THEN
+    updated_links := current_links - 'conflicts' ||
+      jsonb_build_object('conflicts', (COALESCE(current_links->'conflicts', '[]'::jsonb) - to_jsonb(p_entity_id)));
+  ELSIF p_entity_type = 'worldSettings' THEN
+    updated_links := current_links - 'worldSettings' ||
+      jsonb_build_object('worldSettings', (COALESCE(current_links->'worldSettings', '[]'::jsonb) - to_jsonb(p_entity_id)));
+  ELSE
+    RAISE EXCEPTION 'Invalid entity_type: %', p_entity_type;
+  END IF;
+
+  UPDATE resources SET linked_entities = updated_links WHERE id = p_resource_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to reorder scenes
 CREATE OR REPLACE FUNCTION reorder_scenes(
-  story_id UUID,
-  new_order UUID[]
+  p_story_id UUID,
+  p_new_order UUID[]
 )
 RETURNS VOID AS $$
 DECLARE
-  index INTEGER := 0;
-  scene_id UUID;
+  v_index INTEGER := 0;
+  v_scene_id UUID;
+  v_owner_id UUID;
 BEGIN
-  FOREACH scene_id IN ARRAY new_order
+  SELECT user_id INTO v_owner_id FROM stories WHERE id = p_story_id;
+  IF v_owner_id IS NULL OR v_owner_id != auth.uid() THEN
+    RAISE EXCEPTION 'Access denied: story not found or not owned by current user';
+  END IF;
+
+  FOREACH v_scene_id IN ARRAY p_new_order
   LOOP
-    UPDATE scenes
-    SET "order" = index
-    WHERE id = scene_id AND story_id = story_id;
-    
-    index := index + 1;
+    UPDATE scenes SET "order" = v_index WHERE id = v_scene_id AND scenes.story_id = p_story_id;
+    v_index := v_index + 1;
   END LOOP;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Grant execute permissions on RPC functions
+-- Grants
 GRANT EXECUTE ON FUNCTION link_resource_to_entity TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION unlink_resource_from_entity TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION reorder_scenes TO anon, authenticated;
-
--- Migration complete - Unified Story Dashboard schema is ready!
