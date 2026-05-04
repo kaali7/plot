@@ -133,6 +133,18 @@
   background: rgba(255, 51, 102, 0.5);
 }
 
+/* Hide scrollbar utilities */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar,
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Typography polish */
 .prose-manuscript {
   @apply font-sans text-lg leading-relaxed text-editor-text max-w-2xl mx-auto font-light;

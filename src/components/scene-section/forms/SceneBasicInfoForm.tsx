@@ -42,11 +42,11 @@ export const SceneBasicInfoForm: React.FC<SceneBasicInfoFormProps> = ({ data, ch
           onChange={(e) => onUpdate({ ...data, type: e.target.value })}
           className={`w-full bg-[#2a003f] border ${errors.type ? 'border-red-500' : 'border-purple-700/30'} rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none`}
         >
-          <option value="action">Action</option>
-          <option value="dialogue">Dialogue</option>
-          <option value="suspense">Suspense</option>
+          <option value="introduction">Introduction</option>
+          <option value="conflict">Rising Conflict</option>
+          <option value="climax">Narrative Climax</option>
+          <option value="resolution">Resolution</option>
           <option value="transition">Transition</option>
-          <option value="climax">Climax</option>
         </select>
         {errors.type && <p className="text-red-500 text-xs mt-1">{errors.type}</p>}
       </div>

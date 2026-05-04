@@ -29,16 +29,17 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
   onConflictDelete
 }) => {
   return (
-    <div className="w-full px-4 lg:px-8 pb-12">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+    <div className="w-full px-4 md:px-6 lg:px-8 pt-6 md:pt-10 lg:pt-16 pb-24 lg:pb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 lg:gap-10 items-stretch max-w-[1600px] mx-auto">
         
-        <div className="lg:col-span-8 flex flex-col gap-6 lg:gap-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+        <div className="lg:col-span-8 flex flex-col gap-6 md:gap-8 lg:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
             {/* Story Foundation */}
-            <div className="card-tactile p-6 lg:p-10 flex flex-col min-h-[300px] lg:min-h-[380px] hover:border-editor-magenta/20 transition-all duration-500">
-              <div className="flex items-center space-x-3 mb-6 lg:mb-10 pb-4 border-b border-white/5">
-                <div className="w-1.5 h-1.5 rounded-full bg-editor-magenta shadow-magenta-glow"></div>
-                <h2 className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold">Story Foundation</h2>
+            <div className="card-tactile group p-6 md:p-8 lg:p-10 flex flex-col min-h-[320px] lg:min-h-[400px] hover:border-editor-magenta/30 transition-all duration-700 ease-out">
+              <div className="flex items-center space-x-3 mb-8 lg:mb-10 pb-4 border-b border-white/5 relative">
+                <div className="w-1.5 h-1.5 rounded-full bg-editor-magenta shadow-magenta-glow group-hover:scale-125 transition-transform duration-500"></div>
+                <h2 className="text-[10px] md:text-[11px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold group-hover:text-white transition-colors duration-500">Story Foundation</h2>
+                <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-editor-magenta group-hover:w-full transition-all duration-700"></div>
               </div>
               <div className="flex-1">
                 <BasicInfoPanel 
@@ -47,27 +48,30 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
                 />
               </div>
             </div>
-
+ 
             {/* World Settings */}
-            <div className="card-tactile p-6 lg:p-10 flex flex-col min-h-[300px] lg:min-h-[380px] hover:border-green-500/20 transition-all duration-500">
-              <div className="flex items-center space-x-3 mb-6 lg:mb-10 pb-4 border-b border-white/5">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-green-glow"></div>
-                <h2 className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold">World Settings</h2>
+            <div className="card-tactile group p-6 md:p-8 lg:p-10 flex flex-col min-h-[320px] lg:min-h-[400px] hover:border-green-500/30 transition-all duration-700 ease-out">
+              <div className="flex items-center space-x-3 mb-8 lg:mb-10 pb-4 border-b border-white/5 relative">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-green-glow group-hover:scale-125 transition-transform duration-500"></div>
+                <h2 className="text-[10px] md:text-[11px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold group-hover:text-white transition-colors duration-500">World Settings</h2>
+                <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-green-500 group-hover:w-full transition-all duration-700"></div>
               </div>
               <div className="flex-1">
                 <WorldSettingsPanel 
+                  storyId={story.id}
                   worldSettings={worldSettings}
                   onUpdate={onWorldSettingsUpdate}
                 />
               </div>
             </div>
           </div>
-
+ 
           {/* Narrative Compass - Expanded Bottom */}
-          <div className="card-tactile p-6 lg:p-10 flex-1 hover:border-blue-500/20 transition-all duration-500">
-            <div className="flex items-center space-x-3 mb-6 lg:mb-10 pb-4 border-b border-white/5">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-blue-glow"></div>
-              <h2 className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold">Narrative Compass</h2>
+          <div className="card-tactile group p-6 md:p-8 lg:p-10 flex-1 hover:border-blue-500/30 transition-all duration-700 ease-out">
+            <div className="flex items-center space-x-3 mb-8 lg:mb-10 pb-4 border-b border-white/5 relative">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-blue-glow group-hover:scale-125 transition-transform duration-500"></div>
+              <h2 className="text-[10px] md:text-[11px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold group-hover:text-white transition-colors duration-500">Narrative Compass</h2>
+              <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-blue-500 group-hover:w-full transition-all duration-700"></div>
             </div>
             <UnifiedStoryOverview 
               overviewData={story.description || ''}
@@ -76,13 +80,14 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
             />
           </div>
         </div>
-
+ 
         {/* Right Side: Conflict Engine (1/3 width) */}
         <div className="lg:col-span-4 flex">
-          <div className="card-tactile p-6 lg:p-10 flex-1 flex flex-col min-h-[500px] lg:min-h-[700px] hover:border-orange-500/20 transition-all duration-500">
-            <div className="flex items-center space-x-3 mb-6 lg:mb-10 pb-4 border-b border-white/5">
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-500 shadow-orange-glow"></div>
-              <h2 className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold">Conflict Engine</h2>
+          <div className="card-tactile group p-6 md:p-8 lg:p-10 flex-1 flex flex-col min-h-[500px] md:min-h-[600px] lg:min-h-[800px] hover:border-orange-500/30 transition-all duration-700 ease-out">
+            <div className="flex items-center space-x-3 mb-8 lg:mb-10 pb-4 border-b border-white/5 relative">
+              <div className="w-1.5 h-1.5 rounded-full bg-orange-500 shadow-orange-glow group-hover:scale-125 transition-transform duration-500"></div>
+              <h2 className="text-[10px] md:text-[11px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold group-hover:text-white transition-colors duration-500">Conflict Engine</h2>
+              <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-orange-500 group-hover:w-full transition-all duration-700"></div>
             </div>
             <div className="flex-1 flex flex-col">
               <ConflictBuilder 
@@ -95,7 +100,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
             </div>
           </div>
         </div>
-
+ 
       </div>
     </div>
   );

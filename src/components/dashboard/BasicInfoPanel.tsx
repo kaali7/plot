@@ -75,31 +75,41 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       <div className="flex flex-col">
-        <h3 className="text-3xl font-serif font-bold text-white tracking-tight mb-3 leading-tight">{story.name}</h3>
+        <h3 className="text-4xl md:text-5xl font-serif font-bold text-white tracking-tight mb-3 md:mb-4 leading-[1.1] md:leading-tight">
+          {story.name}
+        </h3>
         {story.theme && (
-          <p className="text-editor-magenta font-mono text-[9px] uppercase tracking-[0.4em] font-bold mb-6 italic opacity-80">
-            <span className="opacity-40 mr-2">Theme:</span>{story.theme}
+          <p className="text-editor-magenta font-mono text-[10px] md:text-[11px] uppercase tracking-[0.3em] md:tracking-[0.4em] font-extrabold mb-6 md:mb-10 italic flex items-center">
+            <span className="opacity-40 mr-3 not-italic font-bold">THEME:</span>
+            <span className="bg-editor-magenta/10 px-2 py-0.5 rounded-sm">{story.theme}</span>
           </p>
         )}
-        <div className="max-w-3xl">
+        <div className="max-w-3xl relative">
           {displayDescription ? (
-            <p className="text-editor-text leading-relaxed font-serif text-lg italic opacity-80 border-l-2 border-editor-magenta/30 pl-8 py-2 bg-white/[0.01] rounded-r-lg">
-              "{displayDescription}"
-            </p>
+            <div className="relative group">
+              <div className="absolute -left-6 md:-left-8 top-0 bottom-0 w-1 bg-editor-magenta/20 group-hover:bg-editor-magenta/40 transition-colors rounded-full" />
+              <p className="text-editor-text leading-relaxed font-serif text-lg md:text-xl italic opacity-90 py-1">
+                "{displayDescription}"
+              </p>
+            </div>
           ) : (
-            <p className="text-editor-text-muted font-serif italic text-lg opacity-40 py-4">No core premise established yet.</p>
+            <p className="text-editor-text-muted font-serif italic text-lg opacity-40 py-4">
+              No core premise established yet.
+            </p>
           )}
         </div>
       </div>
       
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="w-fit px-8 py-3 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-editor-magenta hover:text-white hover:border-editor-magenta transition-all"
-      >
-        Edit Foundation
-      </button>
+      <div className="pt-6 md:pt-10">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="w-full md:w-fit px-8 py-4 md:py-3 bg-white/[0.02] border border-white/5 rounded-full text-[10px] font-mono text-white/40 uppercase tracking-[0.2em] hover:bg-editor-magenta/10 hover:text-editor-magenta hover:border-editor-magenta/30 transition-all duration-300 flex items-center justify-center space-x-2"
+        >
+          <span>Edit Foundation</span>
+        </button>
+      </div>
 
       <Modal 
         isOpen={isModalOpen} 

@@ -62,13 +62,13 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
         
         {/* Full Header - Only shown when no selection */}
         {!viewingSceneId && (
-          <div className="flex items-end justify-between pb-8 border-b border-editor-border mb-12 animate-in fade-in slide-in-from-top duration-700">
+          <div className="flex items-end justify-between pb-8 border-b border-white/5 mb-8 md:mb-12 animate-in fade-in slide-in-from-top duration-700">
             <div>
-              <h2 className="text-4xl font-serif font-bold text-white tracking-tight">Chronicle Grid</h2>
-              <div className="flex items-center space-x-3 mt-2">
-                <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em] italic">Sequence of Events ({scenes.length})</p>
+              <h2 className="text-[28px] md:text-4xl font-serif font-extrabold text-white tracking-[-0.02em]">Chronicle Grid</h2>
+              <div className="flex flex-col md:flex-row md:items-center md:space-x-6 mt-3 md:mt-4 space-y-2 md:space-y-0">
+                <p className="text-[9px] md:text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.4em] italic opacity-40 font-medium">Sequence of Events ({scenes.length})</p>
                 {scenes.length > 0 && (
-                  <div className="flex items-center text-[9px] font-mono text-editor-magenta uppercase tracking-widest border border-editor-magenta/20 px-2 py-0.5 rounded-sm">
+                  <div className="w-fit flex items-center text-[9px] font-mono text-red-500 uppercase tracking-widest border border-red-500/20 px-3 py-1 rounded-sm font-bold bg-red-500/5">
                     Active Reorder: Enabled
                   </div>
                 )}
@@ -76,27 +76,20 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="btn-magenta px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
+              className="w-10 h-10 md:w-12 md:h-12 bg-magenta-gradient rounded-xl flex items-center justify-center text-white shadow-magenta-glow hover:scale-105 active:scale-95 transition-all duration-300 group relative overflow-hidden"
             >
-              Draft New Scene
+              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+              </svg>
             </button>
           </div>
         )}
 
-        {/* Close Selection Button (Only in Narrow View) */}
-        {viewingSceneId && (
-          <button 
-            onClick={() => setViewingSceneId(null)}
-            className="absolute top-6 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/20 hover:bg-editor-magenta hover:text-white transition-all duration-300 z-30"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
+        {/* Removed Close Button from sidebar as it was hidden behind the detail view */}
 
         <div className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-700 ${viewingSceneId ? 'pt-20' : ''}`}>
-          <div className={`flex flex-col transition-all duration-700 ${viewingSceneId ? 'space-y-1' : 'space-y-2'}`}>
+          <div className={`flex flex-col transition-all duration-700 pr-4 md:pr-6 ${viewingSceneId ? 'space-y-1' : 'space-y-2'}`}>
             {[...scenes].sort((a, b) => {
               if (a.order !== b.order) return a.order - b.order;
               return a.id.localeCompare(b.id);
@@ -145,16 +138,16 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
             </div>
 
             {/* Ghost Slot for New Scene - Persistent at the bottom */}
-            <div className={`mt-8 flex transition-all duration-700 ${viewingSceneId ? 'justify-center pb-12' : 'px-8 pb-32'}`}>
+            <div className={`mt-8 flex transition-all duration-700 ${viewingSceneId ? 'justify-center pb-12' : 'px-0 pb-32'}`}>
               <button 
                 onClick={() => setShowAddModal(true)}
-                className={`border border-dashed border-white/10 rounded-full flex items-center justify-center group hover:border-editor-magenta/50 hover:bg-editor-magenta/5 transition-all duration-500
-                  ${viewingSceneId ? 'w-12 h-12' : 'w-full py-6 space-x-4'}`}
+                className={`border border-dashed border-white/10 rounded-[2rem] flex items-center justify-center group hover:border-editor-magenta/50 hover:bg-white/[0.02] transition-all duration-500
+                  ${viewingSceneId ? 'w-12 h-12 rounded-full' : 'w-full py-8 space-x-6'}`}
                 title="Forge New Folio"
               >
-                <span className={`text-white/20 group-hover:text-editor-magenta transition-colors ${viewingSceneId ? 'text-xl' : 'text-2xl'}`}>+</span>
+                <span className={`text-white/20 group-hover:text-editor-magenta transition-colors font-light ${viewingSceneId ? 'text-xl' : 'text-3xl'}`}>+</span>
                 {!viewingSceneId && (
-                  <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.3em] font-bold group-hover:text-white transition-colors">Forge New Folio</span>
+                  <span className="text-[11px] md:text-[12px] font-mono text-white/40 uppercase tracking-[0.4em] font-bold group-hover:text-white transition-colors">Forge New Folio</span>
                 )}
               </button>
             </div>
@@ -165,6 +158,17 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
       <div className={`flex-1 h-full bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden
         fixed inset-0 z-50 md:static md:inset-auto md:z-auto
         ${viewingSceneId ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:translate-x-full'}`}>
+        
+        {/* Mobile Close Button */}
+        {viewingSceneId && (
+          <button 
+            onClick={() => setViewingSceneId(null)}
+            className="md:hidden absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-editor-magenta hover:text-white backdrop-blur-md transition-all duration-300 z-[60]"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        )}
+
         {viewingScene && (
           <SceneDetailView 
             scene={viewingScene}

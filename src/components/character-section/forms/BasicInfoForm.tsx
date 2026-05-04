@@ -41,10 +41,10 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ data, onUpdate, er
               onChange={(e) => onUpdate({ ...data, role: e.target.value as any })}
               className="input-tactile w-full appearance-none cursor-pointer"
             >
-              <option value="protagonist">Protagonist</option>
-              <option value="antagonist">Antagonist</option>
-              <option value="supporting">Supporting Character</option>
-              <option value="minor">Minor Character</option>
+              <option value="main">Main Identity</option>
+              <option value="sub-main">Sub-Main Identity</option>
+              <option value="supporting">Supporting Identity</option>
+              <option value="antagonist">Antagonistic Force</option>
             </select>
           </div>
         </div>

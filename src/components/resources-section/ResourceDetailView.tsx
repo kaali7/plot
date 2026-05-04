@@ -19,30 +19,30 @@ export const ResourceDetailView: React.FC<ResourceDetailViewProps> = ({
   const viewContent = (
     <div className={`flex flex-col h-full bg-[#050507] ${!isIntegrated ? 'relative w-full max-w-5xl h-[85vh] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-right duration-500 ease-out rounded-sm overflow-hidden' : 'w-full rounded-tl-[3rem] border-l border-t border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]'}`}>
       {/* Streamlined Typographic Header */}
-      <div className="pt-16 px-12 pb-10 border-b border-white/[0.03] flex items-center justify-between z-30 relative">
+      <div className="pt-12 md:pt-16 px-6 md:px-12 pb-5 md:pb-10 border-b border-white/[0.03] flex items-center justify-between z-30 relative">
         {isIntegrated && (
-          <div className="absolute top-0 left-0 w-24 h-24 border-tl border-white/20 rounded-tl-[3rem] -translate-x-1 -translate-y-1 opacity-20 pointer-events-none" />
+          <div className="absolute top-0 left-0 w-24 h-24 border-tl border-white/20 rounded-tl-[3rem] -translate-x-1 -translate-y-1 opacity-20 pointer-events-none hidden md:block" />
         )}
-        <div className="flex items-center space-x-8">
-          <div className="w-2 h-2 rounded-full bg-editor-magenta shadow-magenta-glow" />
+        <div className="flex items-start md:items-center space-x-4 md:space-x-8">
+          <div className="w-2 h-2 rounded-full bg-editor-magenta shadow-magenta-glow mt-2.5 md:mt-0 shrink-0" />
           <div>
-            <h2 className="text-4xl font-serif font-bold text-white tracking-tight uppercase leading-none">
+            <h2 className="text-2xl md:text-4xl font-serif font-bold text-white tracking-tight uppercase leading-none">
               {resource.title}
             </h2>
-            <div className="flex items-center space-x-3 mt-3">
-              <span className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold border border-editor-magenta/30 px-2 py-0.5 rounded-sm bg-editor-magenta/5">{resource.type}</span>
-              <span className="w-1 h-1 rounded-full bg-white/10" />
-              <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] italic">Archive Reference</span>
+            <div className="flex flex-wrap items-center gap-1.5 md:gap-3 mt-2 md:mt-3">
+              <span className="text-[8px] md:text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold border border-editor-magenta/30 px-2 py-0.5 rounded-sm bg-editor-magenta/5">{resource.type}</span>
+              <span className="w-1 h-1 rounded-full bg-white/10 hidden md:block" />
+              <span className="text-[8px] md:text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] italic">Archive Reference</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Action Tabs */}
-      <div className="flex items-center space-x-3 px-6 py-3 bg-black/[0.1] border-b border-white/5">
+      <div className="flex flex-wrap md:flex-nowrap items-center gap-2 md:space-x-3 px-4 md:px-6 py-2 md:py-3 bg-black/[0.1] border-b border-white/5">
         <button
           onClick={() => setActiveTab('content')}
-          className={`px-6 py-2 rounded-full text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all
+          className={`px-3 py-1.5 md:px-6 md:py-2 rounded-full text-[8px] md:text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap
           ${activeTab === 'content' 
             ? 'bg-editor-magenta text-white shadow-magenta-glow' 
             : 'text-editor-text-muted hover:text-white hover:bg-white/5 border border-white/10'}`}
@@ -51,7 +51,7 @@ export const ResourceDetailView: React.FC<ResourceDetailViewProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('connections')}
-          className={`px-6 py-2 rounded-full text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all
+          className={`px-3 py-1.5 md:px-6 md:py-2 rounded-full text-[8px] md:text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap
           ${activeTab === 'connections' 
             ? 'bg-editor-magenta text-white shadow-magenta-glow' 
             : 'text-editor-text-muted hover:text-white hover:bg-white/5 border border-white/10'}`}
@@ -60,7 +60,7 @@ export const ResourceDetailView: React.FC<ResourceDetailViewProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('metadata')}
-          className={`px-6 py-2 rounded-full text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all
+          className={`px-3 py-1.5 md:px-6 md:py-2 rounded-full text-[8px] md:text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap
           ${activeTab === 'metadata' 
             ? 'bg-editor-magenta text-white shadow-magenta-glow' 
             : 'text-editor-text-muted hover:text-white hover:bg-white/5 border border-white/10'}`}

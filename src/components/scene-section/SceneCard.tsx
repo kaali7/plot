@@ -9,10 +9,10 @@ interface SceneCardProps {
 export const SceneCard: React.FC<SceneCardProps> = ({ scene, onClick }) => {
   const getSceneTypeColor = (type: Scene['type']) => {
     switch (type) {
-      case 'action': return 'bg-green-900/50 text-green-300 border-green-700/30';
-      case 'suspense': return 'bg-red-900/50 text-red-300 border-red-700/30';
+      case 'introduction': return 'bg-green-900/50 text-green-300 border-green-700/30';
+      case 'conflict': return 'bg-red-900/50 text-red-300 border-red-700/30';
       case 'climax': return 'bg-orange-900/50 text-orange-300 border-orange-700/30';
-      case 'dialogue': return 'bg-blue-900/50 text-blue-300 border-blue-700/30';
+      case 'resolution': return 'bg-blue-900/50 text-blue-300 border-blue-700/30';
       case 'transition': return 'bg-purple-900/50 text-purple-300 border-purple-700/30';
       default: return 'bg-gray-900/50 text-gray-300 border-gray-700/30';
     }

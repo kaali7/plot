@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { Conflict } from '../../types/story.types';
 import { conflictSchema } from '../../lib/schemas';
+import { InlineResourceAttacher } from '../resources-section/InlineResourceAttacher';
+import { useStory } from '../../context/StoryContext';
 
 interface ConflictCardProps {
   conflict: Conflict;
@@ -17,6 +19,11 @@ export const ConflictCard: React.FC<ConflictCardProps> = ({ conflict, onUpdate, 
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { resources } = useStory();
+
+  const linkedResourceIds = resources
+    .filter(r => r.linked_entities?.conflicts?.includes(conflict.id))
+    .map(r => r.id);
 
   const handleSave = () => {
     const result = conflictSchema.safeParse(formData);
@@ -113,24 +120,29 @@ export const ConflictCard: React.FC<ConflictCardProps> = ({ conflict, onUpdate, 
   }
 
   return (
-    <div className="card-tactile p-6 group">
-      <div className="flex items-start justify-between mb-4">
+    <div className="card-tactile p-6 md:p-8 group">
+      <div className="flex items-start justify-between mb-5 md:mb-6">
         <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-2">
-            <span className="text-[9px] font-mono text-editor-magenta uppercase tracking-tighter border border-editor-magenta/30 px-2 py-0.5">
+          <div className="flex items-center space-x-2 mb-3 md:mb-4">
+            <span className="text-[9px] font-mono text-editor-magenta uppercase tracking-[0.2em] bg-editor-magenta/10 px-2 py-0.5 rounded-sm font-bold">
               {conflict.type}
             </span>
-            <div className="w-1.5 h-1.5 rounded-full bg-editor-magenta shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="w-1 h-1 rounded-full bg-editor-magenta shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>
-          <h3 className="text-xl font-serif font-bold text-editor-text group-hover:text-white transition-colors">{conflict.title}</h3>
+          <h3 className="text-xl md:text-2xl font-serif font-bold text-white group-hover:text-white transition-colors leading-tight">{conflict.title}</h3>
         </div>
       </div>
       
       {conflict.description && (
-        <p className="text-editor-text-muted font-serif italic text-base leading-relaxed mb-6 line-clamp-2 opacity-80 border-l border-editor-border pl-4">"{conflict.description}"</p>
+        <div className="relative mb-8">
+          <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-orange-500/20 group-hover:bg-orange-500/40 transition-colors rounded-full" />
+          <p className="text-editor-text-muted font-serif italic text-base md:text-lg leading-relaxed opacity-90 line-clamp-3">
+            "{conflict.description}"
+          </p>
+        </div>
       )}
 
-      <div className="flex items-center justify-between pt-4 border-t border-editor-border">
+      <div className="flex items-center justify-between pt-6 border-t border-white/5">
         <div className="flex space-x-4">
           <button
             onClick={() => setEditing(true)}
@@ -147,6 +159,12 @@ export const ConflictCard: React.FC<ConflictCardProps> = ({ conflict, onUpdate, 
         </div>
         <span className="text-[8px] font-mono text-editor-text-muted/40 uppercase tracking-[0.2em]">Conflict Ref #{conflict.id.slice(0, 4)}</span>
       </div>
+
+      <InlineResourceAttacher
+        entityType="conflicts"
+        entityId={conflict.id}
+        linkedResourceIds={linkedResourceIds}
+      />
     </div>
   );
 };

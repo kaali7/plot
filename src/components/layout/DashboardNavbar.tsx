@@ -34,22 +34,25 @@ const DashboardNavbar = () => {
           <span className="w-2.5 h-2.5 rounded-full bg-primary shadow-magenta-glow animate-pulse"></span>
           <span className="text-2xl font-serif font-bold text-white tracking-tight italic">Plot</span>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
           {user ? (
             <>
-              <div className="flex items-center space-x-3 mr-2 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
+              <div className="hidden sm:flex items-center space-x-3 bg-white/5 px-4 py-1.5 rounded-full border border-white/5 transition-all">
                 <FaUserCircle 
-                  className="text-lg text-editor-text-muted hover:text-white transition-colors cursor-pointer"
-                  onClick={() => { /* Profile dropdown could be implemented here */ }}
+                  className="text-lg text-editor-text-muted"
                 />
-                <span className="text-sm font-sans text-editor-text-muted">{user.email?.split('@')[0] || 'Writer'}</span>
+                <span className="text-sm font-sans text-editor-text-muted max-w-[100px] truncate">{user.email?.split('@')[0] || 'Writer'}</span>
+              </div>
+              <div className="sm:hidden flex items-center bg-white/5 p-2 rounded-full border border-white/5">
+                <FaUserCircle className="text-lg text-editor-text-muted" />
               </div>
               <button 
                 onClick={handleSignOut}
-                className="flex items-center space-x-2 text-sm font-sans font-bold tracking-wide text-editor-text-muted hover:text-white transition-all hover:bg-white/10 border border-transparent hover:border-white/10 rounded-full px-5 py-2"
+                className="flex items-center space-x-2 text-sm font-sans font-bold tracking-wide text-editor-text-muted hover:text-white transition-all hover:bg-white/10 border border-transparent hover:border-white/10 rounded-full px-3 py-2 md:px-5"
+                title="Log Out"
               >
                 <FaSignOutAlt className="w-3.5 h-3.5" />
-                <span>Log Out</span>
+                <span className="hidden md:inline">Log Out</span>
               </button>
             </>
           ) : (

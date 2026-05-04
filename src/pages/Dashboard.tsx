@@ -118,23 +118,26 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-32 px-6 md:px-12 relative overflow-hidden">
+    <div className="min-h-screen bg-background pt-24 md:pt-32 px-4 md:px-12 relative overflow-hidden">
       {/* Ambient Dashboard Background Glow */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
 
       {/* Dashboard Header */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end pb-8 border-b border-white/10 mb-12 relative z-10">
-        <div className="mb-6 md:mb-0">
-          <h1 className="text-4xl md:text-5xl font-sans font-bold text-white tracking-tight mb-3">
-            <span className="text-primary font-serif italic pr-2">Your</span>Manuscripts
+      <div className="max-w-7xl mx-auto flex flex-row md:flex-row justify-between items-center md:items-end pb-6 md:pb-8 border-b border-white/10 mb-8 md:mb-12 relative z-10">
+        <div className="flex-1 pr-4">
+          <h1 className="text-2xl md:text-5xl font-sans font-bold text-white tracking-tight mb-1 md:mb-3">
+            <span className="text-primary font-serif italic pr-1 md:pr-2">Your</span>Manuscripts
           </h1>
-          <p className="text-editor-text-muted font-sans text-lg tracking-wide">The creative workspace for your next masterpiece.</p>
+          <p className="text-editor-text-muted font-sans text-xs md:text-lg tracking-wide max-w-[200px] md:max-w-none truncate md:whitespace-normal">The creative workspace for your next masterpiece.</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-primary hover:bg-white text-white hover:text-black shadow-magenta-glow px-8 py-3.5 text-sm font-sans font-bold tracking-wide rounded-full transition-all duration-300 hover:-translate-y-1"
+          className="flex items-center justify-center bg-primary hover:bg-white text-white hover:text-black shadow-magenta-glow transition-all duration-300 hover:-translate-y-1 active:scale-95
+                     w-12 h-12 md:w-auto md:h-auto md:px-8 md:py-4 rounded-xl md:rounded-full flex-shrink-0"
+          title="Initialize New Plot"
         >
-          + Initialize New Plot
+          <span className="text-xl md:text-sm md:font-bold">+</span>
+          <span className="hidden md:inline ml-2 text-sm font-bold tracking-wide">Initialize New Plot</span>
         </button>
       </div>
 
@@ -170,32 +173,32 @@ const Dashboard: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 px-4 sm:px-0">
             {stories.map(story => (
-              <div 
-                key={story.id} 
-                onClick={() => navigate(`/story/${story.id}`)}
-                className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 cursor-pointer flex flex-col justify-between min-h-[240px] transition-all duration-500 hover:bg-white/[0.04] hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(255,51,102,0.15)]"
-              >
-                {/* Subtle top border glow on hover */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[2rem]"></div>
-                
-                <div>
-                  <div className="flex justify-between items-center mb-6">
-                    <span className="text-xs font-sans font-bold text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full border border-primary/20">Story</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-mono text-editor-text-muted uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">#{story.id.slice(0, 4)}</span>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setStoryToDelete(story);
-                        }}
-                        className="p-2 rounded-full bg-white/5 text-editor-text-muted hover:bg-red-500/20 hover:text-red-400 transition-colors border border-white/5"
-                        title="Delete Story"
-                      >
-                        <FaTrash className="w-3.5 h-3.5" />
-                      </button>
+                <div 
+                  key={story.id} 
+                  onClick={() => navigate(`/story/${story.id}`)}
+                  className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 md:p-8 cursor-pointer flex flex-col justify-between min-h-[220px] md:min-h-[240px] transition-all duration-500 hover:bg-white/[0.04] hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(255,51,102,0.15)]"
+                >
+                  {/* Subtle top border glow on hover */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[2rem]"></div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-4 md:mb-6">
+                      <span className="text-[10px] md:text-xs font-sans font-bold text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full border border-primary/20">Story</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[10px] md:text-xs font-mono text-editor-text-muted uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">#{story.id.slice(0, 4)}</span>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setStoryToDelete(story);
+                          }}
+                          className="p-2 rounded-full bg-white/5 text-editor-text-muted hover:bg-red-500/20 hover:text-red-400 transition-colors border border-white/5"
+                          title="Delete Story"
+                        >
+                          <FaTrash className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <h2 className="text-3xl font-sans font-bold text-white group-hover:text-primary transition-colors mb-4 tracking-tight leading-tight">{story.name}</h2>
+                    <h2 className="text-2xl md:text-3xl font-sans font-bold text-white group-hover:text-primary transition-colors mb-3 md:mb-4 tracking-tight leading-tight">{story.name}</h2>
                   {story.description && (
                     <p className="text-editor-text-muted text-sm line-clamp-2 leading-relaxed mb-4">{story.description}</p>
                   )}

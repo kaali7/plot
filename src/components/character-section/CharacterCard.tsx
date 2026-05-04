@@ -3,105 +3,72 @@ import type { Character } from '../../types/story.types';
 
 interface CharacterCardProps {
   character: Character;
-  roleColor: string;
   onClick: (character: Character) => void;
 }
 
-export const CharacterCard: React.FC<CharacterCardProps> = ({ character, roleColor, onClick }) => {
+export const CharacterCard: React.FC<CharacterCardProps> = ({ character, onClick }) => {
   return (
     <div 
-      className="card-tactile group p-8 cursor-pointer flex flex-col justify-between min-h-[320px] relative overflow-hidden"
+      className="bg-[#121218] border border-white/5 rounded-t-[2rem] rounded-b-xl p-6 md:p-10 cursor-pointer flex flex-col group relative overflow-hidden transition-all duration-500 hover:border-editor-magenta/30"
       onClick={() => onClick(character)}
     >
-      {/* Quick Edit Action */}
-      <button 
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick(character); // This will trigger selection and opening
-        }}
-        className="absolute top-6 right-6 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/20 opacity-0 group-hover:opacity-100 hover:bg-editor-magenta hover:text-white hover:border-editor-magenta transition-all duration-300 z-20"
-        title="Edit Identity"
-      >
-        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-      </button>
-
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex-1 flex items-start space-x-6">
-          {character.image_url && (
-            <div className="w-24 h-24 rounded-sm overflow-hidden border border-editor-border bg-surface-dark shadow-magenta-glow group-hover:shadow-magenta-glow-lg transition-all duration-500 flex-shrink-0">
-              <img 
-                src={character.image_url} 
-                alt={character.name} 
-                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
-              />
-            </div>
-          )}
-          <div className="flex-1">
-            <div className="flex items-center space-x-3 mb-2">
-              <span className={`text-[10px] font-mono uppercase tracking-tighter border px-2 py-0.5 ${roleColor.replace('bg-', 'border-').replace('/50', '/30')} ${roleColor.replace('bg-', 'text-')}`}>
-                {character.role}
-              </span>
-              <span className="text-[10px] font-mono text-editor-text-muted uppercase tracking-tighter italic">ID #{character.id.slice(0, 4)}</span>
-            </div>
-            <h3 className="text-3xl font-serif font-bold text-editor-text group-hover:text-white transition-colors">{character.name}</h3>
-          </div>
-        </div>
-        <div className="w-2 h-2 rounded-full bg-editor-magenta shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity" />
+      {/* Role & ID Line */}
+      <div className="flex items-center space-x-4 mb-5">
+        <span className="bg-[#2d0a14] text-editor-magenta px-3 py-1 rounded-md text-[9px] font-mono font-bold uppercase tracking-widest">
+          {character.role === 'main' ? 'MAIN' : character.role.toUpperCase()}
+        </span>
+        <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] italic">
+          ID #{character.id.slice(0, 4)}
+        </span>
       </div>
 
+      {/* Name */}
+      <h3 className="text-2xl md:text-5xl font-serif font-bold text-white leading-tight mb-5 group-hover:text-white transition-colors">
+        {character.name}
+      </h3>
+
+      {/* Quote/Description */}
       {character.description && (
-        <p className="text-editor-text-muted font-serif italic text-lg leading-relaxed mb-8 line-clamp-3">"{character.description}"</p>
+        <div className="mb-8">
+          <p className="text-white/40 leading-relaxed font-serif text-sm md:text-xl italic line-clamp-2">
+            "{character.description}"
+          </p>
+        </div>
       )}
 
-      {/* Character Traits */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div>
-          <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-widest mb-3 italic">Capabilities</h4>
-          <div className="flex flex-wrap gap-2">
+      {/* Character Traits Section */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        {/* Capabilities Column */}
+        <div className="space-y-4">
+          <h4 className="text-[9px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold">
+            Capabilities
+          </h4>
+          <div className="flex flex-col space-y-2">
             {character.traits.strengths.slice(0, 2).map((strength, index) => (
-              <span key={`strength-${index}`} className="glass-pill text-[9px] uppercase tracking-tighter border-white/10">
+              <div key={`strength-${index}`} className="bg-white/[0.02] border border-white/5 rounded-full px-3 py-2 text-[10px] font-mono text-white/60 uppercase tracking-widest text-center">
                 {strength}
-              </span>
-            ))}
-            {character.traits.weaknesses.slice(0, 1).map((weakness, index) => (
-              <span key={`weakness-${index}`} className="glass-pill text-[9px] uppercase tracking-tighter border-red-500/20 text-red-400/50">
-                {weakness}
-              </span>
+              </div>
             ))}
           </div>
         </div>
 
-        <div>
-          <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-widest mb-3 italic">Nature</h4>
-          <div className="flex flex-wrap gap-2">
+        {/* Nature Column */}
+        <div className="space-y-4">
+          <h4 className="text-[9px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold">
+            Nature
+          </h4>
+          <div className="flex flex-col space-y-2">
             {character.traits.personality.slice(0, 3).map((trait, index) => (
-              <span key={`personality-${index}`} className="glass-pill text-[9px] uppercase tracking-tighter border-white/10">
+              <div key={`personality-${index}`} className="bg-white/[0.02] border border-white/5 rounded-full px-3 py-2 text-[10px] font-mono text-white/60 uppercase tracking-widest text-center">
                 {trait}
-              </span>
+              </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="pt-6 border-t border-editor-border mt-auto">
-        <div className="flex justify-between items-center">
-          <div className="flex -space-x-2">
-            {character.relationships.slice(0, 3).map((_, i) => (
-              <div key={i} className="w-5 h-5 rounded-full border border-editor-border bg-surface flex items-center justify-center text-[8px] font-mono text-editor-magenta">
-                👤
-              </div>
-            ))}
-            {character.relationships.length > 3 && (
-              <div className="w-5 h-5 rounded-full border border-editor-border bg-surface flex items-center justify-center text-[8px] font-mono text-editor-text-muted">
-                +{character.relationships.length - 3}
-              </div>
-            )}
-          </div>
-          <span className="text-[10px] font-mono text-editor-text-muted uppercase tracking-widest italic">
-            Arc: {character.arc.start ? 'Active' : 'Unset'}
-          </span>
-        </div>
-      </div>
+      {/* Decorative Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.01] to-transparent pointer-events-none" />
     </div>
   );
 };

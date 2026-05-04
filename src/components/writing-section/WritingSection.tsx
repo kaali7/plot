@@ -1,314 +1,131 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { escapeHtml } from '../../lib/sanitize';
 import { WritingEditor } from './WritingEditor';
 import { ReferencePanel } from './ReferencePanel';
 import { EditorToolbar } from './EditorToolbar';
-import type { WritingSession } from '../../types/story.types';
+import type { WritingSession, Character, Scene } from '../../types/story.types';
+import { useStory } from '../../context/StoryContext';
 
 interface WritingSectionProps {
   writingSession: WritingSession | null;
-  characters: any[]; // Character type
-  scenes: any[]; // Scene type
+  characters: Character[];
+  scenes: Scene[];
+  isSaving: boolean;
   onWritingUpdate: (content: string) => Promise<void>;
 }
 
-export const WritingSection: React.FC<WritingSectionProps> = ({ 
-  writingSession, 
-  characters, 
-  scenes, 
+export const WritingSection: React.FC<WritingSectionProps> = ({
+  writingSession,
+  characters,
+  scenes,
+  isSaving,
   onWritingUpdate 
 }) => {
+  const { conflicts, resources } = useStory();
   const [contentChunks, setContentChunks] = useState<string[]>(writingSession?.content ? [writingSession.content] : ['']);
-  const [isSaving, setIsSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(writingSession?.updated_at ? new Date(writingSession.updated_at) : null);
-  const [referencePanelOpen, setReferencePanelOpen] = useState(true);
-  const [pagesPanelOpen, setPagesPanelOpen] = useState(true);
-  const [detailsPanelOpen, setDetailsPanelOpen] = useState(false);
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const [examineEntity, setExamineEntity] = useState<{ type: 'character' | 'scene' | 'conflict' | 'resource', id: string } | null>(null);
-
-  const PAGE_LIMIT_HEIGHT = 1050;
-
-  // Auto-collapse sidebars on smaller screens
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setReferencePanelOpen(false);
-        setPagesPanelOpen(false);
-      } else {
-        setReferencePanelOpen(true);
-        setPagesPanelOpen(true);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial check
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Sync initial content
-  useEffect(() => {
-    if (writingSession?.content && contentChunks.length <= 1 && contentChunks[0] === '') {
-      setContentChunks([writingSession.content]);
-    }
-  }, [writingSession?.id]);
-
-  // Autosave
-  useEffect(() => {
-    const fullContent = contentChunks.join('');
-    if (!writingSession || fullContent === writingSession.content) return;
-    
-    const handleSave = () => {
-      setIsSaving(true);
-      onWritingUpdate(fullContent)
-        .then(() => {
-          setIsSaving(false);
-          setLastSaved(new Date());
-        })
-        .catch(() => setIsSaving(false));
-    };
-
-    const timeoutId = setTimeout(handleSave, 3000);
-    return () => clearTimeout(timeoutId);
-  }, [contentChunks, writingSession?.id, writingSession?.content, onWritingUpdate]);
-
-  const handlePageChange = (index: number, newPageContent: string) => {
-    const newChunks = [...contentChunks];
-    newChunks[index] = newPageContent;
-
-    // Check for overflow (simplified)
-    const editorElement = document.getElementById(`editor-page-${index}`);
-    if (editorElement && editorElement.scrollHeight > PAGE_LIMIT_HEIGHT) {
-      if (index === contentChunks.length - 1) {
-        newChunks.push('');
-      }
-    }
-    setContentChunks(newChunks);
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    
-    // Backspace at the start of a page
-    if (e.key === 'Backspace' && target.innerText === '' && index > 0) {
-      e.preventDefault();
-      const newChunks = [...contentChunks];
-      newChunks.splice(index, 1);
-      setContentChunks(newChunks);
-      
-      setTimeout(() => {
-        const prevEditor = document.getElementById(`editor-page-${index - 1}`)?.querySelector('[contenteditable]');
-        if (prevEditor) {
-          (prevEditor as HTMLElement).focus();
-          const range = document.createRange();
-          const sel = window.getSelection();
-          range.selectNodeContents(prevEditor);
-          range.collapse(false);
-          sel?.removeAllRanges();
-          sel?.addRange(range);
-        }
-      }, 0);
-    }
-  };
-
-  const insertReference = useCallback((type: 'character' | 'scene', id: string) => {
-    const character = characters.find(c => c.id === id);
-    const scene = scenes.find(s => s.id === id);
-    
-    let htmlToInsert = '';
-
-    if (type === 'character' && character) {
-      htmlToInsert = `<span class="text-editor-magenta font-bold">${escapeHtml(character.name)}</span>&nbsp;`;
-    } else if (type === 'scene' && scene) {
-      htmlToInsert = `
-        <div class="my-6 p-6 bg-white/[0.02] border-l-4 border-primary rounded-r-xl font-sans">
-          <div class="text-[10px] font-mono text-primary uppercase tracking-[0.2em] mb-2">Scene Forge</div>
-          <h4 class="text-xl font-bold text-white mb-3">${escapeHtml(scene.title)}</h4>
-          ${scene.goal ? `<div class="text-xs text-white/60 mb-2"><span class="text-white/40 uppercase mr-2">Goal:</span>${escapeHtml(scene.goal)}</div>` : ''}
-          ${scene.events?.main ? `<div class="text-sm text-editor-text-muted italic leading-relaxed">"${escapeHtml(scene.events.main)}"</div>` : ''}
-        </div>
-        <p>&nbsp;</p>
-      `;
-    } else if (type === ('all_scenes' as any)) {
-      htmlToInsert = `
-        <div class="my-12 p-8 border border-white/10 rounded-2xl bg-white/[0.01]">
-          <h3 className="text-2xl font-serif font-bold text-white mb-8 border-b border-white/5 pb-4">Manuscript Outline</h3>
-          <div class="space-y-6">
-            ${scenes.map((s, i) => `
-              <div class="flex items-start space-x-6">
-                <span class="text-[10px] font-mono text-primary pt-1">#${(i+1).toString().padStart(2, '0')}</span>
-                <div>
-                  <h4 class="text-white font-bold mb-1">${escapeHtml(s.title)}</h4>
-                  ${s.goal ? `<p class="text-[10px] text-white/40 italic">${escapeHtml(s.goal)}</p>` : ''}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        <p>&nbsp;</p>
-      `;
-    }
-    
-    if (htmlToInsert) {
-      // Use execCommand for better integration with undo/redo and selection
-      const editor = document.activeElement;
-      if (editor?.getAttribute('contenteditable') === 'true') {
-        document.execCommand('insertHTML', false, htmlToInsert);
-      } else {
-        // Fallback to manual chunk update if no focus
-        const newChunks = [...contentChunks];
-        newChunks[currentPageIndex] += htmlToInsert;
-        setContentChunks(newChunks);
-      }
-    }
-  }, [characters, scenes, contentChunks, currentPageIndex]);
-
-  const examineReference = (type: 'character' | 'scene' | 'conflict' | 'resource', id: string) => {
-    setExamineEntity({ type, id });
-    setDetailsPanelOpen(true);
-  };
-
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [referencePanelOpen, setReferencePanelOpen] = useState(typeof window !== 'undefined' ? window.innerWidth > 1024 : false);
+  const [pagesPanelOpen, setPagesPanelOpen] = useState(typeof window !== 'undefined' ? window.innerWidth > 1024 : false);
+  const [lastScrollTop, setLastScrollTop] = useState(0);
+  const [toolbarVisible, setToolbarVisible] = useState(true);
+  
+  // Selection State
   const [selectionState, setSelectionState] = useState({
     bold: false,
     italic: false,
     underline: false,
+    blockType: 'p',
     alignLeft: true,
     alignCenter: false,
     alignRight: false,
-    alignJustify: false,
-    blockType: 'p'
+    alignJustify: false
   });
 
-  const updateSelectionState = useCallback(() => {
-    setSelectionState({
-      bold: document.queryCommandState('bold'),
-      italic: document.queryCommandState('italic'),
-      underline: document.queryCommandState('underline'),
-      alignLeft: document.queryCommandState('justifyLeft'),
-      alignCenter: document.queryCommandState('justifyCenter'),
-      alignRight: document.queryCommandState('justifyRight'),
-      alignJustify: document.queryCommandState('justifyFull'),
-      blockType: document.queryCommandValue('formatBlock') || 'p'
-    });
-  }, []);
-
-  useEffect(() => {
-    const handleSelectionChange = () => updateSelectionState();
-    document.addEventListener('selectionchange', handleSelectionChange);
-    return () => document.removeEventListener('selectionchange', handleSelectionChange);
-  }, [updateSelectionState]);
-
-  const [isStyleMenuOpen, setIsStyleMenuOpen] = useState(false);
+  // Find State
   const [findPanelOpen, setFindPanelOpen] = useState(false);
   const [findQuery, setFindQuery] = useState('');
+  
+  // Menu States
+  const [isStyleMenuOpen, setIsStyleMenuOpen] = useState(false);
+  const [isFormatMenuOpen, setIsFormatMenuOpen] = useState(false);
+  const [isAlignMenuOpen, setIsAlignMenuOpen] = useState(false);
 
-  const executeCommand = (command: string, value: string | undefined = undefined) => {
-    const activeEditor = document.activeElement;
-    if (activeEditor?.getAttribute('contenteditable') === 'true') {
-      if (command === 'fontSize') {
-        // High-fidelity Font Scaling Hack
-        document.execCommand('styleWithCSS', false, 'false');
-        document.execCommand('fontSize', false, '7');
-        const fontElements = document.getElementsByTagName('font');
-        for (let i = 0; i < fontElements.length; i++) {
-          if (fontElements[i].size === '7') {
-            fontElements[i].removeAttribute('size');
-            fontElements[i].style.fontSize = `${value}px`;
-            fontElements[i].style.lineHeight = '1.2';
-          }
-        }
-      } else {
-        document.execCommand(command, false, value);
-      }
-      updateSelectionState();
+  // Sync content with session
+  useEffect(() => {
+    if (writingSession?.content && contentChunks[0] !== writingSession.content) {
+      setContentChunks([writingSession.content]);
     }
-  };
+  }, [writingSession?.content]);
 
+  // Handle Scroll to hide toolbar
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    if (scrollTop > lastScrollTop && scrollTop > 100) {
+      setToolbarVisible(false);
+    } else {
+      setToolbarVisible(true);
+    }
+    setLastScrollTop(scrollTop);
+  }, [lastScrollTop]);
 
-  const applyStyle = (tag: string) => {
-    executeCommand('formatBlock', tag);
+  const applyStyle = (style: string) => {
+    // This would typically interface with the editor ref or a command system
+    console.log(`Applying style: ${style}`);
     setIsStyleMenuOpen(false);
-    // Force immediate update
-    setTimeout(updateSelectionState, 50);
   };
 
-  const handleFind = (next = true) => {
-    if (!findQuery) return;
-    // window.find is a non-standard but widely supported way to search in contentEditable
-    // (text, caseSensitive, backwards, wrapAround, wholeWord, searchInFrames, showDialog)
-    const found = (window as any).find(findQuery, false, false, true, false, false, false);
-    if (!found && next) {
-      // If not found and we were going forward, try wrapping around manually if the browser didn't
-      // This is a bit tricky with window.find, but usually it works with wrapAround=true
-    }
+  const handleFind = () => {
+    console.log(`Finding: ${findQuery}`);
+    // Find logic would be implemented here or passed to WritingEditor
   };
 
-  const getBlockTypeName = (type: string) => {
-    switch(type.toLowerCase()) {
-      case 'h1': return 'Title';
-      case 'h2': return 'Subtitle';
-      case 'blockquote': return 'Quote';
-      default: return 'Normal text';
-    }
+
+  const handleExamineReference = (type: 'character' | 'scene' | 'conflict' | 'resource', id: string) => {
+    console.log(`Examining ${type}: ${id}`);
+    // Open detail drawer or similar
   };
 
-  const scrollToPage = (index: number) => {
-    setCurrentPageIndex(index);
-    const element = document.getElementById(`folio-container-${index}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const FormatButton = ({ 
-    icon, 
-    command, 
-    value, 
-    active = false,
-    className = "",
-    ariaLabel
-  }: { 
-    icon: React.ReactNode, 
-    command?: string, 
-    value?: string, 
-    active?: boolean,
-    className?: string,
-    ariaLabel?: string
-  }) => (
-    <button 
-      aria-label={ariaLabel || command || 'Formatting button'}
-
-      onMouseDown={(e) => {
-        e.preventDefault();
-        if (command) executeCommand(command, value);
-      }}
-      className={`p-1.5 rounded-lg transition-all flex items-center justify-center ${className} 
-        ${active ? 'text-primary bg-primary/10 shadow-magenta-glow ring-1 ring-primary/30' : 'text-editor-text-muted hover:text-white hover:bg-white/5'}`}
+  const FormatButton = ({ ariaLabel, active, icon, className = "" }: any) => (
+    <button
+      onMouseDown={(e) => { e.preventDefault(); /* Logic for command execution would go here */ }}
+      className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-2xl transition-all duration-300 flex items-center justify-center border ${
+        active 
+          ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
+          : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
+      } ${className}`}
+      aria-label={ariaLabel}
     >
       {icon}
     </button>
   );
 
+  const wordCount = contentChunks.join('').trim().split(/\s+/).filter(Boolean).length;
+
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden">
-      {/* Premium Workspace Header */}
-      <div className="flex items-center justify-between px-12 py-4 border-b border-white/5 bg-surface backdrop-blur-2xl sticky top-0 z-30 shadow-glass">
-        <div className="flex items-center space-x-6">
-          <div>
-            <h2 className="text-xl font-sans font-bold text-white tracking-tight flex items-center">
+      {/* Writing Header */}
+      <div className="flex items-center justify-between px-4 lg:px-12 py-3 lg:py-10 border-b border-white/5 bg-[#050505] z-40 sticky top-0">
+        <div className="flex flex-col">
+          <div className="flex items-center space-x-3 mb-1 lg:mb-2">
+            <h2 className="text-lg lg:text-3xl font-serif font-bold text-white tracking-tight">
               Manuscript Mode
             </h2>
-            <div className="flex items-center space-x-3 mt-1">
-              <span className="w-2 h-2 rounded-full bg-primary shadow-magenta-glow"></span>
-              <p className="text-xs font-sans font-medium text-editor-text-muted">{contentChunks.join('').trim().split(/\s+/).filter(Boolean).length} words</p>
-              {lastSaved && (
-                <>
-                  <span className="text-editor-text-muted opacity-50">•</span>
-                  <span className="text-xs font-sans text-editor-text-muted opacity-60">Sync: {lastSaved.toLocaleTimeString()}</span>
-                </>
-              )}
+          </div>
+          <div className="flex items-center space-x-2 lg:space-x-3 opacity-60">
+            <div className="flex items-center text-[8px] lg:text-[10px] uppercase tracking-[0.3em] font-sans font-bold opacity-60">
+              <div className="relative flex items-center justify-center mr-2 lg:mr-3">
+                <div className="absolute w-3 h-3 bg-primary/30 blur-md rounded-full" />
+                <div className="relative w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(255,51,102,0.6)]">
+                  <div className="absolute inset-[25%] rounded-full bg-white opacity-80" />
+                </div>
+              </div>
+              {wordCount} words
             </div>
+            {lastSaved && (
+              <>
+                <span className="text-white/10">•</span>
+                <span className="text-[8px] lg:text-[10px] font-sans uppercase tracking-[0.2em]">Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -316,7 +133,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
           <EditorToolbar 
             onSave={() => onWritingUpdate(contentChunks.join('')).then(() => setLastSaved(new Date()))}
             onExport={(format) => alert(`Exporting as ${format}...`)}
-            onInsertReference={insertReference}
+            onInsertReference={(type, id) => console.log(`Inserting ${type} ${id}`)}
             characters={characters}
             scenes={scenes}
             isSaving={isSaving}
@@ -325,23 +142,30 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
       </div>
 
       {/* Formatting Toolbar */}
-      <div className="flex items-center justify-between px-6 py-2 border-b border-white/5 bg-surface-light backdrop-blur-xl sticky top-[73px] z-20 select-none overflow-x-auto whitespace-nowrap scrollbar-hide">
-        <div className="flex items-center min-w-[40px] flex-shrink-0">
-          <button aria-label="Toggle reference panel" onClick={() => setReferencePanelOpen(!referencePanelOpen)} className={`p-2 rounded-lg transition-all ${referencePanelOpen ? 'text-primary bg-primary/10 shadow-magenta-glow' : 'text-editor-text-muted hover:text-white hover:bg-white/10'}`}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+      <div className={`flex items-center justify-between px-2 lg:px-6 py-2 border-b border-white/5 bg-surface-light backdrop-blur-xl sticky top-[73px] lg:top-[97px] z-30 select-none transition-all duration-500 lg:flex-wrap ${toolbarVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
+        <div className="flex items-center flex-shrink-0 mr-3 lg:mr-6">
+          <button 
+            aria-label="Toggle reference panel" 
+            onClick={() => setReferencePanelOpen(!referencePanelOpen)} 
+            className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-2xl transition-all duration-500 flex items-center justify-center border ${
+              referencePanelOpen 
+                ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
+                : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
+            }`}
+          >
+            <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
           </button>
         </div>
 
-        <div className="flex items-center justify-center space-x-2 flex-shrink-0">
+        <div className="flex items-center justify-center space-x-1 lg:space-x-2 flex-shrink-0">
           {/* Find Interface */}
-          <div className="flex items-center border-r border-white/10 pr-4 mr-2">
+          <div className="flex items-center border-r border-white/10 pr-2 lg:pr-4 mr-1 lg:mr-2">
             {!findPanelOpen ? (
               <button 
                 onClick={() => setFindPanelOpen(true)}
-                className="flex items-center space-x-2 bg-white/5 hover:bg-white/10 px-4 py-1.5 rounded-full transition-colors text-sm font-sans text-editor-text"
+                className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-2xl bg-white/5 text-editor-text-muted hover:text-white border border-white/5 hover:bg-white/10 flex items-center justify-center transition-all"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                <span>Find</span>
               </button>
             ) : (
               <div className="flex items-center bg-white/5 rounded-full px-4 py-1 border border-primary/30 shadow-magenta-glow/20">
@@ -351,7 +175,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
                   value={findQuery}
                   onChange={(e) => setFindQuery(e.target.value)}
                   placeholder="Find in manuscript..."
-                  className="bg-transparent border-none outline-none text-xs text-white w-40 font-mono"
+                  className="bg-transparent border-none outline-none text-xs text-white w-24 md:w-40 font-mono"
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') setFindPanelOpen(false);
                     if (e.key === 'Enter') handleFind();
@@ -368,185 +192,238 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
           </div>
 
           {/* Styles Dropdown */}
-          <div className="relative px-3 border-r border-white/10">
+          <div className={`relative px-1 lg:px-3 border-r border-white/10 ${isStyleMenuOpen ? 'z-50' : ''}`}>
             <button 
               onMouseDown={(e) => { e.preventDefault(); setIsStyleMenuOpen(!isStyleMenuOpen); }}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all text-sm font-sans group
-                ${isStyleMenuOpen ? 'bg-primary/10 text-white' : 'text-editor-text hover:bg-white/5'}`}
+              className={`flex items-center justify-center h-8 lg:h-10 px-2 lg:px-4 rounded-lg lg:rounded-2xl transition-all duration-300 border
+                ${isStyleMenuOpen 
+                  ? 'bg-primary/20 text-white border-primary/40 shadow-magenta-glow' 
+                  : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'}`}
             >
-              <span className="font-bold tracking-tight">{getBlockTypeName(selectionState.blockType)}</span>
-              <svg className={`w-3 h-3 transition-transform duration-300 ${isStyleMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+              <div className={`text-xs font-sans font-bold tracking-tighter mr-2 ${isStyleMenuOpen ? 'text-primary' : 'text-primary/60 group-hover:text-primary'}`}>
+                {selectionState.blockType === 'h1' ? 'T' : selectionState.blockType === 'h2' ? 'S' : selectionState.blockType === 'blockquote' ? 'Q' : 'N'}
+              </div>
+              <svg className={`w-3 h-3 transition-transform duration-500 ${isStyleMenuOpen ? 'rotate-180 text-primary' : 'text-editor-text-muted opacity-40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
 
             {isStyleMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setIsStyleMenuOpen(false)} />
-                <div className="absolute top-full left-0 mt-3 w-64 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-50 py-3 animate-in fade-in slide-in-from-top-2 duration-300 backdrop-blur-3xl">
-                  <div className="px-4 py-2 mb-2 border-b border-white/5">
-                    <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-[0.3em] opacity-40">Paragraph Styles</span>
+                <div className="absolute top-full left-0 mt-2 w-64 bg-[#0d0d12] border border-white/10 rounded-xl shadow-2xl z-50 py-2 animate-in fade-in slide-in-from-top-2 duration-200 backdrop-blur-3xl ring-1 ring-white/5">
+                  <div className="px-4 py-1 mb-1 border-b border-white/5">
+                    <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold opacity-60">Styles</span>
                   </div>
-                  <button onClick={() => applyStyle('H1')} className="w-full text-left px-4 py-3 hover:bg-primary/10 hover:border-l-2 hover:border-primary transition-all group">
-                    <span className="block text-2xl font-serif font-bold text-white mb-0.5">Title</span>
-                    <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-widest opacity-40 group-hover:opacity-100">Heading 1</span>
+                  <button onClick={() => applyStyle('H1')} className={`w-full text-left px-4 py-3 hover:bg-white/[0.03] transition-all flex flex-col ${selectionState.blockType === 'h1' ? 'border-l-2 border-primary bg-primary/5' : ''}`}>
+                    <span className="block text-xl font-serif font-bold text-white transition-colors">Title</span>
                   </button>
-                  <button onClick={() => applyStyle('H2')} className="w-full text-left px-4 py-3 hover:bg-primary/10 hover:border-l-2 hover:border-primary transition-all group">
-                    <span className="block text-xl font-serif font-bold text-white mb-0.5">Subtitle</span>
-                    <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-widest opacity-40 group-hover:opacity-100">Heading 2</span>
+                  <button onClick={() => applyStyle('H2')} className={`w-full text-left px-4 py-3 hover:bg-white/[0.03] transition-all flex flex-col ${selectionState.blockType === 'h2' ? 'border-l-2 border-primary bg-primary/5' : ''}`}>
+                    <span className="block text-lg font-serif font-bold text-white transition-colors">Subtitle</span>
                   </button>
-                  <button onClick={() => applyStyle('P')} className="w-full text-left px-4 py-3 hover:bg-primary/10 hover:border-l-2 hover:border-primary transition-all group border-t border-white/5">
-                    <span className="block text-sm font-sans text-white mb-0.5 font-bold">Normal text</span>
-                    <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-widest opacity-40 group-hover:opacity-100">Body Paragraph</span>
+                  <button onClick={() => applyStyle('P')} className={`w-full text-left px-4 py-3 hover:bg-white/[0.03] transition-all border-t border-white/5 flex flex-col ${selectionState.blockType === 'p' ? 'border-l-2 border-primary bg-primary/5' : ''}`}>
+                    <span className="block text-sm font-sans text-white font-bold transition-colors">Normal Text</span>
                   </button>
-                  <button onClick={() => applyStyle('BLOCKQUOTE')} className="w-full text-left px-4 py-3 hover:bg-primary/10 hover:border-l-2 hover:border-primary transition-all group border-t border-white/5">
-                    <span className="block text-base font-serif italic text-editor-magenta mb-0.5">Captive Narrative</span>
-                    <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-widest opacity-40 group-hover:opacity-100">Blockquote</span>
+                  <button onClick={() => applyStyle('BLOCKQUOTE')} className={`w-full text-left px-4 py-3 hover:bg-white/[0.03] transition-all border-t border-white/5 flex flex-col ${selectionState.blockType === 'blockquote' ? 'border-l-2 border-primary bg-primary/5' : ''}`}>
+                    <span className="block text-base font-serif italic text-editor-magenta transition-colors">Quote</span>
                   </button>
                 </div>
               </>
             )}
           </div>
 
+          <div className="flex items-center space-x-1 px-1 lg:px-3 border-r border-white/10">
+            {/* Desktop Basic Formatting - Show All */}
+            <div className="hidden lg:flex items-center space-x-1">
+              <FormatButton ariaLabel="Bold" command="bold" active={selectionState.bold} className="font-serif font-bold w-8 h-8" icon={<span>B</span>} />
+              <FormatButton ariaLabel="Italic" command="italic" active={selectionState.italic} className="font-serif italic w-8 h-8" icon={<span>I</span>} />
+              <FormatButton ariaLabel="Underline" command="underline" active={selectionState.underline} className="font-serif underline w-8 h-8" icon={<span>U</span>} />
+            </div>
 
-          <div className="flex items-center space-x-1 px-3 border-r border-white/10">
-            <FormatButton ariaLabel="Bold" command="bold" active={selectionState.bold} className="font-serif font-bold w-8 h-8" icon={<span>B</span>} />
-            <FormatButton ariaLabel="Italic" command="italic" active={selectionState.italic} className="font-serif italic w-8 h-8" icon={<span>I</span>} />
-            <FormatButton ariaLabel="Underline" command="underline" active={selectionState.underline} className="font-serif underline w-8 h-8" icon={<span>U</span>} />
+            {/* Mobile Basic Formatting - Dropdown */}
+            <div className="lg:hidden relative">
+              <button 
+                onMouseDown={(e) => { e.preventDefault(); setIsFormatMenuOpen(!isFormatMenuOpen); }}
+                className={`w-8 h-8 rounded-lg transition-all flex items-center justify-center border transition-all ${
+                  selectionState.bold || selectionState.italic || selectionState.underline 
+                    ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
+                    : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-center">
+                  <span className={`text-xs font-sans font-bold tracking-tighter ${selectionState.bold || selectionState.italic || selectionState.underline ? 'text-primary' : 'text-primary/60'}`}>A</span>
+                  <svg className={`ml-1 w-2.5 h-2.5 transition-transform duration-300 ${isFormatMenuOpen ? 'rotate-180 text-primary' : 'opacity-40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+                </div>
+              </button>
+
+              {isFormatMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsFormatMenuOpen(false)} />
+                  <div className="absolute top-full left-0 mt-2 bg-[#0d0d12] border border-white/10 rounded-xl shadow-2xl z-50 p-1 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200 ring-1 ring-white/5 min-w-[44px]">
+                    <FormatButton ariaLabel="Bold" command="bold" active={selectionState.bold} className="font-serif font-bold w-10 h-10" icon={<span>B</span>} />
+                    <FormatButton ariaLabel="Italic" command="italic" active={selectionState.italic} className="font-serif italic w-10 h-10" icon={<span>I</span>} />
+                    <FormatButton ariaLabel="Underline" command="underline" active={selectionState.underline} className="font-serif underline w-10 h-10" icon={<span>U</span>} />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center space-x-1 px-3 border-r border-white/10">
-            <FormatButton ariaLabel="Align Left" command="justifyLeft" active={selectionState.alignLeft} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h10M4 18h16" /></svg>} />
-            <FormatButton ariaLabel="Align Center" command="justifyCenter" active={selectionState.alignCenter} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>} />
-            <FormatButton ariaLabel="Align Right" command="justifyRight" active={selectionState.alignRight} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M10 12h10M4 18h16" /></svg>} />
-            <FormatButton ariaLabel="Justify" command="justifyFull" active={selectionState.alignJustify} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>} />
+          <div className="flex items-center space-x-1 px-1 lg:px-3 border-r border-white/10">
+            {/* Desktop Alignment - Show All */}
+            <div className="hidden lg:flex items-center space-x-1">
+              <FormatButton ariaLabel="Align Left" command="justifyLeft" active={selectionState.alignLeft} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h10M4 18h16" /></svg>} />
+              <FormatButton ariaLabel="Align Center" command="justifyCenter" active={selectionState.alignCenter} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>} />
+              <FormatButton ariaLabel="Align Right" command="justifyRight" active={selectionState.alignRight} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M10 12h10M4 18h16" /></svg>} />
+              <FormatButton ariaLabel="Justify" command="justifyFull" active={selectionState.alignJustify} icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>} />
+            </div>
+
+            {/* Mobile Alignment - Smart Dropdown */}
+            <div className="lg:hidden relative">
+              <button 
+                onMouseDown={(e) => { e.preventDefault(); setIsAlignMenuOpen(!isAlignMenuOpen); }}
+                className={`w-8 h-8 rounded-lg transition-all flex items-center justify-center border transition-all ${
+                  isAlignMenuOpen 
+                    ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
+                    : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
+                }`}
+              >
+                {selectionState.alignCenter ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                ) : selectionState.alignRight ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M10 12h10M4 18h16" /></svg>
+                ) : selectionState.alignJustify ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h10M4 18h16" /></svg>
+                )}
+                <svg className={`ml-1 w-2.5 h-2.5 transition-transform duration-300 ${isAlignMenuOpen ? 'rotate-180 text-primary' : 'opacity-40'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+              </button>
+
+              {isAlignMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsAlignMenuOpen(false)} />
+                  <div className="absolute top-full left-0 mt-2 bg-[#0d0d12] border border-white/10 rounded-xl shadow-2xl z-50 p-1 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200 ring-1 ring-white/5 min-w-[44px]">
+                    <FormatButton ariaLabel="Align Left" command="justifyLeft" active={selectionState.alignLeft} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h10M4 18h16" /></svg>} />
+                    <FormatButton ariaLabel="Align Center" command="justifyCenter" active={selectionState.alignCenter} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16m-7 6h7" /></svg>} />
+                    <FormatButton ariaLabel="Align Right" command="justifyRight" active={selectionState.alignRight} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M10 12h10M4 18h16" /></svg>} />
+                    <FormatButton ariaLabel="Justify" command="justifyFull" active={selectionState.alignJustify} icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16" /></svg>} />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="flex items-center min-w-[40px] justify-end">
-          <button aria-label="Toggle pages panel" onClick={() => setPagesPanelOpen(!pagesPanelOpen)} className={`p-2 rounded-lg transition-all ${pagesPanelOpen ? 'text-primary bg-primary/10 shadow-magenta-glow' : 'text-editor-text-muted hover:text-white hover:bg-white/10'}`}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          <button 
+            aria-label="Toggle pages panel" 
+            onClick={() => setPagesPanelOpen(!pagesPanelOpen)} 
+            className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-2xl transition-all duration-500 flex items-center justify-center border ${
+              pagesPanelOpen 
+                ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
+                : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
+            }`}
+          >
+            <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           </button>
         </div>
       </div>
       
       <div className="flex-1 relative overflow-hidden flex bg-[#050505]">
-        {/* Dynamic Reference Sidebar (Compass) - Left */}
-        <div className={`relative flex flex-col bg-[#080808] border-r border-white/5 transition-all duration-700 ease-in-out ${referencePanelOpen ? 'w-[260px]' : 'w-0 opacity-0'} overflow-hidden z-20`}>
-          <div className="p-6 h-full flex flex-col min-w-[260px]">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-base font-sans font-bold text-white uppercase tracking-[0.1em]">Story Compass</h3>
-              <button onClick={() => setReferencePanelOpen(false)} className="text-white/20 hover:text-white p-1 transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-            </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
-              <ReferencePanel characters={characters} scenes={scenes} onInsertReference={insertReference} onExamineReference={examineReference} isOpen={true} onToggle={() => {}} />
-            </div>
-          </div>
+        {/* Mobile Backdrop */}
+        <div 
+          className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] lg:hidden transition-all duration-500 ${
+            (referencePanelOpen || pagesPanelOpen) ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => { setReferencePanelOpen(false); setPagesPanelOpen(false); }}
+        />
+
+        <div className={`fixed lg:relative inset-y-0 left-0 lg:inset-auto flex flex-col bg-[#080808]/95 lg:bg-[#080808] border-r border-white/5 transition-all duration-500 ease-in-out ${
+          referencePanelOpen 
+            ? 'w-full sm:w-[320px] lg:w-[260px] translate-x-0 opacity-100' 
+            : 'w-0 -translate-x-full lg:translate-x-0 opacity-0 lg:opacity-100'
+        } overflow-hidden z-[100] lg:z-20 backdrop-blur-3xl lg:backdrop-blur-none`}>
+          <ReferencePanel 
+            characters={characters}
+            scenes={scenes}
+            conflicts={conflicts}
+            resources={resources}
+            isOpen={referencePanelOpen}
+            onToggle={() => setReferencePanelOpen(!referencePanelOpen)}
+            onInsertReference={(type, id) => console.log(`Inserting ${type} ${id}`)}
+            onExamineReference={handleExamineReference}
+          />
         </div>
 
-        {/* Main Content Area - Manuscript Folios */}
-        <div id="manuscript-scroll-container" className="flex-1 overflow-y-auto custom-scrollbar transition-all duration-500 bg-[#050505] relative flex flex-col items-center">
-          <div className="w-full max-w-5xl py-20 flex flex-col items-center space-y-24">
+        {/* Main Editor Surface */}
+        <div 
+          className="flex-1 relative overflow-y-auto custom-scrollbar bg-background/50 backdrop-blur-3xl scroll-smooth"
+          onScroll={handleScroll}
+        >
+          <div className="w-full lg:max-w-[850px] mx-auto min-h-full lg:min-h-[1100px] lg:my-24 bg-[#0f0f15] lg:shadow-[0_40px_100px_rgba(0,0,0,0.8)] lg:rounded-xl border-white/5 p-6 sm:p-12 lg:p-28 relative group border-0 lg:border">
+            {/* Paper Texture Overlay */}
+            <div className="absolute inset-0 opacity-[0.15] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] lg:rounded-xl" />
             
-            {contentChunks.map((chunk, index) => (
-              <div 
-                key={index}
-                id={`folio-container-${index}`}
-                className={`w-full max-w-[800px] min-h-[1050px] bg-[#0a0a0a] border border-white/[0.03] p-16 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] rounded-sm relative transition-all duration-700 ${currentPageIndex === index ? 'ring-1 ring-primary/20 scale-[1.01]' : 'opacity-60 scale-[0.98]'}`}
-                onClick={() => setCurrentPageIndex(index)}
+            <WritingEditor 
+              value={contentChunks.join('')}
+              onChange={(content) => setContentChunks([content])}
+              onSelectionChange={setSelectionState}
+              placeholder="Begin your manuscript..."
+            />
+
+            {/* Page Footer Decor */}
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center space-x-4 opacity-20">
+              <span className="w-8 h-px bg-white/20" />
+              <span className="text-[10px] font-serif uppercase tracking-[0.4em] text-white/40">Finis</span>
+              <span className="w-8 h-px bg-white/20" />
+            </div>
+          </div>
+        </div>
+
+        {/* Pages Sidebar - Right */}
+        <div className={`fixed lg:relative inset-y-0 right-0 lg:inset-auto flex flex-col bg-[#080808]/95 lg:bg-[#080808]/40 backdrop-blur-3xl border-l border-white/5 transition-all duration-500 ease-in-out ${
+          pagesPanelOpen 
+            ? 'w-full sm:w-[320px] lg:w-[300px] translate-x-0 opacity-100' 
+            : 'w-0 translate-x-full lg:translate-x-0 opacity-0 lg:opacity-100'
+        } overflow-hidden z-[100] lg:z-20`}>
+          <div className="p-8 h-full overflow-y-auto custom-scrollbar">
+            <div className="flex items-center justify-between mb-10">
+              <h3 className="text-[9px] font-sans text-editor-text-muted uppercase tracking-[0.6em] font-bold opacity-60">Manuscript Pages</h3>
+              <button 
+                onClick={() => setPagesPanelOpen(false)}
+                className="lg:hidden p-2 -mr-2 text-white/20 hover:text-white transition-colors"
               >
-                <div id={`editor-page-${index}`} className="relative h-full">
-                  <WritingEditor
-                    value={chunk}
-                    onChange={(e) => handlePageChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e as any)}
-                    placeholder={index === 0 ? "The narrative unfolds..." : ""}
-                    isSaving={isSaving}
-                  />
-                </div>
-              </div>
-            ))}
-
-            <button 
-              onClick={() => setContentChunks([...contentChunks, ''])}
-              className="w-full max-w-[800px] py-16 border border-dashed border-white/5 rounded-sm flex flex-col items-center justify-center group hover:border-white/10 transition-all opacity-20 hover:opacity-100"
-            >
-              <span className="text-xl text-white/30 group-hover:text-white/60 mb-2">+</span>
-              <span className="text-[9px] font-mono text-white/20 uppercase tracking-[0.4em]">Forge Folio</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Dynamic Pages Sidebar */}
-        <div className={`relative flex flex-col bg-[#080808] border-l border-white/5 transition-all duration-500 ease-in-out ${pagesPanelOpen ? 'w-[140px]' : 'w-0 opacity-0'} overflow-hidden z-10`}>
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col min-w-[140px] items-center">
-            <div className="w-full flex items-center justify-between mb-8 border-b border-white/5 pb-2">
-              <h3 className="text-[8px] font-mono font-bold text-white/30 uppercase tracking-[0.1em]">Folios</h3>
-              <span className="text-[8px] font-mono text-primary font-bold">{contentChunks.length}</span>
-            </div>
-            <div className="space-y-8">
-              {contentChunks.map((_, index) => (
-                <div key={index} onClick={() => scrollToPage(index)} className="flex flex-col items-center group cursor-pointer">
-                  <div className={`w-[80px] h-[110px] bg-white/[0.01] transition-all duration-500 rounded-sm flex flex-col p-2 relative overflow-hidden border
-                    ${currentPageIndex === index ? 'border-primary/40 bg-white/[0.03] scale-110 shadow-lg' : 'border-white/5 opacity-30 group-hover:opacity-100 group-hover:border-white/10 group-hover:scale-105'}`}>
-                    <div className="w-full h-[1px] bg-white/10 mb-1 rounded-full"></div>
-                    <div className="w-3/4 h-[1px] bg-white/10 mb-1 rounded-full"></div>
-                    <div className="w-full h-[1px] bg-white/5 mb-1 rounded-full mt-2"></div>
-                  </div>
-                  <span className={`mt-3 font-mono text-[8px] font-bold ${currentPageIndex === index ? 'text-primary' : 'text-white/20'}`}>{index + 1}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Dynamic Details Sidebar (Codex) */}
-        <div className={`relative flex flex-col bg-[#0a0a0a] border-l border-white/5 transition-all duration-700 ease-in-out ${detailsPanelOpen ? 'w-[340px]' : 'w-0 opacity-0'} overflow-hidden z-20`}>
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-8 flex flex-col min-w-[340px]">
-            {/* Detail View Header */}
-            <div className="flex items-center justify-between mb-10 pb-4 border-b border-white/5">
-              <span className="text-[9px] font-mono text-primary font-bold uppercase tracking-[0.4em]">{examineEntity?.type} Codex</span>
-              <button onClick={() => setDetailsPanelOpen(false)} className="text-white/10 hover:text-white p-1 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
             </div>
 
-            {/* Detail Content */}
-            {examineEntity?.type === 'character' && characters.find(c => c.id === examineEntity.id) && (() => {
-              const char = characters.find(c => c.id === examineEntity.id);
-              return (
-                <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-700">
-                  <div>
-                    <h4 className="text-4xl font-sans font-bold text-white mb-1 tracking-tight">{char.name}</h4>
-                    <p className="text-editor-magenta font-mono text-[10px] uppercase tracking-[0.4em] font-bold">{char.role}</p>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <h5 className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] font-bold">Biography</h5>
-                    <p className="text-sm font-serif text-white/60 leading-relaxed italic border-l border-white/5 pl-6 py-1">
-                      {char.description || 'No biography forged.'}
-                    </p>
-                  </div>
-
-                  <div className="space-y-8">
-                    <div className="p-5 bg-white/[0.01] border border-white/5 rounded-xl">
-                      <h5 className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] mb-4 font-bold">Motivation</h5>
-                      <p className="text-xs text-white/80 font-sans leading-relaxed italic">
-                        "{char.motivation?.goal || 'Survive.'}"
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <h5 className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] font-bold">Traits</h5>
-                      <div className="flex flex-wrap gap-2">
-                        {char.traits?.personality?.map((t: string, i: number) => (
-                          <span key={i} className="px-2.5 py-1.5 bg-primary/[0.03] border border-primary/10 rounded text-[9px] font-mono text-primary uppercase font-bold tracking-widest">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-            {/* Scene details would go here similarly... */}
+            <div className="space-y-4">
+               {scenes.length > 0 ? (
+                 scenes.map((scene, idx) => (
+                   <div key={scene.id} className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-primary/40 hover:bg-white/[0.04] transition-all duration-500 cursor-pointer group mb-4">
+                     <div className="flex items-center justify-between mb-3">
+                       <span className="text-[8px] font-sans font-bold text-primary/80 uppercase tracking-[0.2em]">Scene {idx + 1}</span>
+                       <span className="text-[8px] font-sans text-editor-text-muted opacity-40 uppercase tracking-widest font-bold">p. {idx * 2 + 1}</span>
+                     </div>
+                     <h4 className="text-[11px] font-sans font-bold text-white/90 group-hover:text-white transition-colors truncate tracking-tight">{scene.title}</h4>
+                     <div className="mt-3 flex items-center justify-between">
+                       <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden mr-4">
+                         <div className="h-full bg-primary/40 rounded-full" style={{ width: '60%' }} />
+                       </div>
+                       <span className="w-1.5 h-1.5 rounded-full bg-primary/60 shadow-[0_0_8px_rgba(255,51,102,0.4)]" />
+                     </div>
+                   </div>
+                 ))
+               ) : (
+                 <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+                   <div className="w-12 h-12 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center text-white/10">
+                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                   </div>
+                   <p className="text-[10px] font-sans text-white/20 uppercase tracking-[0.2em] italic">No scenes chronicled</p>
+                 </div>
+               )}
+            </div>
           </div>
         </div>
       </div>

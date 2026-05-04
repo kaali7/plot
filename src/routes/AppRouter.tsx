@@ -51,7 +51,7 @@ const StoryDashboardWrapper = () => {
 function AppRouter() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <div className="min-h-screen bg-gradient-to-r from-black to-[#2a003f]">
           {/* We'll handle loading state in the routes themselves */}
           <Routes>
