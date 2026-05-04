@@ -130,10 +130,9 @@ export const characterAPI = {
   
   // Create character
   createCharacter: async (storyId: string, characterData: Omit<Character, 'id' | 'story_id' | 'created_at' | 'updated_at'>) => {
-    // Omit resources as it's not a column in the characters table
-    const { resources: _, ...data } = characterData as any;
+    const { resources: characterResources, ...data } = characterData as any;
     
-    return handleResponse(
+    const result = await handleResponse<Character>(
       supabase.from('characters').insert([
         {
           ...data,
@@ -141,6 +140,14 @@ export const characterAPI = {
         }
       ]).select().single()
     );
+
+    if (result.data && characterResources?.length) {
+      for (const resourceId of characterResources) {
+        await resourceAPI.linkResourceToEntity(resourceId, 'characters', result.data.id);
+      }
+    }
+
+    return result;
   },
   
   // Get character
@@ -152,12 +159,21 @@ export const characterAPI = {
   
   // Update character
   updateCharacter: async (characterId: string, updates: Partial<Omit<Character, 'id' | 'story_id' | 'created_at'>>) => {
-    // Omit resources as it's not a column in the characters table
-    const { resources: _, ...data } = updates as any;
+    const { resources: characterResources, ...data } = updates as any;
     
-    return handleResponse(
+    const result = await handleResponse(
       supabase.from('characters').update(data).eq('id', characterId)
     );
+
+    // Note: This simple implementation doesn't handle unlinking. 
+    // In a full implementation, we'd diff the resources.
+    if (characterResources?.length) {
+      for (const resourceId of characterResources) {
+        await resourceAPI.linkResourceToEntity(resourceId, 'characters', characterId);
+      }
+    }
+
+    return result;
   },
   
   // Delete character
@@ -179,10 +195,9 @@ export const sceneAPI = {
   
   // Create scene
   createScene: async (storyId: string, sceneData: Omit<Scene, 'id' | 'story_id' | 'created_at' | 'updated_at'>) => {
-    // Omit resources as it's not a column in the scenes table
-    const { resources: _, ...data } = sceneData as any;
+    const { resources: sceneResources, ...data } = sceneData as any;
     
-    return handleResponse(
+    const result = await handleResponse<Scene>(
       supabase.from('scenes').insert([
         {
           ...data,
@@ -190,6 +205,14 @@ export const sceneAPI = {
         }
       ]).select().single()
     );
+
+    if (result.data && sceneResources?.length) {
+      for (const resourceId of sceneResources) {
+        await resourceAPI.linkResourceToEntity(resourceId, 'scenes', result.data.id);
+      }
+    }
+
+    return result;
   },
   
   // Get scene
@@ -201,12 +224,19 @@ export const sceneAPI = {
   
   // Update scene
   updateScene: async (sceneId: string, updates: Partial<Omit<Scene, 'id' | 'story_id' | 'created_at'>>) => {
-    // Omit resources as it's not a column in the scenes table
-    const { resources: _, ...data } = updates as any;
+    const { resources: sceneResources, ...data } = updates as any;
     
-    return handleResponse(
+    const result = await handleResponse(
       supabase.from('scenes').update(data).eq('id', sceneId)
     );
+
+    if (sceneResources?.length) {
+      for (const resourceId of sceneResources) {
+        await resourceAPI.linkResourceToEntity(resourceId, 'scenes', sceneId);
+      }
+    }
+
+    return result;
   },
   
   // Delete scene

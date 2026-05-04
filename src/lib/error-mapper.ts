@@ -8,6 +8,7 @@ const ERROR_MAP: Record<string, string> = {
   '23503': 'A related item was not found.', // Foreign key violation
   '42501': 'You do not have permission to perform this action.', // RLS violation
   'PGRST301': 'The requested item was not found.', // Row not found
+  'PGRST116': 'The requested story was not found or you do not have access.', // .single() row not found
   '23502': 'A required field is missing.', // Not null violation
 };
 

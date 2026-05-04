@@ -17,7 +17,7 @@ export const conflictSchema = z.object({
 // Character Schemas
 export const characterSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be under 100 characters'),
-  role: z.enum(['protagonist', 'antagonist', 'supporting', 'minor']),
+  role: z.enum(['main', 'sub-main', 'supporting', 'antagonist']),
   description: z.string().max(3000, 'Description must be under 3000 characters').optional().nullable(),
   motivation: z.object({
     goal: z.string().max(1000, 'Goal must be under 1000 characters').optional().nullable(),
@@ -43,7 +43,7 @@ export const worldSettingsSchema = z.object({
 // Scene Schemas
 export const sceneSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be under 200 characters'),
-  type: z.enum(['action', 'dialogue', 'suspense', 'transition', 'climax']),
+  type: z.enum(['introduction', 'conflict', 'climax', 'resolution', 'transition']),
   goal: z.string().max(2000, 'Goal must be under 2000 characters').optional().nullable(),
   background: z.string().max(5000, 'Background must be under 5000 characters').optional().nullable(),
   outcome: z.string().max(3000, 'Outcome must be under 3000 characters').optional().nullable(),

@@ -34,7 +34,7 @@ export interface Character {
   id: string;
   story_id: string;
   name: string;
-  role: 'protagonist' | 'antagonist' | 'supporting' | 'minor';
+  role: 'main' | 'sub-main' | 'supporting' | 'antagonist';
   description?: string;
   image_url?: string;
   motivation: {
@@ -71,7 +71,7 @@ export interface Scene {
   id: string;
   story_id: string;
   title: string;
-  type: 'action' | 'dialogue' | 'suspense' | 'transition' | 'climax';
+  type: 'introduction' | 'conflict' | 'climax' | 'resolution' | 'transition';
   order: number;
   pov_character_id?: string;
   goal?: string;
@@ -92,6 +92,7 @@ export interface Scene {
   dialogue: Dialogue[];
   background?: string;
   outcome?: string;
+  impact?: string;
   created_at: string;
   updated_at: string;
 }
