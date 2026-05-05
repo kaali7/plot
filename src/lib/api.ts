@@ -389,11 +389,28 @@ export const writingAPI = {
   }
 };
 
+// Storage API
+export const storageAPI = {
+  uploadFile: async (bucket: string, path: string, file: File) => {
+    return handleResponse(
+      supabase.storage.from(bucket).upload(path, file, {
+        upsert: true
+      })
+    );
+  },
+  
+  getPublicUrl: (bucket: string, path: string) => {
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    return data.publicUrl;
+  }
+};
+
 export default {
   story: storyAPI,
   conflict: conflictAPI,
   character: characterAPI,
   scene: sceneAPI,
   resource: resourceAPI,
-  writing: writingAPI
+  writing: writingAPI,
+  storage: storageAPI
 };

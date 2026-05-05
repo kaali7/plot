@@ -277,11 +277,11 @@ Each dialogue row includes:
 
 ## 6. Future Scope
 
-* AI-assisted writing
-* AI character and scene generation
-* AI image generation
-* Export to screenplay / PDF
-* Collaboration features
+* AI-assisted writing (yes now)
+* AI character and scene generation (yes now)
+* AI prompt generation for creating images (future: AI image generation) (yes now)
+* Export to screenplay / PDF (not now )
+* Collaboration features (not now)
 
 ---
 
