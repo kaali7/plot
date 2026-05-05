@@ -46,6 +46,8 @@ export const sceneSchema = z.object({
   type: z.enum(['introduction', 'conflict', 'climax', 'resolution', 'transition']),
   goal: z.string().max(2000, 'Goal must be under 2000 characters').optional().nullable(),
   background: z.string().max(5000, 'Background must be under 5000 characters').optional().nullable(),
+  context: z.string().max(5000, 'Context must be under 5000 characters').optional().nullable(),
+  situation_details: z.string().max(5000, 'Situation details must be under 5000 characters').optional().nullable(),
   outcome: z.string().max(3000, 'Outcome must be under 3000 characters').optional().nullable(),
 });
 

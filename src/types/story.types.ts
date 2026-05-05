@@ -91,6 +91,8 @@ export interface Scene {
   };
   dialogue: Dialogue[];
   background?: string;
+  context?: string;
+  situation_details?: string;
   outcome?: string;
   impact?: string;
   created_at: string;
@@ -268,6 +270,8 @@ export interface SceneFormData {
   conflicts: Scene['conflicts'];
   dialogue: Scene['dialogue'];
   background?: string;
+  context?: string;
+  situation_details?: string;
   outcome?: string;
 }
 
