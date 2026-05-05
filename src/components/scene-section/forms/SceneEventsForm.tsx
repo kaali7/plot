@@ -13,24 +13,24 @@ interface SceneEventsFormProps {
 
 export const SceneEventsForm: React.FC<SceneEventsFormProps> = ({ data, onUpdate }) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <label className="block text-purple-300 mb-2">Main Event</label>
+        <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Narrative Core (Main Event)</label>
         <textarea
           value={data.main || ''}
           onChange={(e) => onUpdate({ ...data, main: e.target.value })}
-          className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[80px]"
-          placeholder="What is the main event of this scene?"
+          className="w-full input-tactile text-sm min-h-[120px] leading-relaxed"
+          placeholder="What is the central action or revelation of this scene?"
         />
       </div>
 
       <div>
-        <label className="block text-purple-300 mb-2">Turning Point</label>
+        <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Structural Pivot (Turning Point)</label>
         <textarea
           value={data.turningPoint || ''}
           onChange={(e) => onUpdate({ ...data, turningPoint: e.target.value })}
-          className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[80px]"
-          placeholder="Is there a significant turning point in this scene?"
+          className="w-full input-tactile text-sm min-h-[120px] leading-relaxed"
+          placeholder="What moment shifts the narrative direction or character state?"
         />
       </div>
     </div>

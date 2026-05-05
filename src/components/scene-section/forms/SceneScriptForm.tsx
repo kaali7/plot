@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import type { Dialogue, Character } from '../../../types/story.types';
+import { FiPlus, FiTrash2, FiChevronUp, FiChevronDown, FiUser, FiMessageSquare } from 'react-icons/fi';
 
 interface SceneScriptFormProps {
   data: Dialogue[];
@@ -7,161 +8,231 @@ interface SceneScriptFormProps {
   onUpdate: (data: Dialogue[]) => void;
 }
 
-export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({ data, characters, onUpdate }) => {
-  const [selectedCharacterId, setSelectedCharacterId] = useState('');
-  const [content, setContent] = useState('');
+export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
+  data,
+  characters,
+  onUpdate
+}) => {
+  const [activeEntry, setActiveEntry] = useState<number | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  // Auto-scroll to bottom on new data
-  React.useEffect(() => {
-    const history = document.getElementById('script-history');
-    if (history) {
-      history.scrollTo({
-        top: history.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, [data]);
-
-  const addEntry = (type: 'dialogue' | 'action') => {
-    if (content.trim()) {
-      const newEntry: Dialogue = {
-        characterId: selectedCharacterId,
-        content: content.trim(),
-        order: data.length,
-        type: type
-      };
-      onUpdate([...data, newEntry]);
-      setContent('');
-      textareaRef.current?.focus();
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (selectedCharacterId) {
-        addEntry('dialogue');
-      } else {
-        addEntry('action');
-      }
-    }
+  const addEntry = useCallback((type: 'dialogue' | 'action' = 'dialogue') => {
+    const newEntry: Dialogue = {
+      characterId: characters[0]?.id || '',
+      content: '',
+      order: data.length,
+      type: type
+    };
+    onUpdate([...data, newEntry]);
+    setActiveEntry(data.length);
     
-    if (e.key === 'Tab' && !e.shiftKey) {
-      e.preventDefault();
-      // Cycle characters
-      const charIds = ['', ...characters.map(c => c.id)];
-      const currentIndex = charIds.indexOf(selectedCharacterId);
-      const nextIndex = (currentIndex + 1) % charIds.length;
-      setSelectedCharacterId(charIds[nextIndex]);
-    }
+    // Smooth scroll to bottom
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }, 100);
+  }, [data, characters, onUpdate]);
+
+  const updateEntry = (index: number, updates: Partial<Dialogue>) => {
+    const newDialogue = [...data];
+    newDialogue[index] = { ...newDialogue[index], ...updates };
+    onUpdate(newDialogue);
   };
 
   const removeEntry = (index: number) => {
-    onUpdate(data.filter((_, i) => i !== index));
+    const newDialogue = data
+      .filter((_, i) => i !== index)
+      .map((entry, i) => ({ ...entry, order: i }));
+    onUpdate(newDialogue);
+    if (activeEntry === index) setActiveEntry(null);
+  };
+
+  const moveEntry = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === data.length - 1) return;
+
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    const newDialogue = [...data];
+    const temp = newDialogue[index];
+    newDialogue[index] = newDialogue[newIndex];
+    newDialogue[newIndex] = temp;
+
+    // Reset order
+    const orderedDialogue = newDialogue.map((entry, i) => ({ ...entry, order: i }));
+    onUpdate(orderedDialogue);
+    setActiveEntry(newIndex);
+  };
+
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      addEntry(data[index].type);
+    } else if (e.key === 'Backspace' && data[index].content === '' && data.length > 1) {
+      e.preventDefault();
+      removeEntry(index);
+      setActiveEntry(Math.max(0, index - 1));
+    } else if (e.key === 'ArrowUp' && e.ctrlKey) {
+      moveEntry(index, 'up');
+    } else if (e.key === 'ArrowDown' && e.ctrlKey) {
+      moveEntry(index, 'down');
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      // Cycle characters for this entry
+      const charIds = ['', ...characters.map(c => c.id)];
+      const currentIndex = charIds.indexOf(data[index].characterId || '');
+      const nextIndex = (currentIndex + 1) % charIds.length;
+      updateEntry(index, { characterId: charIds[nextIndex] });
+    }
   };
 
   return (
-    <div className="h-full flex flex-col max-w-5xl mx-auto overflow-hidden">
-      {/* Script History - Now takes up remaining space */}
-      <div 
-        id="script-history"
-        className="flex-1 overflow-y-auto custom-scrollbar space-y-4 px-4 pb-12 pt-4"
-      >
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted">Chronicle Beats</h3>
+          <p className="text-[10px] font-serif text-white/20 italic">The tactile flow of voices and events.</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => addEntry('action')}
+            className="flex items-center space-x-2 text-[9px] font-mono font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all bg-white/5 px-3 py-1.5 rounded-full border border-white/10"
+          >
+            <FiPlus size={12} />
+            <span>Action</span>
+          </button>
+          <button
+            onClick={() => addEntry('dialogue')}
+            className="flex items-center space-x-2 text-[9px] font-mono font-bold text-editor-magenta uppercase tracking-widest hover:text-white transition-all bg-editor-magenta/5 px-3 py-1.5 rounded-full border border-editor-magenta/20"
+          >
+            <FiPlus size={12} />
+            <span>Dialogue</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar scroll-smooth" ref={scrollRef}>
         {data.length > 0 ? (
-          data.map((entry, index) => {
-            const character = characters.find(c => c.id === entry.characterId);
-            const isAction = entry.type === 'action';
+          data.map((entry, idx) => {
+            const isActive = activeEntry === idx;
 
             return (
               <div 
-                key={index} 
-                className={`group relative py-6 px-12 transition-all border-b border-white/[0.03] hover:bg-white/[0.01] animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both ${
-                  isAction ? 'italic opacity-50' : ''
+                key={idx}
+                className={`group relative transition-all duration-500 rounded-2xl border ${
+                  isActive 
+                    ? 'bg-white/[0.03] border-editor-magenta/30 shadow-magenta-glow/10' 
+                    : 'bg-white/[0.01] border-white/5 hover:border-white/10'
                 }`}
+                onFocus={() => setActiveEntry(idx)}
               >
-                {!isAction && (
-                  <div className="mb-2">
-                    <span className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold">
-                      {character?.name || 'Narrator'}
-                    </span>
-                  </div>
-                )}
-                
-                <div className={`${isAction ? 'pl-8 border-l border-white/10' : ''}`}>
-                  <p className={`text-base font-serif leading-relaxed ${isAction ? 'text-editor-text-muted italic' : 'text-white/90'}`}>
-                    {isAction ? entry.content : `"${entry.content}"`}
-                  </p>
+                {/* Reorder Handle */}
+                <div className="absolute -left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all flex flex-col space-y-1 text-white/10 hover:text-white/40">
+                  <button onClick={() => moveEntry(idx, 'up')} className="hover:text-editor-magenta"><FiChevronUp size={14} /></button>
+                  <button onClick={() => moveEntry(idx, 'down')} className="hover:text-editor-magenta"><FiChevronDown size={14} /></button>
                 </div>
 
-                <button
-                  onClick={() => removeEntry(index)}
-                  className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-2 text-editor-text-muted hover:text-red-500 transition-all"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                <div className="p-4 md:p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      {/* Character Selector */}
+                      <div className="relative">
+                        <select
+                          value={entry.characterId || ''}
+                          onChange={(e) => updateEntry(idx, { characterId: e.target.value })}
+                          className="appearance-none bg-transparent text-[10px] font-mono font-bold uppercase tracking-widest text-editor-magenta/80 hover:text-white transition-colors outline-none cursor-pointer pr-6"
+                        >
+                          <option value="" className="bg-[#0a0a0f]">Narrator</option>
+                          {characters.map(char => (
+                            <option key={char.id} value={char.id} className="bg-[#0a0a0f]">{char.name}</option>
+                          ))}
+                        </select>
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                          <FiUser size={10} />
+                        </div>
+                      </div>
+
+                      {/* Beat Type Toggle */}
+                      <button
+                        onClick={() => updateEntry(idx, { type: entry.type === 'action' ? 'dialogue' : 'action' })}
+                        className={`text-[8px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all ${
+                          entry.type === 'action' 
+                            ? 'border-blue-500/30 text-blue-400 bg-blue-500/10' 
+                            : 'border-white/10 text-editor-text-muted'
+                        }`}
+                      >
+                        {entry.type === 'action' ? 'Action' : 'Dialogue'}
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => removeEntry(idx)}
+                      className="opacity-0 group-hover:opacity-40 hover:opacity-100 text-red-500 transition-all"
+                    >
+                      <FiTrash2 size={14} />
+                    </button>
+                  </div>
+
+                  {/* Content Area */}
+                  <div className="relative">
+                    <textarea
+                      value={entry.content}
+                      onChange={(e) => updateEntry(idx, { content: e.target.value })}
+                      onKeyDown={(e) => handleKeyDown(e, idx)}
+                      placeholder={entry.type === 'action' ? "Describe the movement..." : "What is spoken?"}
+                      className={`w-full bg-transparent border-none outline-none resize-none leading-relaxed text-sm md:text-base ${
+                        entry.type === 'action' 
+                          ? 'font-serif italic text-white/40' 
+                          : 'font-sans text-white/90'
+                      }`}
+                      autoFocus={isActive && entry.content === ''}
+                      rows={1}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = 'auto';
+                        target.style.height = target.scrollHeight + 'px';
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             );
           })
         ) : (
-          <div className="text-center py-20 border border-dashed border-white/10 rounded-xl bg-white/[0.01] animate-in fade-in duration-1000">
-            <p className="text-editor-text-muted text-[11px] font-mono uppercase tracking-[0.3em] italic opacity-40">The scene's dialogue has not yet been forged.</p>
+          <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-white/[0.01] border border-dashed border-white/10 rounded-3xl">
+             <div className="w-16 h-16 rounded-full bg-editor-magenta/5 border border-editor-magenta/10 flex items-center justify-center text-editor-magenta/20">
+               <FiMessageSquare size={24} />
+             </div>
+             <div className="space-y-1">
+               <p className="text-[11px] font-mono text-white/30 uppercase tracking-[0.2em] font-bold">The page is silent</p>
+               <button 
+                 onClick={() => addEntry('dialogue')}
+                 className="text-[10px] font-serif text-editor-magenta hover:text-white transition-all italic underline decoration-editor-magenta/30 underline-offset-4"
+               >
+                 Inaugurate the first beat
+               </button>
+             </div>
           </div>
         )}
       </div>
 
-      {/* Ultra-Compact Speed-Script Bar - Glassmorphic Bottom Anchor */}
-      <div className="mt-auto pt-6 border-t border-white/10 bg-black/40 backdrop-blur-2xl z-10 p-6 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
-        <div className="flex items-center space-x-3">
-          {/* Character Anchor */}
-          <div className="w-48 relative">
-            <select
-              value={selectedCharacterId}
-              onChange={(e) => setSelectedCharacterId(e.target.value)}
-              className="w-full bg-black/20 border border-white/5 rounded-md px-3 py-2 text-[11px] font-mono font-bold text-white/70 uppercase tracking-widest focus:border-editor-magenta outline-none transition-all appearance-none cursor-pointer hover:bg-black/40"
-            >
-              <option value="">Background</option>
-              {characters.map(char => (
-                <option key={char.id} value={char.id}>{char.name}</option>
-              ))}
-            </select>
+      {data.length > 0 && (
+        <div className="pt-4 flex flex-wrap gap-4 items-center text-[8px] font-mono text-editor-text-muted uppercase tracking-[0.3em] opacity-40">
+          <div className="flex items-center space-x-2">
+            <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded">Enter</kbd>
+            <span>Next Beat</span>
           </div>
-
-          {/* Drafting Field */}
-          <div className="flex-1 relative">
-            <textarea
-              ref={textareaRef}
-              rows={1}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="w-full bg-black/10 border border-white/5 rounded-md px-4 py-2 text-sm font-serif text-white/90 focus:border-editor-magenta outline-none transition-all resize-none placeholder:text-white/10"
-              placeholder={selectedCharacterId ? `Enter ${characters.find(c => c.id === selectedCharacterId)?.name}'s dialogue...` : "Describe the movement..."}
-            />
+          <div className="flex items-center space-x-2">
+            <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded">Tab</kbd>
+            <span>Cycle Cast</span>
           </div>
-
-          {/* Commit Action */}
-          <button
-            onClick={() => addEntry(selectedCharacterId ? 'dialogue' : 'action')}
-            disabled={!content.trim()}
-            className={`flex-shrink-0 px-6 py-2 rounded-md text-[10px] font-mono font-bold uppercase tracking-widest transition-all
-              ${content.trim() 
-                ? 'bg-editor-magenta text-white shadow-magenta-glow hover:scale-105 active:scale-95' 
-                : 'bg-white/5 text-white/20 border border-white/5'}`}
-          >
-            {selectedCharacterId ? 'Add Dialogue' : 'Add Action'}
-          </button>
+          <div className="flex items-center space-x-2">
+            <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded">Ctrl+↑/↓</kbd>
+            <span>Reorder</span>
+          </div>
         </div>
-        
-        {/* Quick Keyboard Hints */}
-        <div className="flex items-center space-x-3 mt-2 px-1 opacity-40">
-          <span className="text-[8px] font-mono text-editor-text-muted uppercase tracking-widest">[Tab] Next Cast</span>
-          <span className="text-[8px] font-mono text-editor-text-muted uppercase tracking-widest">[Enter] Commit</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -18,54 +18,60 @@ export const SceneConflictForm: React.FC<SceneConflictFormProps> = ({ data, conf
   const externalConflicts = conflicts.filter(c => c.type === 'external');
 
   return (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-purple-300 mb-2 font-medium">Internal Conflict</label>
+    <div className="space-y-8">
+      {/* Internal Conflict */}
+      <section className="space-y-4">
+        <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted">Psychological Friction (Internal)</label>
         <div className="space-y-3">
           <select
-            className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
+            className="w-full select-tactile text-sm"
             onChange={(e) => onUpdate({ ...data, internal: e.target.value })}
             value={internalConflicts.some(c => c.description === data.internal) ? data.internal : ''}
           >
-            <option value="">Choose an existing internal conflict...</option>
+            <option value="">Link existing friction...</option>
             {internalConflicts.map(c => (
-              <option key={c.id} value={c.description || ''}>{(c.title || 'Conflict')}: {(c.description || '').substring(0, 50)}...</option>
+              <option key={c.id} value={c.description || ''}>
+                {c.title?.toUpperCase()}: {(c.description || '').substring(0, 40)}...
+              </option>
             ))}
-            <option value="custom">-- Custom Conflict --</option>
+            <option value="custom">CUSTOM OVERRIDE</option>
           </select>
           
           <textarea
             value={data.internal || ''}
             onChange={(e) => onUpdate({ ...data, internal: e.target.value })}
-            className="w-full bg-[#1a001f] border border-purple-900/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[80px]"
-            placeholder="Or describe the internal struggle for this scene..."
+            className="w-full input-tactile text-sm min-h-[100px] leading-relaxed"
+            placeholder="Describe the unique psychological tension in this scene..."
           />
         </div>
-      </div>
+      </section>
 
-      <div>
-        <label className="block text-purple-300 mb-2 font-medium">External Conflict</label>
+      {/* External Conflict */}
+      <section className="space-y-4">
+        <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted">Environmental Resistance (External)</label>
         <div className="space-y-3">
           <select
-            className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none"
+            className="w-full select-tactile text-sm"
             onChange={(e) => onUpdate({ ...data, external: e.target.value })}
             value={externalConflicts.some(c => c.description === data.external) ? data.external : ''}
           >
-            <option value="">Choose an existing external conflict...</option>
+            <option value="">Link existing resistance...</option>
             {externalConflicts.map(c => (
-              <option key={c.id} value={c.description || ''}>{(c.title || 'Conflict')}: {(c.description || '').substring(0, 50)}...</option>
+              <option key={c.id} value={c.description || ''}>
+                {c.title?.toUpperCase()}: {(c.description || '').substring(0, 40)}...
+              </option>
             ))}
-            <option value="custom">-- Custom Conflict --</option>
+            <option value="custom">CUSTOM OVERRIDE</option>
           </select>
 
           <textarea
             value={data.external || ''}
             onChange={(e) => onUpdate({ ...data, external: e.target.value })}
-            className="w-full bg-[#1a001f] border border-purple-900/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[80px]"
-            placeholder="Or describe the external forces for this scene..."
+            className="w-full input-tactile text-sm min-h-[100px] leading-relaxed"
+            placeholder="Describe the external pressures or active opposition in this scene..."
           />
         </div>
-      </div>
+      </section>
     </div>
   );
 };
