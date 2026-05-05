@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ResourceForm } from './forms/ResourceForm';
 import type { Resource } from '../../types/story.types';
 import { resourceSchema } from '../../lib/schemas';
+import { Modal } from '../ui/Modal';
+import { FiLink, FiFileText } from 'react-icons/fi';
 
 interface ResourceModalProps {
   resource: Resource | null;
@@ -28,11 +30,6 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({ resource, onSave, 
     }
   });
 
-  const handleTabChange = (tab: typeof activeTab) => {
-    setActiveTab(tab);
-  };
-
-
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSave = () => {
@@ -55,52 +52,63 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({ resource, onSave, 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-surface-dark backdrop-blur-2xl rounded-card w-full max-w-2xl border border-white/10 shadow-glass flex flex-col max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-8 border-b border-white/5 bg-white/[0.02]">
-          <div>
-            <h2 className="text-3xl font-sans font-bold text-white tracking-tight">
-              {resource ? `Refine Asset` : 'Acquire New Asset'}
-            </h2>
-            <p className="text-sm font-sans font-medium text-editor-text-muted mt-2">
-              {resource ? `Archiving: ${resource.title}` : 'Adding to the narrative repository'}
-            </p>
-          </div>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={resource ? `Refine Asset` : 'Acquire New Asset'}
+      description={resource ? `Archiving: ${resource.title}` : 'Adding to the narrative repository'}
+      maxWidth="2xl"
+      footer={
+        <>
+          <button
+            onClick={onDelete}
+            disabled={!resource}
+            className="text-[10px] font-mono text-red-500/50 hover:text-red-500 uppercase tracking-widest transition-all disabled:opacity-0 mr-auto"
+          >
+            {resource ? 'Deconstruct Asset' : 'Discard Acquisition'}
+          </button>
           <button
             onClick={onClose}
-            className="text-editor-text-muted hover:text-white transition-all p-2 bg-white/5 hover:bg-white/10 rounded-full"
+            className="text-[10px] font-mono text-editor-text-muted hover:text-white uppercase tracking-widest transition-all px-4"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            Cancel
           </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex px-8 border-b border-white/5 bg-white/[0.01]">
           <button
-            onClick={() => handleTabChange('content')}
-            className={`px-8 py-4 transition-all border-b-2 text-sm font-sans font-bold
+            onClick={handleSave}
+            className="btn-magenta px-8 py-2.5 rounded-full"
+          >
+            Commit Asset
+          </button>
+        </>
+      }
+    >
+      <div className="flex flex-col h-full -mx-5 md:-mx-8 -mt-5 md:-mt-8">
+        {/* Sticky Tabs */}
+        <div className="sticky top-0 z-10 flex border-b border-white/5 bg-[#0a0a0f]/80 backdrop-blur-md overflow-x-auto whitespace-nowrap scrollbar-hide touch-pan-x">
+          <button
+            onClick={() => setActiveTab('content')}
+            className={`flex-1 flex flex-col items-center px-4 py-3 transition-all border-b-2 gap-1 group
             ${activeTab === 'content' 
-              ? 'border-primary text-primary bg-white/[0.02]' 
+              ? 'border-editor-magenta text-white bg-white/[0.02]' 
               : 'border-transparent text-editor-text-muted hover:text-white'}`}
           >
-            Asset Content
+            <FiFileText className={`${activeTab === 'content' ? 'text-editor-magenta' : 'opacity-40 group-hover:opacity-100'} transition-all`} size={18} />
+            <span className="hidden md:block text-[9px] font-mono font-bold uppercase tracking-[0.2em]">Asset Content</span>
           </button>
           <button
-            onClick={() => handleTabChange('links')}
-            className={`px-8 py-4 transition-all border-b-2 text-sm font-sans font-bold
+            onClick={() => setActiveTab('links')}
+            className={`flex-1 flex flex-col items-center px-4 py-3 transition-all border-b-2 gap-1 group
             ${activeTab === 'links' 
-              ? 'border-primary text-primary bg-white/[0.02]' 
+              ? 'border-editor-magenta text-white bg-white/[0.02]' 
               : 'border-transparent text-editor-text-muted hover:text-white'}`}
           >
-            Linked Entities
+            <FiLink className={`${activeTab === 'links' ? 'text-editor-magenta' : 'opacity-40 group-hover:opacity-100'} transition-all`} size={18} />
+            <span className="hidden md:block text-[9px] font-mono font-bold uppercase tracking-[0.2em]">Linked Entities</span>
           </button>
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
+        <div className="p-5 md:p-8 space-y-6 md:space-y-8">
           {activeTab === 'content' && (
             <ResourceForm
               data={formData}
@@ -111,7 +119,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({ resource, onSave, 
           {activeTab === 'links' && (
             <div className="py-12 text-center space-y-4">
               <div className="w-16 h-16 bg-white/[0.05] border border-white/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-glass">
-                <span className="text-2xl">🔗</span>
+                <FiLink className="text-2xl text-editor-text-muted" />
               </div>
               <h3 className="text-xl font-sans font-bold text-white">Narrative Nexus</h3>
               <p className="text-sm font-sans text-editor-text-muted max-w-xs mx-auto leading-relaxed">
@@ -120,32 +128,7 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({ resource, onSave, 
             </div>
           )}
         </div>
-
-        {/* Action Buttons */}
-        <div className="p-6 border-t border-white/5 bg-white/[0.02] flex justify-between items-center">
-          <button
-            onClick={onDelete}
-            disabled={!resource}
-            className="text-sm font-sans font-medium text-primary/70 hover:text-primary transition-all disabled:opacity-0 px-4 py-2"
-          >
-            {resource ? 'Deconstruct Asset' : 'Discard Acquisition'}
-          </button>
-          <div className="flex space-x-4">
-            <button
-              onClick={onClose}
-              className="text-sm font-sans font-medium text-editor-text-muted hover:text-white transition-all px-4 py-2"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="btn-magenta"
-            >
-              Commit Asset
-            </button>
-          </div>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 };
