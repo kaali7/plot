@@ -421,3 +421,15 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 GRANT EXECUTE ON FUNCTION link_resource_to_entity TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION unlink_resource_from_entity TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION reorder_scenes TO anon, authenticated;
+
+-- 5. Add Scene Context and Situation Details fields (2026-05-05)
+ALTER TABLE scenes 
+ADD COLUMN IF NOT EXISTS context TEXT,
+ADD COLUMN IF NOT EXISTS situation_details TEXT;
+
+-- Migrate existing background data to context if context is empty
+UPDATE scenes 
+SET context = background 
+WHERE (context IS NULL OR context = '') 
+AND background IS NOT NULL 
+AND background != '';

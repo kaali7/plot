@@ -89,7 +89,34 @@ BEGIN
         'Kaelen''s own memories are beginning to overwrite the data he carries.'
     );
 
-    -- 4. Insert an Initial Writing Session
+    -- 4. Insert a Sample Scene
+    INSERT INTO scenes (
+        story_id,
+        title,
+        type,
+        "order",
+        goal,
+        setting,
+        background,
+        context,
+        situation_details,
+        outcome,
+        impact
+    ) VALUES (
+        v_story_id,
+        'The Drop-off',
+        'conflict',
+        0,
+        'Reach the contact without being scanned.',
+        '{"location": "Sector 4 Warehouse", "time": "02:44", "environment": "Freezing"}'::jsonb,
+        'The air is thick with the smell of ozone and rotting kelp.',
+        'Kaelen has been waiting for two hours. The contact is late.',
+        'The warehouse is a known neutral zone, but CorpSec has been raiding them lately.',
+        'The contact arrives but is wounded.',
+        'Kaelen is now forced to protect the contact instead of just delivering.'
+    );
+
+    -- 5. Insert an Initial Writing Session
     INSERT INTO writing_sessions (
         story_id,
         content,
