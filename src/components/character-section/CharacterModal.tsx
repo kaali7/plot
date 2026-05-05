@@ -114,28 +114,30 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSav
         </>
       }
     >
-      <div className="flex flex-col h-full -mx-5 md:-mx-8 -mt-5 md:-mt-8">
-        {/* Sticky Tabs */}
-        <div className="sticky top-0 z-10 flex border-b border-white/5 bg-[#0a0a0f]/95 backdrop-blur-md overflow-x-auto whitespace-nowrap scrollbar-hide touch-pan-x no-scrollbar">
+      <div className="flex flex-col relative">
+        {/* Sticky Tabs - Refined for Mobile Visibility */}
+        <div className="sticky -top-5 md:-top-8 z-30 flex border-b border-white/10 bg-[#0a0a0f] backdrop-blur-2xl overflow-x-auto whitespace-nowrap scrollbar-hide touch-pan-x no-scrollbar -mx-5 md:-mx-8 -mt-5 md:-mt-8 mb-6 md:mb-8 shadow-xl shadow-black/40">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-none flex flex-col items-center justify-center min-w-[64px] md:min-w-[100px] px-2 md:px-6 py-3 md:py-4 transition-all border-b-2 gap-1 group
+              className={`flex-none flex flex-col items-center justify-center min-w-[72px] md:min-w-[110px] px-3 md:px-6 py-4 md:py-5 transition-all border-b-2 gap-1.5 group
               ${activeTab === tab.id 
-                ? 'border-editor-magenta text-white bg-white/[0.04]' 
-                : 'border-transparent text-editor-text-muted hover:text-white hover:bg-white/[0.01]'}`}
+                ? 'border-editor-magenta text-white bg-white/[0.06]' 
+                : 'border-transparent text-editor-text-muted hover:text-white hover:bg-white/[0.02]'}`}
             >
-              <div className={`${activeTab === tab.id ? 'text-editor-magenta scale-110 drop-shadow-[0_0_8px_rgba(255,0,85,0.5)]' : 'text-current opacity-40 group-hover:opacity-100'} transition-all duration-300`}>
-                {React.cloneElement(tab.icon as React.ReactElement, { size: 20 })}
+              <div className={`${activeTab === tab.id ? 'text-editor-magenta scale-110 drop-shadow-[0_0_12px_rgba(255,0,85,0.6)]' : 'text-current opacity-40 group-hover:opacity-100'} transition-all duration-300`}>
+                {React.cloneElement(tab.icon as React.ReactElement, { size: 22 })}
               </div>
-              <span className="text-[8px] md:text-[9px] font-mono font-bold uppercase tracking-[0.2em]">{tab.label}</span>
+              <span className={`text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-[0.25em] transition-colors ${activeTab === tab.id ? 'text-white' : 'text-editor-text-muted/60'}`}>
+                {tab.label}
+              </span>
             </button>
           ))}
         </div>
 
         {/* Form Content */}
-        <div className="p-5 md:p-8 space-y-6 md:space-y-8">
+        <div className="space-y-6 md:space-y-10 pb-8">
             {activeTab === 'basic' && (
               <BasicInfoForm
                 data={formData}

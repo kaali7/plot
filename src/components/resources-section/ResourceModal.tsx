@@ -82,33 +82,41 @@ export const ResourceModal: React.FC<ResourceModalProps> = ({ resource, onSave, 
         </>
       }
     >
-      <div className="flex flex-col h-full -mx-5 md:-mx-8 -mt-5 md:-mt-8">
-        {/* Sticky Tabs */}
-        <div className="sticky top-0 z-10 flex border-b border-white/5 bg-[#0a0a0f]/80 backdrop-blur-md overflow-x-auto whitespace-nowrap scrollbar-hide touch-pan-x">
+      <div className="flex flex-col relative">
+        {/* Sticky Tabs - Refined for Mobile Visibility */}
+        <div className="sticky -top-5 md:-top-8 z-30 flex border-b border-white/10 bg-[#0a0a0f] backdrop-blur-2xl overflow-x-auto whitespace-nowrap scrollbar-hide touch-pan-x no-scrollbar -mx-5 md:-mx-8 -mt-5 md:-mt-8 mb-6 md:mb-8 shadow-xl shadow-black/40">
           <button
             onClick={() => setActiveTab('content')}
-            className={`flex-1 flex flex-col items-center px-4 py-3 transition-all border-b-2 gap-1 group
+            className={`flex-1 flex flex-col items-center justify-center min-h-[64px] md:min-h-[80px] px-4 py-4 md:py-5 transition-all border-b-2 gap-1.5 group
             ${activeTab === 'content' 
-              ? 'border-editor-magenta text-white bg-white/[0.02]' 
-              : 'border-transparent text-editor-text-muted hover:text-white'}`}
+              ? 'border-editor-magenta text-white bg-white/[0.06]' 
+              : 'border-transparent text-editor-text-muted hover:text-white hover:bg-white/[0.02]'}`}
           >
-            <FiFileText className={`${activeTab === 'content' ? 'text-editor-magenta' : 'opacity-40 group-hover:opacity-100'} transition-all`} size={18} />
-            <span className="hidden md:block text-[9px] font-mono font-bold uppercase tracking-[0.2em]">Asset Content</span>
+            <div className={`${activeTab === 'content' ? 'text-editor-magenta scale-110 drop-shadow-[0_0_12px_rgba(255,0,85,0.6)]' : 'text-current opacity-40 group-hover:opacity-100'} transition-all duration-300`}>
+              <FiFileText size={20} />
+            </div>
+            <span className={`text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-[0.25em] transition-colors ${activeTab === 'content' ? 'text-white' : 'text-editor-text-muted/60'}`}>
+              Content
+            </span>
           </button>
           <button
             onClick={() => setActiveTab('links')}
-            className={`flex-1 flex flex-col items-center px-4 py-3 transition-all border-b-2 gap-1 group
+            className={`flex-1 flex flex-col items-center justify-center min-h-[64px] md:min-h-[80px] px-4 py-4 md:py-5 transition-all border-b-2 gap-1.5 group
             ${activeTab === 'links' 
-              ? 'border-editor-magenta text-white bg-white/[0.02]' 
-              : 'border-transparent text-editor-text-muted hover:text-white'}`}
+              ? 'border-editor-magenta text-white bg-white/[0.06]' 
+              : 'border-transparent text-editor-text-muted hover:text-white hover:bg-white/[0.02]'}`}
           >
-            <FiLink className={`${activeTab === 'links' ? 'text-editor-magenta' : 'opacity-40 group-hover:opacity-100'} transition-all`} size={18} />
-            <span className="hidden md:block text-[9px] font-mono font-bold uppercase tracking-[0.2em]">Linked Entities</span>
+            <div className={`${activeTab === 'links' ? 'text-editor-magenta scale-110 drop-shadow-[0_0_12px_rgba(255,0,85,0.6)]' : 'text-current opacity-40 group-hover:opacity-100'} transition-all duration-300`}>
+              <FiLink size={20} />
+            </div>
+            <span className={`text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-[0.25em] transition-colors ${activeTab === 'links' ? 'text-white' : 'text-editor-text-muted/60'}`}>
+              Links
+            </span>
           </button>
         </div>
 
         {/* Form Content */}
-        <div className="p-5 md:p-8 space-y-6 md:space-y-8">
+        <div className="space-y-6 md:space-y-10 pb-8">
           {activeTab === 'content' && (
             <ResourceForm
               data={formData}
