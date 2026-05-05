@@ -1,5 +1,4 @@
 import React from 'react';
-
 import type { Character } from '../../../types/story.types';
 
 interface ConflictsFormProps {
@@ -9,24 +8,24 @@ interface ConflictsFormProps {
 
 export const ConflictsForm: React.FC<ConflictsFormProps> = ({ data, onUpdate }) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <label className="block text-purple-300 mb-2">Internal Conflict</label>
+        <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Internal Conflict</label>
         <textarea
           value={data.internal || ''}
           onChange={(e) => onUpdate({ ...data, internal: e.target.value })}
-          className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[80px]"
-          placeholder="Describe the character's internal struggles"
+          className="w-full input-tactile text-sm min-h-[100px] leading-relaxed"
+          placeholder="What is the character's internal struggle?"
         />
       </div>
 
       <div>
-        <label className="block text-purple-300 mb-2">External Conflict</label>
+        <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">External Conflict</label>
         <textarea
           value={data.external || ''}
           onChange={(e) => onUpdate({ ...data, external: e.target.value })}
-          className="w-full bg-[#2a003f] border border-purple-700/30 rounded-lg px-3 py-2 text-white focus:border-purple-500 focus:outline-none min-h-[80px]"
-          placeholder="Describe external forces opposing the character"
+          className="w-full input-tactile text-sm min-h-[100px] leading-relaxed"
+          placeholder="What outside forces are working against them?"
         />
       </div>
     </div>

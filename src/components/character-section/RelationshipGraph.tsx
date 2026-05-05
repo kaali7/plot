@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiUsers } from 'react-icons/fi';
 
 interface Character {
   id: string;
@@ -19,120 +20,137 @@ interface RelationshipGraphProps {
 
 export const RelationshipGraph: React.FC<RelationshipGraphProps> = ({
   characters,
-  relationships
+  relationships: _relationships // Unused as we fetch from characters
 }) => {
-  // Simple circular layout for character relationship visualization
   const characterCount = characters.length;
   
   if (characterCount === 0) {
     return (
-      <div className="text-center py-8 text-purple-400">
-        No characters to display
+      <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-white/[0.01] border border-dashed border-white/10 rounded-3xl">
+        <div className="w-16 h-16 rounded-full bg-editor-magenta/5 border border-editor-magenta/10 flex items-center justify-center text-editor-magenta/20">
+          <FiUsers size={24} />
+        </div>
+        <div className="space-y-1">
+          <p className="text-[11px] font-mono text-white/30 uppercase tracking-[0.2em] font-bold">The Nexus is Void</p>
+          <p className="text-[10px] font-serif text-white/10 italic">Populate your chronicle to see the bonds form.</p>
+        </div>
       </div>
     );
   }
 
   // Calculate positions for characters in a circle
-  const positions = characters.map((_, index) => {
-    const angle = (index / characterCount) * Math.PI * 2;
-    const radius = 120; // Fixed radius for now
-    const x = Math.cos(angle) * radius;
-    const y = Math.sin(angle) * radius;
-    return { x, y };
-  });
+  const centerX = 200;
+  const centerY = 200;
+  const radius = 140;
 
-  // Relationship type colors (using emotion colors from spec)
-  const relationshipColors: Record<string, string> = {
-    friend: 'bg-blue-500/20 text-blue-400',
-    rival: 'bg-yellow-500/20 text-yellow-400',
-    mentor: 'bg-green-500/20 text-green-400',
-    enemy: 'bg-red-500/20 text-red-400',
-    family: 'bg-purple-500/20 text-purple-400',
-    romantic: 'bg-pink-500/20 text-pink-400'
+  const positions = characters.reduce((acc, char, index) => {
+    const angle = (index / characterCount) * Math.PI * 2 - Math.PI / 2;
+    acc[char.id] = {
+      x: centerX + Math.cos(angle) * radius,
+      y: centerY + Math.sin(angle) * radius,
+      angle: (angle * 180) / Math.PI
+    };
+    return acc;
+  }, {} as Record<string, { x: number; y: number; angle: number }>);
+
+  const getRelationshipColor = (type: string) => {
+    switch (type) {
+      case 'romantic': return '#ff0055'; // Magenta
+      case 'friend': return '#00d2ff'; // Cyan
+      case 'enemy': return '#ff3d00'; // Orange-Red
+      case 'rival': return '#ffcc00'; // Amber
+      case 'mentor': return '#00ff88'; // Emerald
+      case 'family': return '#bf00ff'; // Purple
+      default: return '#ffffff';
+    }
   };
 
   return (
-    <div className="relative h-[300px] w-full">
-      {/* Character nodes */}
-      {characters.map((character, index) => {
-        const pos = positions[index];
-        return (
-          <div 
-            key={character.id}
-            className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
-            style={{ left: `calc(50% + ${pos.x}px)`, top: `calc(50% + ${pos.y}px)` }}
-          >
-            <div className="relative">
-              {/* Character badge */}
-              <div 
-                className="w-16 h-16 flex items-center justify-center rounded-full bg-[#1a001f] border-2 border-purple-500/30 shadow-[0_0_15px_rgba(138,0,194,0.3)]"
-              >
-                <div className="text-purple-200 font-medium">{character.name.charAt(0)}</div>
-              </div>
-              
-              {/* Character name label */}
-              <div className="absolute bottom-full mb-2 text-xs text-purple-300 whitespace-nowrap">
-                {character.name}
-              </div>
-            </div>
-          </div>
-        );
-      })}
+    <div className="relative w-full max-w-[400px] mx-auto aspect-square select-none">
+      <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full drop-shadow-2xl">
+        <defs>
+          {Object.keys(positions).map((id) => (
+            <radialGradient key={`grad-${id}`} id={`grad-${id}`} cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#ff0055" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#ff0055" stopOpacity="0" />
+            </radialGradient>
+          ))}
+        </defs>
 
-       {/* Relationship lines */}
-       {relationships.map((rel, index) => {
-         const sourceChar = characters.find(c => c.id === rel.characterId);
-         const targetChar = characters.find(c => 
-           // For simplicity, connecting to first other character (in real app, would have targetId)
-           c.id !== rel.characterId && characters.length > 1
-         );
-         
-         if (!sourceChar || !targetChar) return null;
-         
-         const sourceIndex = characters.indexOf(sourceChar);
-         const targetIndex = characters.indexOf(targetChar);
-         
-         if (sourceIndex === -1 || targetIndex === -1) return null;
-         
-         const sourcePos = positions[sourceIndex];
-         const targetPos = positions[targetIndex];
-         
-         // Calculate line properties
-         const length = Math.sqrt(
-           Math.pow(targetPos.x - sourcePos.x, 2) + 
-           Math.pow(targetPos.y - sourcePos.y, 2)
-         );
-         const angle = Math.atan2(targetPos.y - sourcePos.y, targetPos.x - sourcePos.x) * (180 / Math.PI);
-         const midpointX = (sourcePos.x + targetPos.x) / 2;
-         const midpointY = (sourcePos.y + targetPos.y) / 2;
-         
-         return (
-           <div 
-             key={index}
-             className="absolute left-1/2 top-1/2 transform"
-             style={{
-               left: `calc(50% + ${midpointX}px)`,
-               top: `calc(50% + ${midpointY}px)`,
-               width: `${length}px`,
-               height: '2px',
-               background: 'linear-gradient(to right, transparent, currentColor, transparent)',
-               backgroundSize: '200% 100%',
-               backgroundPosition: '0% 50%',
-               transform: `rotate(${angle}deg)`
-             }}
-           >
-             {/* Relationship label */}
-             <div 
-               className="absolute -top-4 left-1/2 -translate-x-1/2 text-xs font-medium"
-               style={{ color: 'currentColor' }}
-             >
-                <span className={`${relationshipColors[rel.type] || relationshipColors.friend} px-1 rounded`}>
-                  {rel.type}
-                </span>
-             </div>
-           </div>
-         );
-       })}
+        {/* Lines */}
+        {characters.map(source => 
+          (source as any).relationships?.map((rel: any, idx: number) => {
+            const start = positions[source.id];
+            const end = positions[rel.characterId];
+            if (!start || !end) return null;
+
+            const color = getRelationshipColor(rel.type);
+
+            return (
+              <g key={`${source.id}-${rel.characterId}-${idx}`}>
+                <line
+                  x1={start.x}
+                  y1={start.y}
+                  x2={end.x}
+                  y2={end.y}
+                  stroke={color}
+                  strokeWidth="1"
+                  strokeOpacity="0.15"
+                  className="transition-all duration-700"
+                />
+                <circle
+                  cx={(start.x + end.x) / 2}
+                  cy={(start.y + end.y) / 2}
+                  r="2"
+                  fill={color}
+                  className="animate-pulse shadow-glow"
+                  style={{ filter: `drop-shadow(0 0 4px ${color})` }}
+                />
+              </g>
+            );
+          })
+        )}
+
+        {/* Character Nodes */}
+        {characters.map((character) => {
+          const pos = positions[character.id];
+          const isMain = character.role === 'main';
+
+          return (
+            <g key={character.id} className="group cursor-pointer">
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={isMain ? 22 : 18}
+                className="fill-[#0a0a0f] stroke-white/10 group-hover:stroke-editor-magenta/50 transition-all duration-500"
+                style={{ filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}
+              />
+              <text
+                x={pos.x}
+                y={pos.y}
+                dy=".3em"
+                textAnchor="middle"
+                className="text-[10px] font-mono font-bold fill-white/80 group-hover:fill-white pointer-events-none transition-colors"
+              >
+                {character.name.charAt(0)}
+              </text>
+              
+              {/* Label */}
+              <text
+                x={pos.x}
+                y={pos.y + (isMain ? 35 : 30)}
+                textAnchor="middle"
+                className="text-[8px] font-mono font-bold uppercase tracking-widest fill-editor-text-muted group-hover:fill-editor-magenta transition-colors duration-300"
+              >
+                {character.name}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Decorative Aura */}
+      <div className="absolute inset-0 pointer-events-none bg-radial-gradient from-editor-magenta/5 via-transparent to-transparent opacity-20" />
     </div>
   );
 };
