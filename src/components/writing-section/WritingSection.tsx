@@ -13,6 +13,31 @@ interface WritingSectionProps {
   onWritingUpdate: (content: string) => Promise<void>;
 }
 
+const FormatButton: React.FC<{
+  ariaLabel: string;
+  command: string;
+  active: boolean;
+  icon: React.ReactNode;
+  className?: string;
+}> = ({ ariaLabel, command, active, icon, className }) => {
+  return (
+    <button
+      onMouseDown={(e) => {
+        e.preventDefault();
+        document.execCommand(command, false);
+      }}
+      title={ariaLabel}
+      className={`flex items-center justify-center rounded-lg lg:rounded-2xl transition-all duration-300 border ${
+        active 
+          ? 'bg-primary/20 text-primary border-primary/30 shadow-magenta-glow' 
+          : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
+      } ${className || 'w-8 h-8 lg:w-10 lg:h-10'}`}
+    >
+      {icon}
+    </button>
+  );
+};
+
 export const WritingSection: React.FC<WritingSectionProps> = ({
   writingSession,
   characters,
@@ -27,6 +52,9 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   const [pagesPanelOpen, setPagesPanelOpen] = useState(typeof window !== 'undefined' ? window.innerWidth > 1024 : false);
   const [lastScrollTop, setLastScrollTop] = useState(0);
   const [toolbarVisible, setToolbarVisible] = useState(true);
+
+  // Derived state
+  const wordCount = contentChunks.join('').trim() ? contentChunks.join('').trim().split(/\s+/).length : 0;
   
   // Selection State
   const [selectionState, setSelectionState] = useState({
@@ -76,6 +104,11 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   const handleFind = () => {
     console.log(`Finding: ${findQuery}`);
     // Find logic would be implemented here or passed to WritingEditor
+  };
+
+  const handleExamineReference = (type: string, id: string) => {
+    console.log(`Examining ${type} with ID: ${id}`);
+    // Future: open detail view for the reference
   };
 
 
