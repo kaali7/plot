@@ -89,15 +89,33 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
         isOpen={isModalOpen} 
         onClose={handleCancel} 
         title="Forge New Conflict"
+        description="Define the tensions that drive your narrative forward. Every great story is built on the foundation of friction."
+        footer={
+          <>
+            <button
+              onClick={handleCancel}
+              className="text-editor-text-muted hover:text-white transition-all font-mono text-[10px] uppercase tracking-widest px-4"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAddConflict}
+              className="btn-magenta px-10 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full disabled:opacity-50 shadow-lg shadow-magenta-glow/20"
+              disabled={!newConflict.title.trim()}
+            >
+              Forge Conflict
+            </button>
+          </>
+        }
       >
         <div className="space-y-6">
            <div>
-             <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Conflict Title</label>
+             <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em] font-bold">Conflict Title</label>
              <input
                type="text"
                value={newConflict.title}
                onChange={(e) => setNewConflict({ ...newConflict, title: e.target.value })}
-               className={`w-full input-tactile font-serif text-lg ${errors.title ? 'border-red-500/50' : ''}`}
+               className={`w-full input-tactile font-sans text-lg ${errors.title ? 'border-red-500/50' : ''}`}
                placeholder="e.g., Internal struggle with morality"
                maxLength={200}
              />
@@ -105,11 +123,11 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
            </div>
 
            <div>
-             <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Conflict Nature</label>
+             <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em] font-bold">Conflict Nature</label>
              <select
                value={newConflict.type}
                onChange={(e) => setNewConflict({ ...newConflict, type: e.target.value as Conflict['type'] })}
-               className="w-full input-tactile font-mono text-xs uppercase tracking-widest bg-[#0a0a0a]"
+               className="w-full select-tactile font-mono text-xs uppercase tracking-widest"
              >
                <option value="internal">Internal Tension</option>
                <option value="external">External Obstacle</option>
@@ -118,32 +136,16 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
            </div>
 
            <div>
-             <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Description</label>
+             <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em] font-bold">Description</label>
              <textarea
                value={newConflict.description}
                onChange={(e) => setNewConflict({ ...newConflict, description: e.target.value })}
-               className={`w-full input-tactile font-serif min-h-[150px] leading-relaxed ${errors.description ? 'border-red-500/50' : ''}`}
+               className={`w-full input-tactile font-sans min-h-[150px] leading-relaxed ${errors.description ? 'border-red-500/50' : ''}`}
                placeholder="Describe the tension..."
                maxLength={3000}
              />
              {errors.description && <p className="text-red-500 text-[10px] font-mono mt-1 uppercase tracking-wider">{errors.description}</p>}
            </div>
-
-          <div className="flex justify-end space-x-6 pt-4">
-            <button
-              onClick={handleCancel}
-              className="text-editor-text-muted hover:text-white transition-all font-mono text-[10px] uppercase tracking-widest"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleAddConflict}
-              className="btn-magenta px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm disabled:opacity-50"
-              disabled={!newConflict.title.trim()}
-            >
-              Forge Conflict
-            </button>
-          </div>
         </div>
       </Modal>
     </div>

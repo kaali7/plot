@@ -116,15 +116,32 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ storyId,
         isOpen={isModalOpen} 
         onClose={handleCancel} 
         title="World Settings Codex"
+        description="Define the boundaries, atmosphere, and geography of your narrative universe. The stage upon which your characters will perform."
+        footer={
+          <>
+            <button
+              onClick={handleCancel}
+              className="text-editor-text-muted hover:text-white transition-all font-mono text-[10px] uppercase tracking-widest px-4"
+            >
+              Discard
+            </button>
+            <button
+              onClick={handleSave}
+              className="btn-magenta px-10 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full shadow-lg shadow-magenta-glow/20"
+            >
+              Archive Settings
+            </button>
+          </>
+        }
       >
         <div className="space-y-8">
           <div>
-            <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Temporal Period</label>
+            <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Temporal Period</label>
             <input
               type="text"
               value={formData.timePeriod || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, timePeriod: e.target.value }))}
-              className={`w-full input-tactile font-serif ${errors.timePeriod ? 'border-red-500/50' : ''}`}
+              className={`w-full input-tactile font-sans ${errors.timePeriod ? 'border-red-500/50' : ''}`}
               placeholder="e.g., Late Renaissance, Cyberpunk Neo-Tokyo"
               maxLength={200}
             />
@@ -132,12 +149,12 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ storyId,
           </div>
 
           <div>
-            <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Core Atmosphere</label>
+            <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Core Atmosphere</label>
             <input
               type="text"
               value={formData.atmosphere || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, atmosphere: e.target.value }))}
-              className={`w-full input-tactile font-serif ${errors.atmosphere ? 'border-red-500/50' : ''}`}
+              className={`w-full input-tactile font-sans ${errors.atmosphere ? 'border-red-500/50' : ''}`}
               placeholder="e.g., Melancholic and isolated, Vibrant but decaying"
               maxLength={200}
             />
@@ -145,11 +162,11 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ storyId,
           </div>
 
           <div>
-            <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Environment Codex</label>
+            <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Environment Codex</label>
             <textarea
               value={formData.environmentDescription || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, environmentDescription: e.target.value }))}
-              className={`w-full input-tactile font-serif min-h-[150px] leading-relaxed ${errors.environmentDescription ? 'border-red-500/50' : ''}`}
+              className={`w-full input-tactile font-sans min-h-[150px] leading-relaxed ${errors.environmentDescription ? 'border-red-500/50' : ''}`}
               placeholder="Describe the physical and social landscape..."
               maxLength={5000}
             />
@@ -158,10 +175,10 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ storyId,
 
           <div>
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
-              <label className="block text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.2em]">Cartography: Locations</label>
+              <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted">Cartography: Locations</label>
               <button
                 onClick={addLocation}
-                className="text-[10px] font-mono text-editor-magenta hover:text-white transition-all uppercase tracking-widest"
+                className="text-[10px] font-mono text-editor-magenta hover:text-white transition-all uppercase tracking-widest font-bold"
               >
                 + Map Location
               </button>
@@ -174,33 +191,18 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ storyId,
                     type="text"
                     value={location}
                     onChange={(e) => updateLocation(index, e.target.value)}
-                    className="flex-1 input-tactile font-serif"
+                    className="flex-1 input-tactile font-sans"
                     placeholder="Location designation..."
                   />
                   <button
                     onClick={() => removeLocation(index)}
-                    className="text-[10px] font-mono text-red-500/40 hover:text-red-500 transition-all uppercase"
+                    className="text-[10px] font-mono text-red-500/40 hover:text-red-500 transition-all uppercase px-2 py-1"
                   >
                     Remove
                   </button>
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="flex justify-end space-x-6 pt-6 border-t border-white/5">
-            <button
-              onClick={handleCancel}
-              className="text-editor-text-muted hover:text-white transition-all font-mono text-[10px] uppercase tracking-widest"
-            >
-              Discard
-            </button>
-            <button
-              onClick={handleSave}
-              className="btn-magenta px-10 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
-            >
-              Archive Settings
-            </button>
           </div>
         </div>
       </Modal>

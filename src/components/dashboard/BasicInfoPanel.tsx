@@ -115,15 +115,32 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
         isOpen={isModalOpen} 
         onClose={handleCancel} 
         title="Manuscript Foundation"
+        description="The core pillars of your narrative. Update the title, theme, and premise of your work."
+        footer={
+          <>
+            <button
+              onClick={handleCancel}
+              className="text-editor-text-muted hover:text-white transition-all font-mono text-[10px] uppercase tracking-widest px-4"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              className="btn-magenta px-10 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full shadow-lg shadow-magenta-glow/20"
+            >
+              Update Foundation
+            </button>
+          </>
+        }
       >
         <div className="space-y-6">
           <div>
-            <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Manuscript Title</label>
+            <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Manuscript Title</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className={`w-full input-tactile font-serif text-lg ${errors.name ? 'border-red-500/50' : ''}`}
+              className={`w-full input-tactile font-sans text-lg ${errors.name ? 'border-red-500/50' : ''}`}
               placeholder="Enter story name"
               maxLength={200}
             />
@@ -131,12 +148,12 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
           </div>
           
           <div>
-            <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Thematic Core</label>
+            <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Thematic Core</label>
             <input
               type="text"
               value={formData.theme}
               onChange={(e) => setFormData(prev => ({ ...prev, theme: e.target.value }))}
-              className={`w-full input-tactile font-serif ${errors.theme ? 'border-red-500/50' : ''}`}
+              className={`w-full input-tactile font-sans ${errors.theme ? 'border-red-500/50' : ''}`}
               placeholder="e.g. Redemption, Cosmic Horror, Betrayal"
               maxLength={200}
             />
@@ -144,30 +161,15 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
           </div>
           
           <div>
-            <label className="block text-[10px] font-mono text-editor-text-muted mb-2 uppercase tracking-[0.2em]">Core Premise</label>
+            <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Core Premise</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className={`w-full input-tactile font-serif min-h-[150px] leading-relaxed ${errors.description ? 'border-red-500/50' : ''}`}
+              className={`w-full input-tactile font-sans min-h-[150px] leading-relaxed ${errors.description ? 'border-red-500/50' : ''}`}
               placeholder="Summarize the heart of your narrative..."
               maxLength={5000}
             />
             {errors.description && <p className="text-red-500 text-[10px] font-mono mt-1 uppercase tracking-wider">{errors.description}</p>}
-          </div>
-          
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
-              onClick={handleCancel}
-              className="px-6 py-2 rounded-sm text-[10px] font-bold tracking-widest uppercase border border-white/10 text-editor-text-muted hover:text-white transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="px-8 py-2 btn-magenta text-[10px] font-bold tracking-widest uppercase rounded-sm"
-            >
-              Update Foundation
-            </button>
           </div>
         </div>
       </Modal>

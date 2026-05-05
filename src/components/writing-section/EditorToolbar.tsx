@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 interface EditorToolbarProps {
   onSave: () => void;
   onExport: (format: string) => void;
+  onDraftNarrative: () => void;
   onInsertReference: (type: 'character' | 'scene', id: string) => void;
   characters: any[];
   scenes: any[];
@@ -12,6 +13,7 @@ interface EditorToolbarProps {
 export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onSave,
   onExport,
+  onDraftNarrative,
   isSaving: _isSaving
 }) => {
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
@@ -19,6 +21,18 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   return (
     <div className="flex items-center space-x-6">
 
+
+      {/* Draft Narrative Action */}
+      <button
+        onClick={onDraftNarrative}
+        className="hidden md:flex items-center space-x-2 px-4 py-2 bg-editor-magenta/10 hover:bg-editor-magenta/20 text-editor-magenta rounded-xl border border-editor-magenta/20 transition-all group"
+        title="Forge Narrative from Structured Data"
+      >
+        <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Forge Skeleton</span>
+      </button>
 
       {/* Export & Save Menu */}
       <div className="flex items-center space-x-4">
