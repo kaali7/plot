@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import type { Dialogue, Character } from '../../../types/story.types';
-import { FiPlus, FiTrash2, FiChevronUp, FiChevronDown, FiUser, FiMessageSquare } from 'react-icons/fi';
+import { FiTrash2, FiChevronUp, FiChevronDown, FiUser, FiMessageSquare } from 'react-icons/fi';
 
 interface SceneScriptFormProps {
   data: Dialogue[];
@@ -15,24 +15,16 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
 }) => {
   const [activeEntry, setActiveEntry] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const addEntry = useCallback((type: 'dialogue' | 'action' = 'dialogue') => {
-    const newEntry: Dialogue = {
-      characterId: characters[0]?.id || '',
-      content: '',
-      order: data.length,
-      type: type
-    };
-    onUpdate([...data, newEntry]);
-    setActiveEntry(data.length);
-    
-    // Smooth scroll to bottom
-    setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-      }
-    }, 100);
-  }, [data, characters, onUpdate]);
+  
+  const [newBeat, setNewBeat] = useState<{
+    type: 'dialogue' | 'action',
+    content: string,
+    characterId: string
+  }>({
+    type: 'dialogue',
+    content: '',
+    characterId: characters[0]?.id || ''
+  });
 
   const updateEntry = (index: number, updates: Partial<Dialogue>) => {
     const newDialogue = [...data];
@@ -58,18 +50,13 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
     newDialogue[index] = newDialogue[newIndex];
     newDialogue[newIndex] = temp;
 
-    // Reset order
     const orderedDialogue = newDialogue.map((entry, i) => ({ ...entry, order: i }));
     onUpdate(orderedDialogue);
     setActiveEntry(newIndex);
   };
 
-  // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      addEntry(data[index].type);
-    } else if (e.key === 'Backspace' && data[index].content === '' && data.length > 1) {
+    if (e.key === 'Backspace' && data[index].content === '' && data.length > 1) {
       e.preventDefault();
       removeEntry(index);
       setActiveEntry(Math.max(0, index - 1));
@@ -77,42 +64,50 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
       moveEntry(index, 'up');
     } else if (e.key === 'ArrowDown' && e.ctrlKey) {
       moveEntry(index, 'down');
-    } else if (e.key === 'Tab') {
+    }
+  };
+
+  const submitNewBeat = () => {
+    if (newBeat.content.trim() === '') return;
+    
+    const entry: Dialogue = {
+      characterId: newBeat.type === 'action' ? '' : newBeat.characterId,
+      content: newBeat.content,
+      order: data.length,
+      type: newBeat.type
+    };
+    onUpdate([...data, entry]);
+    setNewBeat(prev => ({ ...prev, content: '' }));
+    
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }, 100);
+  };
+
+  const handleNewBeatKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      // Cycle characters for this entry
-      const charIds = ['', ...characters.map(c => c.id)];
-      const currentIndex = charIds.indexOf(data[index].characterId || '');
-      const nextIndex = (currentIndex + 1) % charIds.length;
-      updateEntry(index, { characterId: charIds[nextIndex] });
+      submitNewBeat();
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col h-[65vh] relative">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
         <div className="space-y-1">
           <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted">Chronicle Beats</h3>
           <p className="text-[10px] font-serif text-white/20 italic">The tactile flow of voices and events.</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => addEntry('action')}
-            className="flex items-center space-x-2 text-[9px] font-mono font-bold text-white/40 hover:text-white uppercase tracking-widest transition-all bg-white/5 px-3 py-1.5 rounded-full border border-white/10"
-          >
-            <FiPlus size={12} />
-            <span>Action</span>
-          </button>
-          <button
-            onClick={() => addEntry('dialogue')}
-            className="flex items-center space-x-2 text-[9px] font-mono font-bold text-editor-magenta uppercase tracking-widest hover:text-white transition-all bg-editor-magenta/5 px-3 py-1.5 rounded-full border border-editor-magenta/20"
-          >
-            <FiPlus size={12} />
-            <span>Dialogue</span>
-          </button>
-        </div>
       </div>
 
-      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar scroll-smooth" ref={scrollRef}>
+      {/* Beats List */}
+      <div 
+        className="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar scroll-smooth pb-32" 
+        ref={scrollRef}
+      >
         {data.length > 0 ? (
           data.map((entry, idx) => {
             const isActive = activeEntry === idx;
@@ -127,43 +122,30 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
                 }`}
                 onFocus={() => setActiveEntry(idx)}
               >
-                {/* Reorder Handle */}
                 <div className="absolute -left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all flex flex-col space-y-1 text-white/10 hover:text-white/40">
                   <button onClick={() => moveEntry(idx, 'up')} className="hover:text-editor-magenta"><FiChevronUp size={14} /></button>
                   <button onClick={() => moveEntry(idx, 'down')} className="hover:text-editor-magenta"><FiChevronDown size={14} /></button>
                 </div>
 
-                <div className="p-4 md:p-6 space-y-4">
+                <div className="p-4 md:p-5 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      {/* Character Selector */}
-                      <div className="relative">
-                        <select
-                          value={entry.characterId || ''}
-                          onChange={(e) => updateEntry(idx, { characterId: e.target.value })}
-                          className="appearance-none bg-transparent text-[10px] font-mono font-bold uppercase tracking-widest text-editor-magenta/80 hover:text-white transition-colors outline-none cursor-pointer pr-6"
-                        >
-                          <option value="" className="bg-[#0a0a0f]">Narrator</option>
-                          {characters.map(char => (
-                            <option key={char.id} value={char.id} className="bg-[#0a0a0f]">{char.name}</option>
-                          ))}
-                        </select>
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-editor-magenta/80">
+                          {entry.characterId ? characters.find(c => c.id === entry.characterId)?.name : 'Narrator'}
+                        </span>
+                        <div className="opacity-20">
                           <FiUser size={10} />
                         </div>
                       </div>
 
-                      {/* Beat Type Toggle */}
-                      <button
-                        onClick={() => updateEntry(idx, { type: entry.type === 'action' ? 'dialogue' : 'action' })}
-                        className={`text-[8px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all ${
-                          entry.type === 'action' 
-                            ? 'border-blue-500/30 text-blue-400 bg-blue-500/10' 
-                            : 'border-white/10 text-editor-text-muted'
-                        }`}
-                      >
+                      <div className={`text-[8px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all ${
+                        entry.type === 'action' 
+                          ? 'border-blue-500/30 text-blue-400 bg-blue-500/10' 
+                          : 'border-white/10 text-editor-text-muted'
+                      }`}>
                         {entry.type === 'action' ? 'Action' : 'Dialogue'}
-                      </button>
+                      </div>
                     </div>
 
                     <button
@@ -174,7 +156,6 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
                     </button>
                   </div>
 
-                  {/* Content Area */}
                   <div className="relative">
                     <textarea
                       value={entry.content}
@@ -186,7 +167,6 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
                           ? 'font-serif italic text-white/40' 
                           : 'font-sans text-white/90'
                       }`}
-                      autoFocus={isActive && entry.content === ''}
                       rows={1}
                       onInput={(e) => {
                         const target = e.target as HTMLTextAreaElement;
@@ -205,34 +185,87 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
                <FiMessageSquare size={24} />
              </div>
              <div className="space-y-1">
-               <p className="text-[11px] font-mono text-white/30 uppercase tracking-[0.2em] font-bold">The page is silent</p>
-               <button 
-                 onClick={() => addEntry('dialogue')}
-                 className="text-[10px] font-serif text-editor-magenta hover:text-white transition-all italic underline decoration-editor-magenta/30 underline-offset-4"
-               >
-                 Inaugurate the first beat
-               </button>
+               <p className="text-[11px] font-mono text-white/30 uppercase tracking-[0.2em] font-bold">The chronicle is empty</p>
+               <p className="text-[10px] font-serif text-white/20 italic">Speak or act below to begin.</p>
              </div>
           </div>
         )}
       </div>
 
-      {data.length > 0 && (
-        <div className="pt-4 flex flex-wrap gap-4 items-center text-[8px] font-mono text-editor-text-muted uppercase tracking-[0.3em] opacity-40">
-          <div className="flex items-center space-x-2">
-            <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded">Enter</kbd>
-            <span>Next Beat</span>
+      {/* Message-style Entry Box */}
+      <div className="absolute bottom-0 left-0 right-0 pt-6 pb-2 px-1 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f] to-transparent z-10">
+        <div className="flex flex-col space-y-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3 backdrop-blur-xl shadow-2xl shadow-black/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="flex bg-white/5 rounded-full p-0.5 border border-white/10">
+                <button
+                  onClick={() => setNewBeat(prev => ({ ...prev, type: 'action' }))}
+                  className={`px-3 py-1 rounded-full text-[8px] font-mono font-bold uppercase tracking-widest transition-all ${
+                    newBeat.type === 'action' 
+                      ? 'bg-blue-500/20 text-blue-400' 
+                      : 'text-white/30 hover:text-white/50'
+                  }`}
+                >
+                  Action
+                </button>
+                <button
+                  onClick={() => setNewBeat(prev => ({ ...prev, type: 'dialogue' }))}
+                  className={`px-3 py-1 rounded-full text-[8px] font-mono font-bold uppercase tracking-widest transition-all ${
+                    newBeat.type === 'dialogue' 
+                      ? 'bg-editor-magenta/20 text-editor-magenta' 
+                      : 'text-white/30 hover:text-white/50'
+                  }`}
+                >
+                  Dialogue
+                </button>
+              </div>
+
+              {newBeat.type === 'dialogue' && (
+                <div className="flex items-center space-x-2 bg-white/5 rounded-full px-3 py-1 border border-white/10">
+                  <FiUser size={10} className="text-white/20" />
+                  <select
+                    value={newBeat.characterId}
+                    onChange={(e) => setNewBeat(prev => ({ ...prev, characterId: e.target.value }))}
+                    className="bg-transparent text-[8px] font-mono font-bold uppercase tracking-widest text-white/60 outline-none cursor-pointer pr-1"
+                  >
+                    <option value="" className="bg-[#0a0a0f]">Narrator</option>
+                    {characters.map(char => (
+                      <option key={char.id} value={char.id} className="bg-[#0a0a0f]">{char.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded">Tab</kbd>
-            <span>Cycle Cast</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded">Ctrl+↑/↓</kbd>
-            <span>Reorder</span>
+
+          <div className="flex items-end space-x-3">
+            <textarea
+              value={newBeat.content}
+              onChange={(e) => setNewBeat(prev => ({ ...prev, content: e.target.value }))}
+              onKeyDown={handleNewBeatKeyDown}
+              placeholder={newBeat.type === 'action' ? "Describe action..." : "Enter dialogue..."}
+              className="flex-1 bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:border-editor-magenta/30 transition-all resize-none max-h-32"
+              rows={1}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = Math.min(target.scrollHeight, 128) + 'px';
+              }}
+            />
+            <button
+              onClick={submitNewBeat}
+              disabled={newBeat.content.trim() === ''}
+              className={`p-3 rounded-xl transition-all ${
+                newBeat.content.trim() !== '' 
+                  ? 'bg-editor-magenta text-white shadow-lg shadow-editor-magenta/40' 
+                  : 'bg-white/5 text-white/10'
+              }`}
+            >
+              <FiChevronUp size={20} className="stroke-[3]" />
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
