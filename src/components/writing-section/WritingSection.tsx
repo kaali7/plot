@@ -79,26 +79,53 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   };
 
 
-  const handleExamineReference = (type: 'character' | 'scene' | 'conflict' | 'resource', id: string) => {
-    console.log(`Examining ${type}: ${id}`);
-    // Open detail drawer or similar
+  const handleDraftNarrative = () => {
+    if (!scenes || scenes.length === 0) {
+      alert("No scenes found to forge into narrative.");
+      return;
+    }
+
+    if (contentChunks.join('').trim() && !confirm("This will prepend the narrative skeleton to your existing work. Continue?")) {
+      return;
+    }
+
+    let skeleton = "# Story Narrative Draft\n\n";
+
+    scenes.forEach((scene, idx) => {
+      skeleton += `## Scene ${idx + 1}: ${scene.title}\n\n`;
+      
+      if (scene.background) {
+        skeleton += `*Atmosphere:* ${scene.background}\n\n`;
+      }
+
+      if (scene.context) {
+        skeleton += `*Narrative Context:* ${scene.context}\n\n`;
+      }
+
+      if (scene.situation_details) {
+        skeleton += `*Situation Details:* ${scene.situation_details}\n\n`;
+      }
+
+      if (scene.dialogue && Array.isArray(scene.dialogue)) {
+        scene.dialogue.forEach((beat: any) => {
+          if (beat.type === 'action') {
+            skeleton += `*${beat.content}*\n\n`;
+          } else {
+            const char = characters.find(c => c.id === beat.characterId);
+            skeleton += `**${char?.name || 'Narrator'}:** "${beat.content}"\n\n`;
+          }
+        });
+      }
+
+      if (scene.outcome) {
+        skeleton += `*Outcome:* ${scene.outcome}\n\n`;
+      }
+      
+      skeleton += "---\n\n";
+    });
+
+    setContentChunks([skeleton + contentChunks.join('')]);
   };
-
-  const FormatButton = ({ ariaLabel, active, icon, className = "" }: any) => (
-    <button
-      onMouseDown={(e) => { e.preventDefault(); /* Logic for command execution would go here */ }}
-      className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-2xl transition-all duration-300 flex items-center justify-center border ${
-        active 
-          ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
-          : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
-      } ${className}`}
-      aria-label={ariaLabel}
-    >
-      {icon}
-    </button>
-  );
-
-  const wordCount = contentChunks.join('').trim().split(/\s+/).filter(Boolean).length;
 
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden">
@@ -133,6 +160,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
           <EditorToolbar 
             onSave={() => onWritingUpdate(contentChunks.join('')).then(() => setLastSaved(new Date()))}
             onExport={(format) => alert(`Exporting as ${format}...`)}
+            onDraftNarrative={handleDraftNarrative}
             onInsertReference={(type, id) => console.log(`Inserting ${type} ${id}`)}
             characters={characters}
             scenes={scenes}
@@ -244,7 +272,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
             <div className="lg:hidden relative">
               <button 
                 onMouseDown={(e) => { e.preventDefault(); setIsFormatMenuOpen(!isFormatMenuOpen); }}
-                className={`w-8 h-8 rounded-lg transition-all flex items-center justify-center border transition-all ${
+                className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${
                   selectionState.bold || selectionState.italic || selectionState.underline 
                     ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
                     : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
@@ -282,7 +310,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
             <div className="lg:hidden relative">
               <button 
                 onMouseDown={(e) => { e.preventDefault(); setIsAlignMenuOpen(!isAlignMenuOpen); }}
-                className={`w-8 h-8 rounded-lg transition-all flex items-center justify-center border transition-all ${
+                className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${
                   isAlignMenuOpen 
                     ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
                     : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'

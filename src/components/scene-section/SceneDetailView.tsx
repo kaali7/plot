@@ -110,6 +110,28 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
                   </p>
                 </section>
 
+                {/* 01b. Background & Situation */}
+                {(scene.context || scene.situation_details) && (
+                  <section className="col-span-12 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {scene.context && (
+                      <div className="p-6 bg-white/[0.01] border border-white/5 rounded-xl">
+                        <h4 className="text-[8px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-3 opacity-50">Narrative Context</h4>
+                        <p className="text-sm font-serif text-white/70 italic leading-relaxed whitespace-pre-wrap">
+                          {scene.context}
+                        </p>
+                      </div>
+                    )}
+                    {scene.situation_details && (
+                      <div className="p-6 bg-white/[0.01] border border-white/5 rounded-xl">
+                        <h4 className="text-[8px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-3 opacity-50">Situation Details</h4>
+                        <p className="text-sm font-serif text-white/70 leading-relaxed whitespace-pre-wrap">
+                          {scene.situation_details}
+                        </p>
+                      </div>
+                    )}
+                  </section>
+                )}
+
                 {/* 02. Setting - Environmental context */}
                 <section className="col-span-12 lg:col-span-8 p-6 bg-white/[0.02] border border-white/5 rounded-xl">
                   <h4 className="text-[8px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-4 opacity-50">02. Setting & Atmosphere</h4>
