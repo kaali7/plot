@@ -35,11 +35,11 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
         <div className="lg:col-span-8 flex flex-col gap-6 md:gap-8 lg:gap-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
             {/* Story Foundation */}
-            <div className="card-tactile group p-6 md:p-8 lg:p-10 flex flex-col min-h-[320px] lg:min-h-[400px] hover:border-editor-magenta/30 transition-all duration-700 ease-out">
+            <div className="card-tactile group p-6 md:p-8 lg:p-10 flex flex-col min-h-[320px] lg:min-h-[400px] hover:border-primary/30 transition-all duration-700 ease-out">
               <div className="flex items-center space-x-3 mb-8 lg:mb-10 pb-4 border-b border-white/5 relative">
-                <div className="w-1.5 h-1.5 rounded-full bg-editor-magenta shadow-magenta-glow group-hover:scale-125 transition-transform duration-500"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-primary-glow group-hover:scale-125 transition-transform duration-500"></div>
                 <h2 className="text-[10px] md:text-[11px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold group-hover:text-white transition-colors duration-500">Story Foundation</h2>
-                <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-editor-magenta group-hover:w-full transition-all duration-700"></div>
+                <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-primary group-hover:w-full transition-all duration-700"></div>
               </div>
               <div className="flex-1">
                 <BasicInfoPanel 

@@ -81,15 +81,15 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
           {story.name}
         </h3>
         {story.theme && (
-          <p className="text-editor-magenta font-mono text-[10px] md:text-[11px] uppercase tracking-[0.3em] md:tracking-[0.4em] font-extrabold mb-6 md:mb-10 italic flex items-center">
+          <p className="text-primary font-mono text-[10px] md:text-[11px] uppercase tracking-[0.3em] md:tracking-[0.4em] font-extrabold mb-6 md:mb-10 italic flex items-center">
             <span className="opacity-40 mr-3 not-italic font-bold">THEME:</span>
-            <span className="bg-editor-magenta/10 px-2 py-0.5 rounded-sm">{story.theme}</span>
+            <span className="bg-primary/10 px-2 py-0.5 rounded-sm">{story.theme}</span>
           </p>
         )}
         <div className="max-w-3xl relative">
           {displayDescription ? (
             <div className="relative group">
-              <div className="absolute -left-6 md:-left-8 top-0 bottom-0 w-1 bg-editor-magenta/20 group-hover:bg-editor-magenta/40 transition-colors rounded-full" />
+              <div className="absolute -left-6 md:-left-8 top-0 bottom-0 w-1 bg-primary/20 group-hover:bg-primary/40 transition-colors rounded-full" />
               <p className="text-editor-text leading-relaxed font-serif text-lg md:text-xl italic opacity-90 py-1">
                 "{displayDescription}"
               </p>
@@ -105,7 +105,7 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
       <div className="pt-6 md:pt-10">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="w-full md:w-fit px-8 py-4 md:py-3 bg-white/[0.02] border border-white/5 rounded-full text-[10px] font-mono text-white/40 uppercase tracking-[0.2em] hover:bg-editor-magenta/10 hover:text-editor-magenta hover:border-editor-magenta/30 transition-all duration-300 flex items-center justify-center space-x-2"
+          className="w-full md:w-fit px-8 py-4 md:py-3 bg-white/[0.02] border border-white/5 rounded-full text-[10px] font-mono text-white/40 uppercase tracking-[0.2em] hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all duration-300 flex items-center justify-center space-x-2"
         >
           <span>Edit Foundation</span>
         </button>
@@ -126,7 +126,7 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
             </button>
             <button
               onClick={handleSave}
-              className="btn-magenta px-10 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full shadow-lg shadow-magenta-glow/20"
+              className="btn-primary px-10 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full shadow-lg shadow-primary-glow/20"
             >
               Update Foundation
             </button>

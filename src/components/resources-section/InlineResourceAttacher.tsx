@@ -56,7 +56,7 @@ export const InlineResourceAttacher: React.FC<InlineResourceAttacherProps> = ({
         </h4>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="text-[9px] font-mono text-editor-magenta hover:text-white uppercase tracking-widest transition-all"
+          className="text-[9px] font-mono text-primary hover:text-white uppercase tracking-widest transition-all"
         >
           {isOpen ? 'Close' : '+ Attach'}
         </button>
@@ -105,7 +105,7 @@ export const InlineResourceAttacher: React.FC<InlineResourceAttacherProps> = ({
                   <span className="text-[9px] font-mono text-white/30 uppercase">{res.type}</span>
                   <span className="text-sm font-serif text-white/60 group-hover:text-white transition-colors">{res.title}</span>
                 </div>
-                {isLinking === res.id && <span className="w-2 h-2 rounded-full bg-editor-magenta animate-pulse" />}
+                {isLinking === res.id && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
               </button>
             ))
           ) : (
@@ -113,7 +113,7 @@ export const InlineResourceAttacher: React.FC<InlineResourceAttacherProps> = ({
               <p className="text-[9px] font-mono text-white/20 italic">
                 All library items are already linked or none exist.
               </p>
-              <p className="text-[8px] font-mono text-editor-magenta/40 uppercase tracking-widest mt-2">
+              <p className="text-[8px] font-mono text-primary/40 uppercase tracking-widest mt-2">
                 Create new resources in Narrative Library
               </p>
             </div>

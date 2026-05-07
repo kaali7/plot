@@ -23,10 +23,10 @@ import { useParams } from 'react-router-dom';
 // Simple loading component
 const LoadingIndicator: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-r from-black to-[#2a003f] flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center">
-        <div className="h-8 w-8 border-4 border-t-purple-600 rounded-full animate-spin"></div>
-        <p className="mt-4 text-gray-400">Loading...</p>
+        <div className="h-8 w-8 border-4 border-t-primary rounded-full animate-spin"></div>
+        <p className="mt-4 text-editor-text-muted">Loading...</p>
       </div>
     </div>
   );
@@ -52,7 +52,7 @@ function AppRouter() {
   return (
     <AuthProvider>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <div className="min-h-screen bg-gradient-to-r from-black to-[#2a003f]">
+        <div className="min-h-screen bg-background">
           {/* We'll handle loading state in the routes themselves */}
           <Routes>
             <Route path="/" element={

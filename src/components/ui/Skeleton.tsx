@@ -10,15 +10,15 @@ export const Skeleton: React.FC<SkeletonProps> & {
   Text: React.FC<SkeletonProps & { lines?: number }>;
 } = ({ className = '' }) => {
   return (
-    <div className={`animate-pulse bg-purple-900/20 rounded-md ${className}`} />
+    <div className={`animate-pulse bg-white/5 rounded-md ${className}`} />
   );
 };
 
 Skeleton.Card = ({ className = '' }) => (
-  <div className={`bg-[#1a001f] border border-purple-900/30 rounded-xl p-6 ${className}`}>
+  <div className={`bg-white/[0.02] border border-white/10 rounded-xl p-6 ${className}`}>
     <Skeleton className="h-6 w-3/4 mb-4" />
     <Skeleton className="h-4 w-1/2 mb-8" />
-    <div className="space-y-2 mt-4 pt-4 border-t border-purple-900/20">
+    <div className="space-y-2 mt-4 pt-4 border-t border-white/5">
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-5/6" />
       <Skeleton className="h-4 w-4/6" />
@@ -27,7 +27,7 @@ Skeleton.Card = ({ className = '' }) => (
 );
 
 Skeleton.List = ({ className = '' }) => (
-  <div className={`flex items-center p-4 bg-[#1a001f] border border-purple-900/30 rounded-xl ${className}`}>
+  <div className={`flex items-center p-4 bg-white/[0.02] border border-white/10 rounded-xl ${className}`}>
     <Skeleton className="h-12 w-12 rounded-lg mr-4" />
     <div className="flex-1 space-y-2">
       <Skeleton className="h-5 w-1/3" />

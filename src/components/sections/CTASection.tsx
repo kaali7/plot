@@ -34,7 +34,7 @@ const CTASection: React.FC<CTASectionProps> = ({ id }) => {
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <button 
               onClick={handleGetStarted}
-              className="bg-primary hover:bg-white text-white hover:text-black font-sans font-bold rounded-2xl transition-all duration-300 px-10 py-5 text-lg shadow-magenta-glow hover:scale-105"
+              className="bg-primary hover:bg-white text-white hover:text-black font-sans font-bold rounded-2xl transition-all duration-300 px-10 py-5 text-lg shadow-primary-glow hover:scale-105"
             >
               Start Writing Free
             </button>

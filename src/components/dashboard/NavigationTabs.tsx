@@ -36,7 +36,7 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
               title={tab.label}
               className={`group relative flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-700 cubic-bezier(0.34, 1.56, 0.64, 1) flex-shrink-0 ${
                 isActive 
-                  ? 'bg-primary/20 text-primary shadow-magenta-glow scale-110' 
+                  ? 'bg-primary/20 text-primary shadow-primary-glow scale-110' 
                   : 'bg-surface-dark text-editor-text-muted hover:text-white hover:bg-white/[0.05] hover:scale-105'
               }`}
             >
@@ -46,7 +46,7 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
 
               {/* Micro-indicator */}
               {isActive && (
-                <div className="absolute -right-2 w-1.5 h-1.5 rounded-full bg-primary shadow-magenta-glow" />
+                <div className="absolute -right-2 w-1.5 h-1.5 rounded-full bg-primary shadow-primary-glow" />
               )}
 
               {/* Custom Tooltip */}

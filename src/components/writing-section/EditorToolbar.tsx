@@ -25,7 +25,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
       {/* Draft Narrative Action */}
       <button
         onClick={onDraftNarrative}
-        className="hidden md:flex items-center space-x-2 px-4 py-2 bg-editor-magenta/10 hover:bg-editor-magenta/20 text-editor-magenta rounded-xl border border-editor-magenta/20 transition-all group"
+        className="hidden md:flex items-center space-x-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl border border-primary/20 transition-all group"
         title="Forge Narrative from Structured Data"
       >
         <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,7 +57,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
                     className="w-full text-left px-4 py-4 text-[10px] font-mono text-editor-text-muted hover:text-white hover:bg-white/[0.03] transition-colors flex items-center justify-between group border-b border-editor-border/30 last:border-0"
                   >
                     <span className="uppercase tracking-widest">{format}</span>
-                    <span className="text-[8px] font-bold text-editor-magenta opacity-0 group-hover:opacity-100 transition-opacity">EXPORT</span>
+                    <span className="text-[8px] font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">EXPORT</span>
                   </button>
                 ))}
               </div>
@@ -67,7 +67,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
         <button
           onClick={onSave}
-          className="w-9 h-9 md:w-auto md:h-auto md:px-8 md:py-3 btn-magenta text-[10px] font-bold tracking-widest uppercase rounded-lg md:rounded-xl flex items-center justify-center"
+          className="w-9 h-9 md:w-auto md:h-auto md:px-8 md:py-3 btn-primary text-[10px] font-bold tracking-widest uppercase rounded-lg md:rounded-xl flex items-center justify-center"
         >
           <span className="hidden md:inline">{_isSaving ? 'Synchronizing...' : 'Save Manuscript'}</span>
           {_isSaving ? (

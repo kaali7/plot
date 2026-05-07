@@ -60,32 +60,34 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
   return (
     <div className="flex h-full overflow-hidden relative">
       {/* Sidebar Navigation - Character List */}
-      <div className={`relative h-full flex flex-col border-r border-white/5 bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden z-20
-        ${viewingCharacterId ? 'w-24' : 'w-full p-8'}`}>
+      <div className={`relative h-full flex flex-col border-r border-black/20 bg-[#0b0c10] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] z-20
+        ${viewingCharacterId ? 'w-24' : 'w-full px-10 pt-12'}`}>
+        
+        {/* Detail View Close Button - Repositioned to Top Left (above sidebar) */}
+        {viewingCharacterId && (
+          <button 
+            onClick={() => setViewingCharacterId(null)}
+            className="absolute top-6 left-6 w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-500 z-50 shadow-2xl hover:scale-110 active:scale-95"
+            title="Back to Forge"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        )}
         
         {/* Full Header - Only shown when no selection */}
         {!viewingCharacterId && (
           <div className="flex items-end justify-between pb-8 mb-8 md:mb-12 border-b border-white/5 animate-in fade-in slide-in-from-top duration-700">
             <div>
-              <h2 className="text-[28px] md:text-4xl font-serif font-extrabold text-white tracking-[-0.02em]">Character Forge</h2>
-              <p className="text-[9px] md:text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.4em] mt-2 italic opacity-40 font-medium">Architecture of Persona ({characters.length})</p>
+              <h2 className="text-3xl md:text-5xl font-serif font-black text-white tracking-tight uppercase">Character Forge</h2>
+              <p className="text-[10px] font-mono text-primary/40 uppercase tracking-[0.5em] mt-3 font-bold">Architecture of Persona ({characters.length})</p>
             </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="w-10 h-10 md:w-12 md:h-12 bg-magenta-gradient rounded-xl flex items-center justify-center text-white shadow-magenta-glow hover:scale-105 active:scale-95 transition-all duration-300 group relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
           </div>
         )}
 
         {/* Removed Close Button from sidebar as it was hidden behind the detail view */}
 
         {/* Navigation Area */}
-        <div className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-700 ${viewingCharacterId ? 'pt-20' : ''}`}>
+        <div className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-700 ${viewingCharacterId ? 'pt-24' : ''}`}>
           {viewingCharacterId ? (
             <div className={`flex flex-col transition-all duration-700 ${viewingCharacterId ? 'space-y-1' : 'space-y-2'}`}>
               {characters.map(char => (
@@ -128,19 +130,22 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
               ))}
 
               {/* Persistent Add Button */}
-              <button 
-                onClick={() => setShowAddModal(true)}
-                className="w-12 h-12 rounded-full border border-dashed border-white/10 flex items-center justify-center text-white/20 hover:border-editor-magenta hover:text-white transition-all duration-300 mt-4"
-                title="Forge New Identity"
-              >
-                +
-              </button>
+              <div className="w-full flex justify-center py-4">
+                <button 
+                  onClick={() => setShowAddModal(true)}
+                  className="w-12 h-12 rounded-full border border-dashed border-white/10 flex items-center justify-center text-white/20 hover:border-primary hover:text-white transition-all duration-300"
+                  title="Forge New Identity"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+                </button>
+              </div>
             </div>
           ) : (
             <div className="pr-4 md:pr-6 pb-32">
               <CharacterGrid 
                 characters={characters}
                 onCharacterClick={handleCharacterClick}
+                onAddClick={() => setShowAddModal(true)}
               />
             </div>
           )}
@@ -148,7 +153,7 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
       </div>
 
       {/* Detail Panel Area */}
-      <div className={`flex-1 h-full bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden
+      <div className={`flex-1 h-full bg-[#0b0c10] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden
         fixed inset-0 z-50 md:static md:inset-auto md:z-auto
         ${viewingCharacterId ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:translate-x-full'}`}>
         
@@ -156,7 +161,7 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
         {viewingCharacterId && (
           <button 
             onClick={handleCloseDetail}
-            className="md:hidden absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-editor-magenta hover:text-white backdrop-blur-md transition-all duration-300 z-[60]"
+            className="md:hidden absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-300 z-[60]"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>

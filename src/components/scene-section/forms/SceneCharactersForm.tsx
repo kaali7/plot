@@ -78,7 +78,7 @@ export const SceneCharactersForm: React.FC<SceneCharactersFormProps> = ({ data, 
             <button
               onClick={addCharacterToScene}
               disabled={!selectedCharacterId}
-              className="px-6 py-2 bg-editor-magenta/10 text-editor-magenta rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-editor-magenta/20 transition-all border border-editor-magenta/20 disabled:opacity-30"
+              className="px-6 py-2 bg-primary/10 text-primary rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 transition-all border border-primary/20 disabled:opacity-30"
             >
               Cast
             </button>
@@ -111,7 +111,7 @@ export const SceneCharactersForm: React.FC<SceneCharactersFormProps> = ({ data, 
                           onClick={() => updateCharacterRole(index, role.value)}
                           className={`text-[7px] font-mono font-bold px-1.5 py-0.5 rounded uppercase tracking-[0.1em] transition-all
                             ${char.role === role.value 
-                              ? 'bg-editor-magenta/20 text-editor-magenta border border-editor-magenta/30 shadow-[0_0_8px_rgba(255,0,85,0.1)]' 
+                              ? 'bg-primary/20 text-primary border border-primary/30 shadow-[0_0_8px_rgba(255,0,85,0.1)]' 
                               : 'bg-white/[0.02] text-white/20 border border-transparent hover:text-white/40'}`}
                         >
                           {role.label}

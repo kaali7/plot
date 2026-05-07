@@ -20,7 +20,7 @@ const Navbar: React.FC = () => {
       <div className="px-6 sm:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex-shrink-0 flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
-            <span className="w-2.5 h-2.5 rounded-full bg-primary shadow-magenta-glow animate-pulse"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-primary shadow-primary-glow animate-pulse"></span>
             <span className="text-white font-serif font-bold text-2xl tracking-tight italic">Plot</span>
           </div>
           
@@ -70,7 +70,7 @@ const Navbar: React.FC = () => {
                 </button>
                 <button 
                   onClick={handleRegister}
-                  className="bg-primary hover:bg-white text-white hover:text-black shadow-magenta-glow px-6 py-2 text-sm font-sans font-bold tracking-wide rounded-full transition-all duration-300"
+                  className="bg-primary hover:bg-white text-white hover:text-black shadow-primary-glow px-6 py-2 text-sm font-sans font-bold tracking-wide rounded-full transition-all duration-300"
                 >
                   Start Writing
                 </button>
@@ -82,7 +82,7 @@ const Navbar: React.FC = () => {
                 </span>
                 <button 
                   onClick={() => navigate('/dashboard')}
-                  className="bg-primary hover:bg-white text-white hover:text-black shadow-magenta-glow px-5 py-2 text-sm font-sans font-bold tracking-wide rounded-full transition-all duration-300 mr-2"
+                  className="bg-primary hover:bg-white text-white hover:text-black shadow-primary-glow px-5 py-2 text-sm font-sans font-bold tracking-wide rounded-full transition-all duration-300 mr-2"
                 >
                   Open Workspace
                 </button>
@@ -114,7 +114,7 @@ const Navbar: React.FC = () => {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[100] md:hidden">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-          <nav className="absolute left-0 top-0 bottom-0 w-72 bg-[#0a0a0f] border-r border-white/10 p-6 flex flex-col animate-in slide-in-from-left duration-300">
+          <nav className="absolute left-0 top-0 bottom-0 w-72 bg-background border-r border-white/10 p-6 flex flex-col animate-in slide-in-from-left duration-300">
             <div className="flex items-center justify-between mb-8">
               <span className="text-lg font-serif font-bold text-white">Plot</span>
               <button onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="text-white/40 hover:text-white">
@@ -136,11 +136,11 @@ const Navbar: React.FC = () => {
               {!user ? (
                 <>
                   <button onClick={() => { handleLogin(); setMobileMenuOpen(false); }} className="w-full px-4 py-3 text-sm font-bold text-white/80 hover:text-white text-center border border-white/10 rounded-full">Sign In</button>
-                  <button onClick={() => { handleRegister(); setMobileMenuOpen(false); }} className="w-full px-4 py-3 text-sm font-bold text-black bg-primary hover:bg-white text-center rounded-full">Start Writing</button>
+                  <button onClick={() => { handleRegister(); setMobileMenuOpen(false); }} className="w-full px-4 py-3 text-sm font-bold text-background bg-primary hover:bg-accent text-center rounded-full transition-colors">Start Writing</button>
                 </>
               ) : (
                 <>
-                  <button onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }} className="w-full px-4 py-3 text-sm font-bold text-black bg-primary hover:bg-white text-center rounded-full">Open Workspace</button>
+                  <button onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }} className="w-full px-4 py-3 text-sm font-bold text-background bg-primary hover:bg-accent text-center rounded-full transition-colors">Open Workspace</button>
                   <button onClick={() => { signOut(); setMobileMenuOpen(false); }} className="w-full px-4 py-3 text-sm text-red-400/60 hover:text-red-400 text-center border border-red-400/20 rounded-full">Log Out</button>
                 </>
               )}

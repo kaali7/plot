@@ -105,7 +105,7 @@ const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewDat
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Conflicts Summary */}
         <div className="space-y-4">
-          <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-widest font-bold">Core Engine</h4>
+          <h4 className="text-[10px] font-mono text-primary uppercase tracking-widest font-bold">Core Engine</h4>
           <div className="grid grid-cols-1 gap-4">
             <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
               <span className="text-[9px] font-mono text-editor-text-muted uppercase mb-2 block tracking-widest">Internal Conflict</span>
@@ -124,7 +124,7 @@ const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewDat
 
         {/* Acts Summary */}
         <div className="space-y-4">
-          <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-widest font-bold">Narrative Arc</h4>
+          <h4 className="text-[10px] font-mono text-primary uppercase tracking-widest font-bold">Narrative Arc</h4>
           <div className="space-y-3">
             {[
               { key: 'setup', label: 'Act I', color: 'bg-purple-500/20 text-purple-400' },
@@ -209,7 +209,7 @@ const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewDat
           <div className="flex justify-end pt-4">
             <button
               onClick={() => setIsEditModalOpen(false)}
-              className="px-10 py-3 btn-magenta text-[10px] font-bold tracking-widest uppercase rounded-sm"
+              className="px-10 py-3 btn-primary text-[10px] font-bold tracking-widest uppercase rounded-sm"
             >
               Finish Editing
             </button>

@@ -86,7 +86,7 @@ export const RelationshipsForm: React.FC<RelationshipsFormProps> = ({ data, onUp
           <button
             onClick={addRelationship}
             disabled={!newCharacterId.trim()}
-            className="btn-magenta px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-magenta-glow/20 disabled:opacity-30 transition-all"
+            className="btn-primary px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary-glow/20 disabled:opacity-30 transition-all"
           >
             Add Connection
           </button>
@@ -110,7 +110,7 @@ export const RelationshipsForm: React.FC<RelationshipsFormProps> = ({ data, onUp
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h5 className="text-sm font-serif font-bold text-white/80 truncate">{rel.characterId}</h5>
-                    <span className="text-[8px] font-mono font-bold px-2 py-0.5 rounded bg-editor-magenta/10 text-editor-magenta uppercase tracking-widest">
+                    <span className="text-[8px] font-mono font-bold px-2 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-widest">
                       {rel.type}
                     </span>
                   </div>

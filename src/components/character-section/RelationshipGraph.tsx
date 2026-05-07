@@ -27,7 +27,7 @@ export const RelationshipGraph: React.FC<RelationshipGraphProps> = ({
   if (characterCount === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-white/[0.01] border border-dashed border-white/10 rounded-3xl">
-        <div className="w-16 h-16 rounded-full bg-editor-magenta/5 border border-editor-magenta/10 flex items-center justify-center text-editor-magenta/20">
+        <div className="w-16 h-16 rounded-full bg-primary/5 border border-primary/10 flex items-center justify-center text-primary/20">
           <FiUsers size={24} />
         </div>
         <div className="space-y-1">
@@ -122,7 +122,7 @@ export const RelationshipGraph: React.FC<RelationshipGraphProps> = ({
                 cx={pos.x}
                 cy={pos.y}
                 r={isMain ? 22 : 18}
-                className="fill-[#0a0a0f] stroke-white/10 group-hover:stroke-editor-magenta/50 transition-all duration-500"
+                className="fill-[#0a0a0f] stroke-white/10 group-hover:stroke-primary/50 transition-all duration-500"
                 style={{ filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}
               />
               <text
@@ -140,7 +140,7 @@ export const RelationshipGraph: React.FC<RelationshipGraphProps> = ({
                 x={pos.x}
                 y={pos.y + (isMain ? 35 : 30)}
                 textAnchor="middle"
-                className="text-[8px] font-mono font-bold uppercase tracking-widest fill-editor-text-muted group-hover:fill-editor-magenta transition-colors duration-300"
+                className="text-[8px] font-mono font-bold uppercase tracking-widest fill-editor-text-muted group-hover:fill-primary transition-colors duration-300"
               >
                 {character.name}
               </text>
@@ -150,7 +150,7 @@ export const RelationshipGraph: React.FC<RelationshipGraphProps> = ({
       </svg>
 
       {/* Decorative Aura */}
-      <div className="absolute inset-0 pointer-events-none bg-radial-gradient from-editor-magenta/5 via-transparent to-transparent opacity-20" />
+      <div className="absolute inset-0 pointer-events-none bg-radial-gradient from-primary/5 via-transparent to-transparent opacity-20" />
     </div>
   );
 };

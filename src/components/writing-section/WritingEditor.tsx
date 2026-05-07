@@ -59,7 +59,7 @@ export const WritingEditor: React.FC<WritingEditorProps> = ({
           const text = e.clipboardData.getData('text/plain');
           document.execCommand('insertText', false, text);
         }}
-        className="w-full h-full min-h-[800px] bg-transparent text-[#e0e0e0] font-serif text-base leading-[1.7] focus:outline-none selection:bg-primary/30"
+        className="w-full h-full min-h-[800px] bg-transparent text-editor-text font-serif text-base leading-[1.7] focus:outline-none selection:bg-primary/30"
         spellCheck="true"
         data-placeholder={placeholder}
         style={{ outline: 'none' }}
@@ -67,7 +67,7 @@ export const WritingEditor: React.FC<WritingEditorProps> = ({
       
       {/* Empty State Placeholder */}
       {!value && (
-        <div className="absolute top-0 left-0 pointer-events-none text-white/10 font-serif text-base italic">
+        <div className="absolute top-0 left-0 pointer-events-none text-editor-text-muted/30 font-serif text-base italic">
           {placeholder}
         </div>
       )}

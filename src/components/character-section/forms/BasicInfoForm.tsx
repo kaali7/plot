@@ -106,7 +106,7 @@ export const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ data, onUpdate, er
                   ${uploading 
                     ? 'bg-white/[0.02] border-white/10 text-white/20' 
                     : data.image_url 
-                      ? 'bg-editor-magenta/5 border-editor-magenta/20 text-editor-magenta' 
+                      ? 'bg-primary/5 border-primary/20 text-primary' 
                       : 'bg-white/[0.02] border-white/20 text-white/40 hover:border-white/40 hover:text-white'}`}
               >
                 {uploading ? (

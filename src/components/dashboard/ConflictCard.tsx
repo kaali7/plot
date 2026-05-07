@@ -97,7 +97,7 @@ export const ConflictCard: React.FC<ConflictCardProps> = ({ conflict, onUpdate, 
           <div className="flex space-x-4 pt-4 border-t border-editor-border">
             <button
               onClick={handleSave}
-              className="btn-magenta px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded-sm"
+              className="btn-primary px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded-sm"
             >
               Update
             </button>
@@ -124,10 +124,10 @@ export const ConflictCard: React.FC<ConflictCardProps> = ({ conflict, onUpdate, 
       <div className="flex items-start justify-between mb-5 md:mb-6">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-3 md:mb-4">
-            <span className="text-[9px] font-mono text-editor-magenta uppercase tracking-[0.2em] bg-editor-magenta/10 px-2 py-0.5 rounded-sm font-bold">
+            <span className="text-[9px] font-mono text-primary uppercase tracking-[0.2em] bg-primary/10 px-2 py-0.5 rounded-sm font-bold">
               {conflict.type}
             </span>
-            <div className="w-1 h-1 rounded-full bg-editor-magenta shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="w-1 h-1 rounded-full bg-primary shadow-primary-glow opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>
           <h3 className="text-xl md:text-2xl font-serif font-bold text-white group-hover:text-white transition-colors leading-tight">{conflict.title}</h3>
         </div>

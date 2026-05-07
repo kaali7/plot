@@ -33,10 +33,10 @@ export const ReferencePanel: React.FC<ReferencePanelProps> = ({
   const SectionHeader = ({ title, sectionId }: { title: string, sectionId: string }) => (
     <button 
       onClick={() => toggleSection(sectionId)}
-      className={`w-full flex items-center justify-between px-6 py-4 rounded-2xl transition-all duration-500 mb-4 group border ${
+      className={`w-full flex items-center justify-between px-6 py-4 rounded-xl transition-all duration-500 mb-4 group border ${
         expandedSection === sectionId 
-          ? 'bg-primary/5 border-primary/30 shadow-magenta-glow/5' 
-          : 'bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]'
+          ? 'bg-primary/5 border-primary/30 shadow-primary-glow/5' 
+          : 'bg-[#1a1b1e] border-white/5 hover:border-white/20 hover:bg-[#1e1f22]'
       }`}
     >
       <span className={`text-[10px] font-sans font-bold uppercase tracking-[0.4em] transition-colors ${
@@ -76,7 +76,7 @@ export const ReferencePanel: React.FC<ReferencePanelProps> = ({
                   characters.map(char => (
                     <div 
                       key={char.id} 
-                      className="group relative flex flex-col p-4 bg-black/40 border border-white/5 hover:border-white/10 transition-all rounded-xl hover:bg-black/60"
+                      className="group relative flex flex-col p-4 bg-[#1a1b1e] border border-white/5 hover:border-white/10 transition-all rounded-xl hover:bg-[#1e1f22] shadow-sm"
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex flex-col">
@@ -119,11 +119,11 @@ export const ReferencePanel: React.FC<ReferencePanelProps> = ({
                   conflicts.map(conflict => (
                     <div 
                       key={conflict.id} 
-                      className="group relative flex flex-col p-4 bg-black/40 border border-white/5 hover:border-white/10 transition-all rounded-xl hover:bg-black/60"
+                      className="group relative flex flex-col p-4 bg-[#1a1b1e] border border-white/5 hover:border-white/10 transition-all rounded-xl hover:bg-[#1e1f22] shadow-sm"
                     >
                       <div className="flex justify-between items-start mb-1">
                         <span className="text-xs font-serif font-bold text-white/90 group-hover:text-white transition-colors">{conflict.title}</span>
-                        <span className="text-[8px] font-mono text-editor-magenta/40 uppercase tracking-widest">{conflict.type}</span>
+                        <span className="text-[8px] font-mono text-primary/40 uppercase tracking-widest">{conflict.type}</span>
                       </div>
                       <p className="text-[10px] font-serif text-white/40 italic line-clamp-1">{conflict.description}</p>
                     </div>
@@ -143,7 +143,7 @@ export const ReferencePanel: React.FC<ReferencePanelProps> = ({
                 {scenes.length > 0 && (
                   <button 
                     onClick={() => onInsertReference('all_scenes' as any, 'all')}
-                    className="w-full py-3 mb-4 bg-primary/5 border border-primary/20 rounded-xl text-[9px] font-mono text-primary uppercase tracking-[0.2em] font-bold hover:bg-primary/10 transition-all flex items-center justify-center space-x-2 shadow-magenta-glow/5"
+                    className="w-full py-3 mb-4 bg-primary/5 border border-primary/20 rounded-xl text-[9px] font-mono text-primary uppercase tracking-[0.2em] font-bold hover:bg-primary/10 transition-all flex items-center justify-center space-x-2 shadow-primary-glow/5"
                   >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
                     <span>Insert Full Outline</span>
@@ -153,7 +153,7 @@ export const ReferencePanel: React.FC<ReferencePanelProps> = ({
                   scenes.map((scene, i) => (
                     <div 
                       key={scene.id} 
-                      className="group relative flex flex-col p-4 bg-black/40 border border-white/5 hover:border-white/10 transition-all rounded-xl hover:bg-black/60"
+                      className="group relative flex flex-col p-4 bg-[#1a1b1e] border border-white/5 hover:border-white/10 transition-all rounded-xl hover:bg-[#1e1f22] shadow-sm"
                     >
                       <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-3">
@@ -196,7 +196,7 @@ export const ReferencePanel: React.FC<ReferencePanelProps> = ({
                   resources.map(res => (
                     <div 
                       key={res.id} 
-                      className="group relative flex flex-col p-4 bg-black/40 border border-white/5 hover:border-white/10 transition-all rounded-xl hover:bg-black/60 cursor-pointer"
+                      className="group relative flex flex-col p-4 bg-[#1a1b1e] border border-white/5 hover:border-white/10 transition-all rounded-xl hover:bg-[#1e1f22] shadow-sm cursor-pointer"
                       onClick={() => onExamineReference('resource', res.id)}
                     >
                       <div className="flex justify-between items-start mb-1">

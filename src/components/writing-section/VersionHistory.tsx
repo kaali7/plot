@@ -51,14 +51,14 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
           >
             <div className="flex items-start justify-between mb-4 pb-4 border-b border-editor-border/30">
               <div className="flex items-center space-x-3">
-                <span className="text-[10px] font-mono font-bold text-editor-magenta uppercase tracking-widest border border-editor-magenta/20 px-2 py-0.5">
+                <span className="text-[10px] font-mono font-bold text-primary uppercase tracking-widest border border-primary/20 px-2 py-0.5">
                   Rev v{version.version}
                 </span>
                 <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-tighter italic">
                   {new Date(version.createdAt).toLocaleString()}
                 </span>
               </div>
-              <div className="w-1.5 h-1.5 rounded-full bg-editor-magenta shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-primary-glow opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
             
             <div className="text-editor-text-muted font-serif text-sm italic leading-relaxed line-clamp-3 mb-6 opacity-60">
@@ -69,7 +69,7 @@ export const VersionHistory: React.FC<VersionHistoryProps> = ({
               <span className="text-[8px] font-mono text-editor-text-muted/40 uppercase tracking-[0.2em]">Revision Ref #{version.id.slice(0, 4)}</span>
               <button
                 onClick={() => onRestore(version.id)}
-                className="text-[10px] font-mono text-editor-magenta hover:text-white uppercase tracking-widest transition-all"
+                className="text-[10px] font-mono text-primary hover:text-white uppercase tracking-widest transition-all"
               >
                 Restore Version
               </button>

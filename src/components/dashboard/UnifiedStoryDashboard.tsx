@@ -52,7 +52,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
           <p className="text-editor-text-muted font-mono text-xs uppercase tracking-widest mb-8">{error || 'Unknown error'}</p>
           <button 
             onClick={() => refetch()}
-            className="btn-magenta px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
+            className="btn-primary px-8 py-3 text-[10px] font-bold tracking-widest uppercase rounded-sm"
           >
             Re-Initialize
           </button>
@@ -64,7 +64,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
   return (
     <div className="flex flex-col lg:flex-row h-screen w-full overflow-hidden bg-background">
       {/* Sidebar/Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:static w-full lg:w-20 h-auto lg:h-full bg-surface border-t lg:border-t-0 lg:border-r border-editor-border flex flex-row lg:flex-col items-center pb-safe lg:pb-0 shrink-0">
+      <nav className="w-full lg:w-24 bg-[#0b0c10] border-t lg:border-t-0 lg:border-r border-black/20 flex lg:flex-col items-center justify-between lg:justify-start px-6 lg:px-0 py-2 lg:py-12 z-50 transition-all duration-500">
         <div className="hidden lg:block w-full">
           <DashboardHeader story={story} />
         </div>
@@ -72,7 +72,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
           activeTab={activeTab} 
           onTabChange={(tab) => setActiveTab(tab as any)}
         />
-      </div>
+      </nav>
 
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 overflow-hidden bg-background relative pb-20 lg:pb-0">
@@ -117,6 +117,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
                   onSceneAdd={addScene}
                   onSceneUpdate={updateScene}
                   onSceneDelete={deleteScene}
+                  onClose={() => setActiveTab('overview')}
                 />
               </ErrorBoundary>
             )}

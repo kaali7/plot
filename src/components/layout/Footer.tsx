@@ -6,7 +6,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-12 text-left mb-16">
           <div className="md:col-span-2 space-y-6">
             <div className="flex items-center space-x-2 mb-2">
-              <span className="w-3 h-3 rounded-full bg-primary shadow-magenta-glow"></span>
+              <span className="w-3 h-3 rounded-full bg-primary shadow-primary-glow"></span>
               <h3 className="text-2xl font-serif font-bold text-white tracking-tight italic">Plot</h3>
             </div>
             <p className="text-editor-text-muted font-sans leading-relaxed max-w-sm">

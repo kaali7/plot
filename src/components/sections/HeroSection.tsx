@@ -24,7 +24,7 @@ const HeroSection = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-white/[0.05] to-transparent pointer-events-none"></div>
           
           <div className="inline-flex items-center space-x-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-4">
-            <span className="w-2 h-2 rounded-full bg-primary shadow-magenta-glow animate-pulse"></span>
+            <span className="w-2 h-2 rounded-full bg-primary shadow-primary-glow animate-pulse"></span>
             <span className="text-xs font-sans font-bold text-primary uppercase tracking-widest">Plot Studio 2.0</span>
           </div>
 
@@ -40,7 +40,7 @@ const HeroSection = () => {
           <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
             <button 
               onClick={handleGetStarted}
-              className="bg-primary hover:bg-white text-white hover:text-black font-sans font-bold rounded-2xl transition-all duration-300 px-10 py-5 text-lg shadow-magenta-glow hover:scale-105"
+              className="bg-primary hover:bg-white text-white hover:text-black font-sans font-bold rounded-2xl transition-all duration-300 px-10 py-5 text-lg shadow-primary-glow hover:scale-105"
             >
               Start Writing Free
             </button>

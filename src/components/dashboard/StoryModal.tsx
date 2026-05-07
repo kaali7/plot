@@ -51,7 +51,7 @@ export const StoryModal: React.FC<StoryModalProps> = ({
           <button
             onClick={() => handleSubmit()}
             disabled={!title.trim()}
-            className="btn-magenta px-8 py-2.5 rounded-full shadow-lg shadow-magenta-glow/20"
+            className="btn-primary px-8 py-2.5 rounded-full shadow-lg shadow-primary-glow/20"
           >
             Initialize
           </button>

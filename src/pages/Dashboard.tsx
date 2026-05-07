@@ -104,7 +104,7 @@ const Dashboard: React.FC = () => {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-r from-black to-[#2a003f] pt-16 px-6">
+      <div className="min-h-screen bg-background pt-16 px-6">
         <div className="pt-8 pb-4">
           <Skeleton className="h-8 w-48 mb-12" />
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 px-4 sm:px-0">
@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center bg-primary hover:bg-white text-white hover:text-black shadow-magenta-glow transition-all duration-300 hover:-translate-y-1 active:scale-95
+          className="flex items-center justify-center bg-primary hover:bg-accent text-background shadow-primary-glow transition-all duration-300 hover:-translate-y-1 active:scale-95
                      w-12 h-12 md:w-auto md:h-auto md:px-8 md:py-4 rounded-xl md:rounded-full flex-shrink-0"
           title="Initialize New Plot"
         >
@@ -176,7 +176,7 @@ const Dashboard: React.FC = () => {
                 <div 
                   key={story.id} 
                   onClick={() => navigate(`/story/${story.id}`)}
-                  className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 md:p-8 cursor-pointer flex flex-col justify-between min-h-[220px] md:min-h-[240px] transition-all duration-500 hover:bg-white/[0.04] hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(255,51,102,0.15)]"
+                  className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 md:p-8 cursor-pointer flex flex-col justify-between min-h-[220px] md:min-h-[240px] transition-all duration-500 hover:bg-white/[0.04] hover:-translate-y-2 hover:shadow-primary-glow-lg"
                 >
                   {/* Subtle top border glow on hover */}
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[2rem]"></div>
@@ -207,7 +207,7 @@ const Dashboard: React.FC = () => {
                   <p className="text-editor-text-muted font-sans text-xs tracking-wider">
                     Last Modified: {new Date(story.updated_at).toLocaleDateString()}
                   </p>
-                  <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-magenta-glow opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-primary-glow opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
             ))}

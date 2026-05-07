@@ -11,6 +11,7 @@ interface SceneSectionProps {
   onSceneAdd: (sceneData: Partial<Scene>) => void;
   onSceneUpdate: (id: string, updates: Partial<Scene>) => void;
   onSceneDelete: (id: string) => void;
+  onClose: () => void;
 }
 
 export const SceneSection: React.FC<SceneSectionProps> = ({
@@ -19,7 +20,8 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   conflicts,
   onSceneAdd,
   onSceneUpdate,
-  onSceneDelete
+  onSceneDelete,
+  onClose
 }) => {
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [viewingSceneId, setViewingSceneId] = useState<string | null>(null);
@@ -57,117 +59,107 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   return (
     <div className="flex h-full overflow-hidden relative">
       {/* Sidebar Navigation - Scene List */}
-      <div className={`relative h-full flex flex-col border-r border-white/5 bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden z-20
-        ${viewingSceneId ? 'w-24' : 'w-full p-8'}`}>
+      <div className={`relative h-full flex flex-col border-r border-black/20 bg-[#0b0c10] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] z-20
+        ${viewingSceneId ? 'w-20' : 'w-full border-white/5 bg-[#0b0c10]'}`}>
         
         {/* Full Header - Only shown when no selection */}
         {!viewingSceneId && (
-          <div className="flex items-end justify-between pb-8 border-b border-white/5 mb-8 md:mb-12 animate-in fade-in slide-in-from-top duration-700">
-            <div>
-              <h2 className="text-[28px] md:text-4xl font-serif font-extrabold text-white tracking-[-0.02em]">Chronicle Grid</h2>
-              <div className="flex flex-col md:flex-row md:items-center md:space-x-6 mt-3 md:mt-4 space-y-2 md:space-y-0">
-                <p className="text-[9px] md:text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.4em] italic opacity-40 font-medium">Sequence of Events ({scenes.length})</p>
-                {scenes.length > 0 && (
-                  <div className="w-fit flex items-center text-[9px] font-mono text-red-500 uppercase tracking-widest border border-red-500/20 px-3 py-1 rounded-sm font-bold bg-red-500/5">
-                    Active Reorder: Enabled
-                  </div>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="w-10 h-10 md:w-12 md:h-12 bg-magenta-gradient rounded-xl flex items-center justify-center text-white shadow-magenta-glow hover:scale-105 active:scale-95 transition-all duration-300 group relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
+          <div className="p-6 md:p-10 border-b border-white/5 animate-in fade-in slide-in-from-top duration-700 flex flex-col">
+            <h2 className="text-white font-serif font-black text-2xl md:text-3xl tracking-tight">CHRONICLE GRID</h2>
+            <p className="text-[10px] font-mono text-[#949ba4] uppercase tracking-[0.3em] mt-2 opacity-50">Narrative Sequence Archive</p>
           </div>
         )}
 
-        {/* Removed Close Button from sidebar as it was hidden behind the detail view */}
-
-        <div className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-700 ${viewingSceneId ? 'pt-20' : ''}`}>
-          <div className={`flex flex-col transition-all duration-700 pr-4 md:pr-6 ${viewingSceneId ? 'space-y-1' : 'space-y-2'}`}>
+        <div className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-700 ${viewingSceneId ? 'pt-24' : 'pt-8 md:pt-12'}`}>
+          <div className={`flex flex-col transition-all duration-700 ${viewingSceneId ? 'space-y-4 items-center' : 'space-y-1 px-6 md:px-10 pb-20'}`}>
             {[...scenes].sort((a, b) => {
               if (a.order !== b.order) return a.order - b.order;
               return a.id.localeCompare(b.id);
-            }).map((scene, index) => (
-              <div
-                key={scene.id}
-                onClick={() => handleSceneClick(scene)}
-                className={`group relative h-20 w-full flex items-center transition-all duration-[800ms] cubic-bezier(0.4, 0, 0.2, 1)
-                  ${viewingSceneId === scene.id 
-                    ? 'bg-white text-black z-20 rounded-l-full translate-x-1' 
-                    : 'text-white/20 hover:text-white/60'}`}
-              >
-                <div className={`flex items-center space-x-6 transition-all duration-[800ms] ${viewingSceneId ? 'justify-center w-full' : 'w-full'}`}>
-                  <span className={`text-sm font-mono font-bold tracking-tighter w-12 h-12 rounded-full flex items-center justify-center transition-all duration-700 flex-shrink-0 border
-                    ${viewingSceneId === scene.id 
-                      ? 'bg-black text-white border-black shadow-2xl scale-110' 
-                      : 'bg-white/[0.02] border-white/5 group-hover:border-white/20 group-hover:bg-white/10'}`}>
-                    {(index + 1).toString().padStart(2, '0')}
-                  </span>
+            }).map((scene, index) => {
+              const isActive = viewingSceneId === scene.id;
+              const sceneNumber = (index + 1).toString().padStart(2, '0');
+
+              return (
+                <div
+                  key={scene.id}
+                  onClick={() => handleSceneClick(scene)}
+                  className={`group relative flex items-center cursor-pointer transition-all duration-500 w-full
+                    ${viewingSceneId 
+                      ? `justify-center h-[48px] ${isActive ? 'bg-white text-black rounded-l-full translate-x-[1px]' : 'text-[#949ba4] hover:text-white'}` 
+                      : `rounded px-2 h-[34px] text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1] ${isActive ? 'bg-[#3f4147] text-white' : ''}`}`}
+                >
+                  {/* Liquid Curve Elements - Top and Bottom Concave Corners */}
+                  {isActive && viewingSceneId && (
+                    <>
+                      <div className="absolute -top-[24px] right-0 w-[24px] h-[24px] bg-transparent rounded-full pointer-events-none shadow-[12px_12px_0_0_#fff] z-10" />
+                      <div className="absolute -bottom-[24px] right-0 w-[24px] h-[24px] bg-transparent rounded-full pointer-events-none shadow-[12px_-12px_0_0_#fff] z-10" />
+                    </>
+                  )}
+
+                  {/* Active Indicator Bar (Discord style when expanded) */}
+                  {isActive && !viewingSceneId && (
+                    <div className="absolute left-[-8px] w-1 h-5 bg-white rounded-r-full" />
+                  )}
                   
-                  {!viewingSceneId && (
-                    <div className="flex-1 truncate animate-in fade-in slide-in-from-left-4 duration-1000">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-serif font-bold tracking-tight truncate text-white/60 group-hover:text-white transition-colors">
+                  <div className={`flex items-center w-full ${viewingSceneId ? 'justify-center' : 'space-x-2'}`}>
+                    {/* Icon / Number */}
+                    <div className={`flex items-center justify-center shrink-0 transition-all duration-300
+                      ${viewingSceneId 
+                        ? `w-10 h-10 rounded-full font-bold text-sm ${isActive ? 'bg-black text-white' : 'bg-[#313338] text-[#dbdee1] group-hover:bg-[#5865f2] group-hover:rounded-xl group-hover:text-white'}` 
+                        : 'w-5 text-[#80848e] font-medium text-xs'}`}>
+                      {viewingSceneId ? (index + 1) : <span>#</span>}
+                    </div>
+                    
+                    {!viewingSceneId && (
+                      <div className="flex-1 truncate flex items-center space-x-2">
+                        <span className="text-[11px] font-mono opacity-40 font-bold">{sceneNumber}</span>
+                        <h4 className="text-[15px] font-medium truncate tracking-tight">
                           {scene.title}
                         </h4>
-                        <div className="flex items-center space-x-4">
-                          <span className="text-[9px] font-mono text-white/10 uppercase tracking-widest">{scene.type}</span>
-                          <div className="w-1.5 h-1.5 rounded-full bg-editor-magenta/20 group-hover:bg-editor-magenta group-hover:shadow-magenta-glow transition-all" />
-                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
+              );
+            })}
 
-                {/* Liquid Curve Elements - Top and Bottom Concave Corners */}
-                {viewingSceneId === scene.id && (
-                  <>
-                    <div className="absolute -top-[48px] right-0 w-[48px] h-[48px] bg-transparent rounded-full pointer-events-none shadow-[24px_24px_0_0_#fff] transition-all duration-[800ms]" />
-                    <div className="absolute -bottom-[48px] right-0 w-[48px] h-[48px] bg-transparent rounded-full pointer-events-none shadow-[24px_-24px_0_0_#fff] transition-all duration-[800ms]" />
-                  </>
-                )}
+            {/* Add Scene Button */}
+            <div 
+              onClick={() => setShowAddModal(true)}
+              className={`group flex items-center cursor-pointer rounded transition-all w-full mt-2
+                ${viewingSceneId ? 'justify-center h-[48px]' : 'px-2 py-1.5 hover:bg-[#35373c] text-[#949ba4] hover:text-[#dbdee1]'}`}
+            >
+              <div className={`flex items-center justify-center shrink-0 transition-all duration-300
+                ${viewingSceneId 
+                  ? 'w-10 h-10 rounded-full bg-[#313338] text-[#3ba55c] hover:bg-[#3ba55c] hover:text-white hover:rounded-xl' 
+                  : 'w-5 text-[#80848e] font-light text-xl'}`}>
+                +
               </div>
-            ))}
-
-            </div>
-
-            {/* Ghost Slot for New Scene - Persistent at the bottom */}
-            <div className={`mt-8 flex transition-all duration-700 ${viewingSceneId ? 'justify-center pb-12' : 'px-0 pb-32'}`}>
-              <button 
-                onClick={() => setShowAddModal(true)}
-                className={`border border-dashed border-white/10 rounded-[2rem] flex items-center justify-center group hover:border-editor-magenta/50 hover:bg-white/[0.02] transition-all duration-500
-                  ${viewingSceneId ? 'w-12 h-12 rounded-full' : 'w-full py-8 space-x-6'}`}
-                title="Forge New Folio"
-              >
-                <span className={`text-white/20 group-hover:text-editor-magenta transition-colors font-light ${viewingSceneId ? 'text-xl' : 'text-3xl'}`}>+</span>
-                {!viewingSceneId && (
-                  <span className="text-[11px] md:text-[12px] font-mono text-white/40 uppercase tracking-[0.4em] font-bold group-hover:text-white transition-colors">Forge New Folio</span>
-                )}
-              </button>
+              {!viewingSceneId && (
+                <span className="ml-2 text-[11px] font-bold tracking-widest opacity-60 group-hover:opacity-100 uppercase">Forge New Folio</span>
+              )}
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Detail View Close Button - Repositioned to Top Left (above sidebar) */}
+      {viewingSceneId && (
+        <button 
+          onClick={() => setViewingSceneId(null)}
+          className="absolute top-6 left-4 w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-500 z-50 shadow-2xl hover:scale-110 active:scale-95"
+          title="Back to Chronicle"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      )}
 
       {/* Integrated Scene Detail View */}
-      <div className={`flex-1 h-full bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden
-        fixed inset-0 z-50 md:static md:inset-auto md:z-auto
+      <div className={`flex-1 h-full bg-[#0b0c10] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden
+        fixed inset-0 z-40 md:static md:inset-auto md:z-auto
         ${viewingSceneId ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:translate-x-full'}`}>
         
-        {/* Mobile Close Button */}
-        {viewingSceneId && (
-          <button 
-            onClick={() => setViewingSceneId(null)}
-            className="md:hidden absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-editor-magenta hover:text-white backdrop-blur-md transition-all duration-300 z-[60]"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        )}
+        {/* Detail view content - close button removed from here and moved to parent sidebar area */}
 
         {viewingScene && (
           <SceneDetailView 

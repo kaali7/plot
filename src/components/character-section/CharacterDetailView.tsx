@@ -32,13 +32,13 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
           <div className="absolute top-0 left-0 w-24 h-24 border-tl border-white/20 rounded-tl-[3rem] -translate-x-1 -translate-y-1 opacity-20 pointer-events-none hidden md:block" />
         )}
         <div className="flex items-start md:items-center space-x-4 md:space-x-8">
-          <div className="w-2 h-2 rounded-full bg-editor-magenta shadow-magenta-glow mt-2.5 md:mt-0 shrink-0" />
+          <div className="w-2 h-2 rounded-full bg-primary shadow-primary-glow mt-2.5 md:mt-0 shrink-0" />
           <div>
             <h2 className="text-2xl md:text-4xl font-serif font-bold text-white tracking-tight uppercase leading-none">
               {character.name}
             </h2>
             <div className="flex flex-wrap items-center gap-1.5 md:gap-3 mt-2 md:mt-3">
-              <span className="text-[8px] md:text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold border border-editor-magenta/30 px-2 py-0.5 rounded-sm bg-editor-magenta/5">{character.role}</span>
+              <span className="text-[8px] md:text-[10px] font-mono text-primary uppercase tracking-[0.3em] font-bold border border-primary/30 px-2 py-0.5 rounded-sm bg-primary/5">{character.role}</span>
               <span className="w-1 h-1 rounded-full bg-white/10 hidden md:block" />
               <span className="text-[8px] md:text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] italic">Identity Architecture</span>
             </div>
@@ -52,7 +52,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
           onClick={() => setActiveTab('profile')}
           className={`px-3 py-1.5 md:px-6 md:py-2 rounded-full text-[8px] md:text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap
           ${activeTab === 'profile' 
-            ? 'bg-editor-magenta text-white shadow-magenta-glow' 
+            ? 'bg-primary text-white shadow-primary-glow' 
             : 'text-editor-text-muted hover:text-white hover:bg-white/5 border border-white/10'}`}
         >
           Character Profile
@@ -61,7 +61,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
           onClick={() => setActiveTab('arc')}
           className={`px-3 py-1.5 md:px-6 md:py-2 rounded-full text-[8px] md:text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap
           ${activeTab === 'arc' 
-            ? 'bg-editor-magenta text-white shadow-magenta-glow' 
+            ? 'bg-primary text-white shadow-primary-glow' 
             : 'text-editor-text-muted hover:text-white hover:bg-white/5 border border-white/10'}`}
         >
           Narrative Arc
@@ -70,7 +70,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
           onClick={() => setActiveTab('relationships')}
           className={`px-3 py-1.5 md:px-6 md:py-2 rounded-full text-[8px] md:text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap
           ${activeTab === 'relationships' 
-            ? 'bg-editor-magenta text-white shadow-magenta-glow' 
+            ? 'bg-primary text-white shadow-primary-glow' 
             : 'text-editor-text-muted hover:text-white hover:bg-white/5 border border-white/10'}`}
         >
           Relationship Matrix
@@ -84,7 +84,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
           <div className="flex justify-end mb-6">
             <button
               onClick={onEdit}
-              className="flex items-center space-x-2 px-4 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-editor-magenta hover:text-white hover:border-editor-magenta transition-all"
+              className="flex items-center space-x-2 px-4 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-primary hover:text-white hover:border-primary transition-all"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
               <span>Edit Persona</span>
@@ -111,15 +111,15 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
                 {/* Persona Data */}
                 <div className="col-span-12 lg:col-span-8 space-y-6 md:space-y-8">
                   <section>
-                    <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-4 opacity-50">Identity Description</h4>
-                    <p className="text-lg md:text-xl font-serif text-white/90 italic leading-relaxed border-l border-editor-magenta/30 pl-6 md:pl-8">
+                    <h4 className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] font-bold mb-4 opacity-50">Identity Description</h4>
+                    <p className="text-lg md:text-xl font-serif text-white/90 italic leading-relaxed border-l border-primary/30 pl-6 md:pl-8">
                       "{character.description || 'This identity remains a mystery in the narrative shadows...'}"
                     </p>
                   </section>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
                     <section className="p-5 md:p-6 bg-white/[0.02] border border-white/5 rounded-2xl">
-                      <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-4 md:mb-6">Strengths</h4>
+                      <h4 className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] font-bold mb-4 md:mb-6">Strengths</h4>
                       <div className="flex flex-wrap gap-2">
                         {character.traits.strengths.map((s, i) => (
                           <span key={i} className="px-3 md:px-4 py-1.5 md:py-2 bg-white/[0.03] border border-white/10 rounded-full text-[9px] md:text-[10px] font-mono text-white/70 uppercase tracking-widest">{s}</span>
@@ -127,7 +127,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
                       </div>
                     </section>
                     <section className="p-5 md:p-6 bg-white/[0.02] border border-white/5 rounded-2xl">
-                      <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-4 md:mb-6">Weaknesses</h4>
+                      <h4 className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] font-bold mb-4 md:mb-6">Weaknesses</h4>
                       <div className="flex flex-wrap gap-2">
                         {character.traits.weaknesses.map((w, i) => (
                           <span key={i} className="px-3 md:px-4 py-1.5 md:py-2 bg-red-500/5 border border-red-500/20 rounded-full text-[9px] md:text-[10px] font-mono text-red-400/60 uppercase tracking-widest">{w}</span>
@@ -151,16 +151,16 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
           {activeTab === 'arc' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               <section className="p-10 bg-white/[0.01] border border-white/5 rounded-3xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-editor-magenta/50 to-transparent" />
-                <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.4em] font-bold mb-12 opacity-60">Narrative Trajectory</h4>
+                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-primary/50 to-transparent" />
+                <h4 className="text-[10px] font-mono text-primary uppercase tracking-[0.4em] font-bold mb-12 opacity-60">Narrative Trajectory</h4>
                 <div className="grid grid-cols-1 gap-12 max-w-2xl">
                   <div className="relative pl-12 border-l border-white/10 group">
-                    <div className="absolute left-[-5px] top-1.5 w-2.5 h-2.5 rounded-full bg-editor-magenta shadow-magenta-glow group-hover:scale-125 transition-transform" />
+                    <div className="absolute left-[-5px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary shadow-primary-glow group-hover:scale-125 transition-transform" />
                     <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] mb-3 block">Anchor point: inception</span>
                     <p className="text-xl font-serif text-white/90 leading-relaxed italic">"{character.arc.start || 'No initial state defined'}"</p>
                   </div>
                   <div className="relative pl-12 border-l border-white/10 group opacity-60 hover:opacity-100 transition-opacity">
-                    <div className="absolute left-[-5px] top-1.5 w-2.5 h-2.5 rounded-full bg-white/20 group-hover:bg-editor-magenta/30 transition-colors" />
+                    <div className="absolute left-[-5px] top-1.5 w-2.5 h-2.5 rounded-full bg-white/20 group-hover:bg-primary/30 transition-colors" />
                     <span className="text-[10px] font-mono text-white/20 uppercase tracking-[0.2em] mb-3 block">Anchor point: resolution</span>
                     <p className="text-xl font-serif text-white/60 leading-relaxed">{character.arc.end || 'The final resolution of this arc is unwritten'}</p>
                   </div>
@@ -172,13 +172,13 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
           {activeTab === 'relationships' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               <section className="p-8 bg-white/[0.02] border border-white/5 rounded-3xl">
-                <h4 className="text-[10px] font-mono text-editor-magenta uppercase tracking-[0.3em] font-bold mb-8">Relationship matrix</h4>
+                <h4 className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] font-bold mb-8">Relationship matrix</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {character.relationships.length > 0 ? (
                     character.relationships.map((rel, i) => (
-                      <div key={i} className="flex items-center justify-between p-6 bg-black/40 border border-white/5 rounded-2xl hover:border-editor-magenta/30 transition-all">
+                      <div key={i} className="flex items-center justify-between p-6 bg-black/40 border border-white/5 rounded-2xl hover:border-primary/30 transition-all">
                         <div className="flex items-center space-x-4">
-                          <div className="w-8 h-8 rounded-full bg-editor-magenta/10 flex items-center justify-center text-editor-magenta text-[10px] font-mono">ID</div>
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-[10px] font-mono">ID</div>
                           <div>
                             <span className="text-xs font-serif font-bold text-white block">Reference ID: {rel.characterId.slice(0, 8)}</span>
                             <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">{rel.type}</span>

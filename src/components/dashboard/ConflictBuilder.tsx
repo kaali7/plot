@@ -100,7 +100,7 @@ export const ConflictBuilder: React.FC<ConflictBuilderProps> = ({
             </button>
             <button
               onClick={handleAddConflict}
-              className="btn-magenta px-10 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full disabled:opacity-50 shadow-lg shadow-magenta-glow/20"
+              className="btn-primary px-10 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full disabled:opacity-50 shadow-lg shadow-primary-glow/20"
               disabled={!newConflict.title.trim()}
             >
               Forge Conflict

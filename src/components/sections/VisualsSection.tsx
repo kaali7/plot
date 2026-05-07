@@ -37,9 +37,9 @@ const VisualsSection = ({ id }: VisualsSectionProps) => {
         </h2>
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           {visuals.map((visual, index) => (
-            <div key={index} className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 transition-all duration-500 hover:bg-white/[0.04] hover:-translate-y-2 shadow-glass hover:shadow-[0_20px_40px_rgba(128,0,255,0.1)]">
+            <div key={index} className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2rem] p-6 transition-all duration-500 hover:bg-white/[0.04] hover:-translate-y-2 shadow-glass hover:shadow-primary-glow-lg">
               {/* Subtle top border glow on hover */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[2rem]"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-[2rem]"></div>
               
               <div className="rounded-[1.5rem] overflow-hidden mb-6 relative">
                  <div className="absolute inset-0 bg-primary/20 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500 z-10"></div>
@@ -49,7 +49,7 @@ const VisualsSection = ({ id }: VisualsSectionProps) => {
                    className="w-full h-48 object-cover transform group-hover:scale-105 transition-transform duration-700"
                  />
               </div>
-              <h3 className="text-xl font-sans font-bold mb-3 text-white group-hover:text-blue-400 transition-colors duration-300 tracking-tight">{visual.title}</h3>
+              <h3 className="text-xl font-sans font-bold mb-3 text-white group-hover:text-primary transition-colors duration-300 tracking-tight">{visual.title}</h3>
               <p className="text-editor-text-muted font-sans text-sm leading-relaxed">{visual.description}</p>
             </div>
           ))}

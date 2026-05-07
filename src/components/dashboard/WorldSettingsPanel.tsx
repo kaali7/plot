@@ -127,7 +127,7 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ storyId,
             </button>
             <button
               onClick={handleSave}
-              className="btn-magenta px-10 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full shadow-lg shadow-magenta-glow/20"
+              className="btn-primary px-10 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full shadow-lg shadow-primary-glow/20"
             >
               Archive Settings
             </button>
@@ -178,7 +178,7 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ storyId,
               <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted">Cartography: Locations</label>
               <button
                 onClick={addLocation}
-                className="text-[10px] font-mono text-editor-magenta hover:text-white transition-all uppercase tracking-widest font-bold"
+                className="text-[10px] font-mono text-primary hover:text-white transition-all uppercase tracking-widest font-bold"
               >
                 + Map Location
               </button>

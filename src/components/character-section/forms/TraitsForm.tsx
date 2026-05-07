@@ -129,7 +129,7 @@ export const TraitsForm: React.FC<TraitsFormProps> = ({ data, onUpdate }) => {
           />
           <button
             onClick={addPersonality}
-            className="px-4 py-2 bg-editor-magenta/10 text-editor-magenta rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-editor-magenta/20 transition-all border border-editor-magenta/20"
+            className="px-4 py-2 bg-primary/10 text-primary rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 transition-all border border-primary/20"
           >
             Add
           </button>

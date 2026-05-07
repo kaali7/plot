@@ -122,7 +122,7 @@ export const SceneModal: React.FC<SceneModalProps> = ({ scene, characters, confl
             </button>
             <button
               onClick={handleSave}
-              className="btn-magenta flex items-center justify-center gap-2 px-6 md:px-8 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full shadow-lg shadow-magenta-glow/20"
+              className="btn-primary flex items-center justify-center gap-2 px-6 md:px-8 py-2.5 text-[10px] font-bold tracking-widest uppercase rounded-full shadow-lg shadow-primary-glow/20"
             >
               <FiCheck size={18} className="md:hidden" />
               <span className="hidden md:block">Commit to Chronicle</span>
@@ -141,10 +141,10 @@ export const SceneModal: React.FC<SceneModalProps> = ({ scene, characters, confl
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 flex flex-col items-center justify-center md:min-w-[110px] px-0 md:px-6 py-2.5 md:py-5 transition-all border-b-2 gap-0.5 group
               ${activeTab === tab.id 
-                ? 'border-editor-magenta text-white bg-white/[0.06]' 
+                ? 'border-primary text-white bg-white/[0.06]' 
                 : 'border-transparent text-editor-text-muted hover:text-white hover:bg-white/[0.02]'}`}
             >
-              <div className={`${activeTab === tab.id ? 'text-editor-magenta scale-110 drop-shadow-[0_0_12px_rgba(255,0,85,0.6)]' : 'text-current opacity-40 group-hover:opacity-100'} transition-all duration-300`}>
+              <div className={`${activeTab === tab.id ? 'text-primary scale-110 drop-shadow-[0_0_12px_rgba(255,0,85,0.6)]' : 'text-current opacity-40 group-hover:opacity-100'} transition-all duration-300`}>
                 {React.cloneElement(tab.icon as React.ReactElement, { size: 18 })}
               </div>
               <span className={`hidden md:block text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-[0.25em] transition-colors ${activeTab === tab.id ? 'text-white' : 'text-editor-text-muted/60'}`}>

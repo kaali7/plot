@@ -29,7 +29,7 @@ const FormatButton: React.FC<{
       title={ariaLabel}
       className={`flex items-center justify-center rounded-lg lg:rounded-2xl transition-all duration-300 border ${
         active 
-          ? 'bg-primary/20 text-primary border-primary/30 shadow-magenta-glow' 
+          ? 'bg-primary/20 text-primary border-primary/30 shadow-primary-glow' 
           : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
       } ${className || 'w-8 h-8 lg:w-10 lg:h-10'}`}
     >
@@ -163,7 +163,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Writing Header */}
-      <div className="flex items-center justify-between px-4 lg:px-12 py-3 lg:py-10 border-b border-white/5 bg-[#050505] z-40 sticky top-0">
+      <div className="flex items-center justify-between px-4 lg:px-12 py-3 lg:py-10 border-b border-black/20 bg-[#0b0c10] z-40 sticky top-0">
         <div className="flex flex-col">
           <div className="flex items-center space-x-3 mb-1 lg:mb-2">
             <h2 className="text-lg lg:text-3xl font-serif font-bold text-white tracking-tight">
@@ -174,7 +174,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
             <div className="flex items-center text-[8px] lg:text-[10px] uppercase tracking-[0.3em] font-sans font-bold opacity-60">
               <div className="relative flex items-center justify-center mr-2 lg:mr-3">
                 <div className="absolute w-3 h-3 bg-primary/30 blur-md rounded-full" />
-                <div className="relative w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(255,51,102,0.6)]">
+                <div className="relative w-1.5 h-1.5 rounded-full bg-primary shadow-primary-glow">
                   <div className="absolute inset-[25%] rounded-full bg-white opacity-80" />
                 </div>
               </div>
@@ -203,14 +203,14 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
       </div>
 
       {/* Formatting Toolbar */}
-      <div className={`flex items-center justify-between px-2 lg:px-6 py-2 border-b border-white/5 bg-surface-light backdrop-blur-xl sticky top-[73px] lg:top-[97px] z-30 select-none transition-all duration-500 lg:flex-wrap ${toolbarVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
+      <div className={`flex items-center justify-between px-2 lg:px-6 py-2 border-b border-black/20 bg-[#0b0c10]/80 backdrop-blur-xl sticky top-[73px] lg:top-[97px] z-30 select-none transition-all duration-500 lg:flex-wrap ${toolbarVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
         <div className="flex items-center flex-shrink-0 mr-3 lg:mr-6">
           <button 
             aria-label="Toggle reference panel" 
             onClick={() => setReferencePanelOpen(!referencePanelOpen)} 
             className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-2xl transition-all duration-500 flex items-center justify-center border ${
               referencePanelOpen 
-                ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
+                ? 'bg-primary/20 text-primary shadow-primary-glow border-primary/30' 
                 : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
             }`}
           >
@@ -229,7 +229,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
               </button>
             ) : (
-              <div className="flex items-center bg-white/5 rounded-full px-4 py-1 border border-primary/30 shadow-magenta-glow/20">
+              <div className="flex items-center bg-white/5 rounded-full px-4 py-1 border border-primary/30 shadow-primary-glow/20">
                 <input 
                   autoFocus
                   type="text" 
@@ -242,7 +242,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
                     if (e.key === 'Enter') handleFind();
                   }}
                 />
-                <button onClick={() => handleFind()} className="ml-2 text-editor-magenta hover:text-white transition-colors">
+                <button onClick={() => handleFind()} className="ml-2 text-primary hover:text-white transition-colors">
                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
                 </button>
                 <button onClick={() => setFindPanelOpen(false)} className="ml-2 text-editor-text-muted hover:text-white">
@@ -258,7 +258,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
               onMouseDown={(e) => { e.preventDefault(); setIsStyleMenuOpen(!isStyleMenuOpen); }}
               className={`flex items-center justify-center h-8 lg:h-10 px-2 lg:px-4 rounded-lg lg:rounded-2xl transition-all duration-300 border
                 ${isStyleMenuOpen 
-                  ? 'bg-primary/20 text-white border-primary/40 shadow-magenta-glow' 
+                  ? 'bg-primary/20 text-white border-primary/40 shadow-primary-glow' 
                   : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'}`}
             >
               <div className={`text-xs font-sans font-bold tracking-tighter mr-2 ${isStyleMenuOpen ? 'text-primary' : 'text-primary/60 group-hover:text-primary'}`}>
@@ -272,7 +272,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
             {isStyleMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setIsStyleMenuOpen(false)} />
-                <div className="absolute top-full left-0 mt-2 w-64 bg-[#0d0d12] border border-white/10 rounded-xl shadow-2xl z-50 py-2 animate-in fade-in slide-in-from-top-2 duration-200 backdrop-blur-3xl ring-1 ring-white/5">
+                <div className="absolute top-full left-0 mt-2 w-64 bg-background border border-white/10 rounded-xl shadow-2xl z-50 py-2 animate-in fade-in slide-in-from-top-2 duration-200 backdrop-blur-3xl ring-1 ring-white/5">
                   <div className="px-4 py-1 mb-1 border-b border-white/5">
                     <span className="text-[9px] font-mono text-editor-text-muted uppercase tracking-[0.4em] font-bold opacity-60">Styles</span>
                   </div>
@@ -286,7 +286,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
                     <span className="block text-sm font-sans text-white font-bold transition-colors">Normal Text</span>
                   </button>
                   <button onClick={() => applyStyle('BLOCKQUOTE')} className={`w-full text-left px-4 py-3 hover:bg-white/[0.03] transition-all border-t border-white/5 flex flex-col ${selectionState.blockType === 'blockquote' ? 'border-l-2 border-primary bg-primary/5' : ''}`}>
-                    <span className="block text-base font-serif italic text-editor-magenta transition-colors">Quote</span>
+                    <span className="block text-base font-serif italic text-primary transition-colors">Quote</span>
                   </button>
                 </div>
               </>
@@ -307,7 +307,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
                 onMouseDown={(e) => { e.preventDefault(); setIsFormatMenuOpen(!isFormatMenuOpen); }}
                 className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${
                   selectionState.bold || selectionState.italic || selectionState.underline 
-                    ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
+                    ? 'bg-primary/20 text-primary shadow-primary-glow border-primary/30' 
                     : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
                 }`}
               >
@@ -345,7 +345,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
                 onMouseDown={(e) => { e.preventDefault(); setIsAlignMenuOpen(!isAlignMenuOpen); }}
                 className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all ${
                   isAlignMenuOpen 
-                    ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
+                    ? 'bg-primary/20 text-primary shadow-primary-glow border-primary/30' 
                     : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
                 }`}
               >
@@ -382,7 +382,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
             onClick={() => setPagesPanelOpen(!pagesPanelOpen)} 
             className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-2xl transition-all duration-500 flex items-center justify-center border ${
               pagesPanelOpen 
-                ? 'bg-primary/20 text-primary shadow-magenta-glow border-primary/30' 
+                ? 'bg-primary/20 text-primary shadow-primary-glow border-primary/30' 
                 : 'bg-white/5 text-editor-text-muted hover:text-white border-white/5 hover:bg-white/10'
             }`}
           >
@@ -391,7 +391,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
         </div>
       </div>
       
-      <div className="flex-1 relative overflow-hidden flex bg-[#050505]">
+      <div className="flex-1 relative overflow-hidden flex bg-background">
         {/* Mobile Backdrop */}
         <div 
           className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] lg:hidden transition-all duration-500 ${
@@ -400,7 +400,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
           onClick={() => { setReferencePanelOpen(false); setPagesPanelOpen(false); }}
         />
 
-        <div className={`fixed lg:relative inset-y-0 left-0 lg:inset-auto flex flex-col bg-[#080808]/95 lg:bg-[#080808] border-r border-white/5 transition-all duration-500 ease-in-out ${
+        <div className={`fixed lg:relative inset-y-0 left-0 lg:inset-auto flex flex-col bg-[#0b0c10] border-r border-white/5 transition-all duration-500 ease-in-out ${
           referencePanelOpen 
             ? 'w-full sm:w-[320px] lg:w-[260px] translate-x-0 opacity-100' 
             : 'w-0 -translate-x-full lg:translate-x-0 opacity-0 lg:opacity-100'
@@ -422,9 +422,9 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
           className="flex-1 relative overflow-y-auto custom-scrollbar bg-background/50 backdrop-blur-3xl scroll-smooth"
           onScroll={handleScroll}
         >
-          <div className="w-full lg:max-w-[850px] mx-auto min-h-full lg:min-h-[1100px] lg:my-24 bg-[#0f0f15] lg:shadow-[0_40px_100px_rgba(0,0,0,0.8)] lg:rounded-xl border-white/5 p-6 sm:p-12 lg:p-28 relative group border-0 lg:border">
+          <div className="w-full lg:max-w-[850px] mx-auto min-h-full lg:min-h-[1100px] lg:my-24 bg-[#1a1b1e] lg:shadow-[0_40px_120px_rgba(0,0,0,0.9)] lg:rounded-2xl border-white/5 p-6 sm:p-12 lg:p-28 relative group border-0 lg:border transition-all duration-700">
             {/* Paper Texture Overlay */}
-            <div className="absolute inset-0 opacity-[0.15] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] lg:rounded-xl" />
+            <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] lg:rounded-xl" />
             
             <WritingEditor 
               value={contentChunks.join('')}
@@ -443,7 +443,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
         </div>
 
         {/* Pages Sidebar - Right */}
-        <div className={`fixed lg:relative inset-y-0 right-0 lg:inset-auto flex flex-col bg-[#080808]/95 lg:bg-[#080808]/40 backdrop-blur-3xl border-l border-white/5 transition-all duration-500 ease-in-out ${
+        <div className={`fixed lg:relative inset-y-0 right-0 lg:inset-auto flex flex-col bg-[#0b0c10] border-l border-white/5 transition-all duration-500 ease-in-out ${
           pagesPanelOpen 
             ? 'w-full sm:w-[320px] lg:w-[300px] translate-x-0 opacity-100' 
             : 'w-0 translate-x-full lg:translate-x-0 opacity-0 lg:opacity-100'
@@ -462,7 +462,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
             <div className="space-y-4">
                {scenes.length > 0 ? (
                  scenes.map((scene, idx) => (
-                   <div key={scene.id} className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-primary/40 hover:bg-white/[0.04] transition-all duration-500 cursor-pointer group mb-4">
+                   <div key={scene.id} className="p-5 rounded-2xl bg-[#1a1b1e] border border-white/5 hover:border-primary/40 hover:bg-[#1e1f22] transition-all duration-500 cursor-pointer group mb-4 shadow-xl">
                      <div className="flex items-center justify-between mb-3">
                        <span className="text-[8px] font-sans font-bold text-primary/80 uppercase tracking-[0.2em]">Scene {idx + 1}</span>
                        <span className="text-[8px] font-sans text-editor-text-muted opacity-40 uppercase tracking-widest font-bold">p. {idx * 2 + 1}</span>
@@ -472,7 +472,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
                        <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden mr-4">
                          <div className="h-full bg-primary/40 rounded-full" style={{ width: '60%' }} />
                        </div>
-                       <span className="w-1.5 h-1.5 rounded-full bg-primary/60 shadow-[0_0_8px_rgba(255,51,102,0.4)]" />
+                       <span className="w-1.5 h-1.5 rounded-full bg-primary/60 shadow-primary-glow" />
                      </div>
                    </div>
                  ))

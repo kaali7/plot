@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import type { Dialogue, Character } from '../../../types/story.types';
-import { FiTrash2, FiChevronUp, FiChevronDown, FiUser, FiMessageSquare } from 'react-icons/fi';
+import { FiTrash2, FiChevronUp, FiChevronDown, FiMessageSquare, FiZap } from 'react-icons/fi';
 
 interface SceneScriptFormProps {
   data: Dialogue[];
@@ -93,178 +93,201 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
     }
   };
 
+  // Avatar color helper
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      '#ed4245', '#5865f2', '#3ba55c', '#faa61a', '#eb459e', '#7289da'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
   return (
-    <div className="flex flex-col h-[65vh] relative">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="space-y-1">
-          <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted">Chronicle Beats</h3>
-          <p className="text-[10px] font-serif text-white/20 italic">The tactile flow of voices and events.</p>
+    <div className="flex flex-col h-full bg-[#313338] relative overflow-hidden">
+      {/* Discord-like Header */}
+      <div className="flex items-center px-4 h-12 border-b border-[#26272d] bg-[#313338] shrink-0 shadow-sm z-20">
+        <div className="flex items-center space-x-2 text-[#949ba4]">
+          <FiMessageSquare className="text-[#80848e]" />
+          <span className="font-bold text-white text-sm">chronicle-script</span>
+          <div className="h-6 w-[1px] bg-white/10 mx-2" />
+          <p className="text-xs font-medium truncate max-w-md hidden md:block">The tactical flow of voices and events.</p>
         </div>
       </div>
 
-      {/* Beats List */}
+      {/* Beats List (Chat Area) */}
       <div 
-        className="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar scroll-smooth pb-32" 
+        className="flex-1 overflow-y-auto custom-scrollbar px-1 pt-4 pb-48 flex flex-col-reverse" 
+        style={{ scrollBehavior: 'smooth' }}
         ref={scrollRef}
       >
-        {data.length > 0 ? (
-          data.map((entry, idx) => {
-            const isActive = activeEntry === idx;
-
-            return (
-              <div 
-                key={idx}
-                className={`group relative transition-all duration-500 rounded-2xl border ${
-                  isActive 
-                    ? 'bg-white/[0.03] border-editor-magenta/30 shadow-magenta-glow/10' 
-                    : 'bg-white/[0.01] border-white/5 hover:border-white/10'
-                }`}
-                onFocus={() => setActiveEntry(idx)}
-              >
-                <div className="absolute -left-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all flex flex-col space-y-1 text-white/10 hover:text-white/40">
-                  <button onClick={() => moveEntry(idx, 'up')} className="hover:text-editor-magenta"><FiChevronUp size={14} /></button>
-                  <button onClick={() => moveEntry(idx, 'down')} className="hover:text-editor-magenta"><FiChevronDown size={14} /></button>
-                </div>
-
-                <div className="p-4 md:p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-editor-magenta/80">
-                          {entry.characterId ? characters.find(c => c.id === entry.characterId)?.name : 'Narrator'}
-                        </span>
-                        <div className="opacity-20">
-                          <FiUser size={10} />
-                        </div>
-                      </div>
-
-                      <div className={`text-[8px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full border transition-all ${
-                        entry.type === 'action' 
-                          ? 'border-blue-500/30 text-blue-400 bg-blue-500/10' 
-                          : 'border-white/10 text-editor-text-muted'
-                      }`}>
-                        {entry.type === 'action' ? 'Action' : 'Dialogue'}
-                      </div>
+        <div className="flex flex-col justify-end min-h-full">
+          {data.length > 0 ? (
+            data.map((entry, idx) => {
+              const character = entry.characterId ? characters.find(c => c.id === entry.characterId) : null;
+              const charName = character?.name || 'Narrator';
+              const avatarColor = getAvatarColor(charName);
+              
+              return (
+                <div 
+                  key={idx}
+                  className="group relative px-4 py-1 flex items-start space-x-4 hover:bg-[#2e3035] transition-colors"
+                >
+                  {/* Floating Action Menu on Hover */}
+                  <div className="absolute right-4 top-[-16px] opacity-0 group-hover:opacity-100 transition-all z-20">
+                    <div className="flex items-center bg-[#313338] border border-[#26272d] rounded shadow-xl overflow-hidden">
+                      <button onClick={() => moveEntry(idx, 'up')} className="p-1.5 hover:bg-[#3f4147] text-[#b5bac1] hover:text-white"><FiChevronUp size={14} /></button>
+                      <button onClick={() => moveEntry(idx, 'down')} className="p-1.5 hover:bg-[#3f4147] text-[#b5bac1] hover:text-white"><FiChevronDown size={14} /></button>
+                      <button onClick={() => removeEntry(idx)} className="p-1.5 hover:bg-[#3f4147] text-[#ed4245]"><FiTrash2 size={14} /></button>
                     </div>
-
-                    <button
-                      onClick={() => removeEntry(idx)}
-                      className="opacity-0 group-hover:opacity-40 hover:opacity-100 text-red-500 transition-all"
-                    >
-                      <FiTrash2 size={14} />
-                    </button>
                   </div>
 
-                  <div className="relative">
-                    <textarea
-                      value={entry.content}
-                      onChange={(e) => updateEntry(idx, { content: e.target.value })}
-                      onKeyDown={(e) => handleKeyDown(e, idx)}
-                      placeholder={entry.type === 'action' ? "Describe the movement..." : "What is spoken?"}
-                      className={`w-full bg-transparent border-none outline-none resize-none leading-relaxed text-sm md:text-base ${
-                        entry.type === 'action' 
-                          ? 'font-serif italic text-white/40' 
-                          : 'font-sans text-white/90'
-                      }`}
-                      rows={1}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = target.scrollHeight + 'px';
-                      }}
-                    />
+                  {/* Avatar */}
+                  <div 
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 mt-0.5 shadow-md"
+                    style={{ backgroundColor: entry.type === 'action' ? '#4e5058' : avatarColor }}
+                  >
+                    {entry.type === 'action' ? <FiZap size={18} /> : charName.charAt(0)}
+                  </div>
+
+                  {/* Message Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline space-x-2">
+                      <span 
+                        className="font-bold hover:underline cursor-pointer transition-all"
+                        style={{ color: entry.type === 'action' ? '#949ba4' : avatarColor }}
+                      >
+                        {charName}
+                      </span>
+                      <span className="text-[10px] text-[#949ba4] font-medium uppercase tracking-tighter">
+                        Beat #{idx + 1}
+                      </span>
+                      {entry.type === 'action' && (
+                        <span className="bg-[#4e5058] text-[#ffffff] text-[8px] font-bold px-1 rounded-[3px] uppercase tracking-tighter h-3 flex items-center">
+                          Action
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="relative mt-1">
+                      <textarea
+                        value={entry.content}
+                        onChange={(e) => updateEntry(idx, { content: e.target.value })}
+                        onKeyDown={(e) => handleKeyDown(e, idx)}
+                        rows={1}
+                        className={`w-full bg-transparent border-none outline-none resize-none leading-snug ${
+                          entry.type === 'action' 
+                            ? 'text-[#b5bac1] italic text-sm' 
+                            : 'text-[#dbdee1] text-[15px]'
+                        }`}
+                        onInput={(e) => {
+                          const target = e.target as HTMLTextAreaElement;
+                          target.style.height = 'auto';
+                          target.style.height = target.scrollHeight + 'px';
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
+              );
+            })
+          ) : (
+            <div className="px-12 py-20">
+              <div className="w-16 h-16 rounded-full bg-[#4e5058] flex items-center justify-center text-white/40 mb-6">
+                <FiMessageSquare size={32} />
               </div>
-            );
-          })
-        ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-white/[0.01] border border-dashed border-white/10 rounded-3xl">
-             <div className="w-16 h-16 rounded-full bg-editor-magenta/5 border border-editor-magenta/10 flex items-center justify-center text-editor-magenta/20">
-               <FiMessageSquare size={24} />
-             </div>
-             <div className="space-y-1">
-               <p className="text-[11px] font-mono text-white/30 uppercase tracking-[0.2em] font-bold">The chronicle is empty</p>
-               <p className="text-[10px] font-serif text-white/20 italic">Speak or act below to begin.</p>
-             </div>
-          </div>
-        )}
+              <h2 className="text-3xl font-bold text-white mb-2">Welcome to the Chronicle</h2>
+              <p className="text-[#b5bac1] text-sm leading-relaxed max-w-md">
+                This is the beginning of your scene. Start by adding dialogue or actions using the input below.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Message-style Entry Box */}
-      <div className="absolute bottom-0 left-0 right-0 pt-6 pb-2 px-1 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f] to-transparent z-10">
-        <div className="flex flex-col space-y-3 bg-white/[0.03] border border-white/10 rounded-2xl p-3 backdrop-blur-xl shadow-2xl shadow-black/50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="flex bg-white/5 rounded-full p-0.5 border border-white/10">
+      {/* Discord-like Message Input Box */}
+      <div className="px-4 pb-6 pt-2 shrink-0 z-10 bg-[#313338]">
+        <div className="bg-[#383a40] rounded-lg px-4 py-2.5 flex flex-col space-y-2">
+          {/* Top Row: Type Selector & Character */}
+          <div className="flex items-center justify-between pb-1">
+             <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setNewBeat(prev => ({ ...prev, type: 'action' }))}
-                  className={`px-3 py-1 rounded-full text-[8px] font-mono font-bold uppercase tracking-widest transition-all ${
-                    newBeat.type === 'action' 
-                      ? 'bg-blue-500/20 text-blue-400' 
-                      : 'text-white/30 hover:text-white/50'
-                  }`}
+                  className={`flex items-center space-x-1 px-2 py-0.5 rounded transition-all text-[10px] font-bold uppercase tracking-wider
+                  ${newBeat.type === 'action' ? 'bg-[#4e5058] text-white' : 'text-[#b5bac1] hover:bg-[#3f4147] hover:text-white'}`}
                 >
-                  Action
+                  <FiZap size={12} />
+                  <span>Action</span>
                 </button>
                 <button
                   onClick={() => setNewBeat(prev => ({ ...prev, type: 'dialogue' }))}
-                  className={`px-3 py-1 rounded-full text-[8px] font-mono font-bold uppercase tracking-widest transition-all ${
-                    newBeat.type === 'dialogue' 
-                      ? 'bg-editor-magenta/20 text-editor-magenta' 
-                      : 'text-white/30 hover:text-white/50'
-                  }`}
+                  className={`flex items-center space-x-1 px-2 py-0.5 rounded transition-all text-[10px] font-bold uppercase tracking-wider
+                  ${newBeat.type === 'dialogue' ? 'bg-[#5865f2] text-white' : 'text-[#b5bac1] hover:bg-[#3f4147] hover:text-white'}`}
                 >
-                  Dialogue
+                  <FiMessageSquare size={12} />
+                  <span>Dialogue</span>
                 </button>
-              </div>
+             </div>
 
-              {newBeat.type === 'dialogue' && (
-                <div className="flex items-center space-x-2 bg-white/5 rounded-full px-3 py-1 border border-white/10">
-                  <FiUser size={10} className="text-white/20" />
-                  <select
-                    value={newBeat.characterId}
-                    onChange={(e) => setNewBeat(prev => ({ ...prev, characterId: e.target.value }))}
-                    className="bg-transparent text-[8px] font-mono font-bold uppercase tracking-widest text-white/60 outline-none cursor-pointer pr-1"
-                  >
-                    <option value="" className="bg-[#0a0a0f]">Narrator</option>
-                    {characters.map(char => (
-                      <option key={char.id} value={char.id} className="bg-[#0a0a0f]">{char.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </div>
+             {newBeat.type === 'dialogue' && (
+               <div className="flex items-center space-x-2 text-[#b5bac1] text-[10px] font-bold uppercase tracking-wider">
+                 <span>Speaking as:</span>
+                 <select
+                   value={newBeat.characterId}
+                   onChange={(e) => setNewBeat(prev => ({ ...prev, characterId: e.target.value }))}
+                   className="bg-transparent text-white outline-none cursor-pointer border-b border-white/10"
+                 >
+                   <option value="" className="bg-[#313338]">Narrator</option>
+                   {characters.map(char => (
+                     <option key={char.id} value={char.id} className="bg-[#313338]">{char.name}</option>
+                   ))}
+                 </select>
+               </div>
+             )}
           </div>
 
+          {/* Main Input Row */}
           <div className="flex items-end space-x-3">
+            <button className="p-1 rounded-full bg-[#b5bac1]/10 text-[#b5bac1] hover:bg-[#b5bac1]/20 hover:text-white transition-all shrink-0">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-lg leading-none">+</div>
+            </button>
+            
             <textarea
               value={newBeat.content}
               onChange={(e) => setNewBeat(prev => ({ ...prev, content: e.target.value }))}
               onKeyDown={handleNewBeatKeyDown}
               placeholder={newBeat.type === 'action' ? "Describe action..." : "Enter dialogue..."}
-              className="flex-1 bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm outline-none focus:border-editor-magenta/30 transition-all resize-none max-h-32"
+              className="flex-1 bg-transparent text-white text-[15px] outline-none resize-none max-h-40 py-0.5 custom-scrollbar"
               rows={1}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = 'auto';
-                target.style.height = Math.min(target.scrollHeight, 128) + 'px';
+                target.style.height = Math.min(target.scrollHeight, 160) + 'px';
               }}
             />
-            <button
-              onClick={submitNewBeat}
-              disabled={newBeat.content.trim() === ''}
-              className={`p-3 rounded-xl transition-all ${
-                newBeat.content.trim() !== '' 
-                  ? 'bg-editor-magenta text-white shadow-lg shadow-editor-magenta/40' 
-                  : 'bg-white/5 text-white/10'
-              }`}
-            >
-              <FiChevronUp size={20} className="stroke-[3]" />
-            </button>
+            
+            <div className="flex items-center space-x-2 shrink-0">
+               <button 
+                 onClick={submitNewBeat}
+                 disabled={newBeat.content.trim() === ''}
+                 className={`p-1.5 rounded transition-all ${
+                   newBeat.content.trim() !== '' 
+                     ? 'text-[#5865f2] hover:scale-110' 
+                     : 'text-[#b5bac1]/20'
+                 }`}
+               >
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                 </svg>
+               </button>
+            </div>
           </div>
         </div>
+        <p className="text-[10px] text-[#949ba4] mt-2 px-1">
+          <span className="font-bold">Shift + Enter</span> for new line • <span className="font-bold">Enter</span> to send
+        </p>
       </div>
     </div>
   );

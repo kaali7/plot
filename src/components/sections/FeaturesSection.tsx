@@ -37,7 +37,7 @@ const FeaturesSection = ({ id }: FeaturesSectionProps) => {
     <section id={id} className="py-32 bg-surface-dark relative overflow-hidden">
       {/* Ambient background glows */}
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none transform -translate-y-1/2 -translate-x-1/2"></div>
-      <div className="absolute top-1/2 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none transform -translate-y-1/2 translate-x-1/2"></div>
+      <div className="absolute top-1/2 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none transform -translate-y-1/2 translate-x-1/2"></div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 space-y-20">
         <div className="text-center space-y-4">
@@ -53,7 +53,7 @@ const FeaturesSection = ({ id }: FeaturesSectionProps) => {
           {features.map((feature, index) => (
             <div 
               key={index} 
-              className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 text-center transition-all duration-300 hover:bg-white/[0.04] hover:-translate-y-2 shadow-glass hover:shadow-[0_20px_40px_rgba(255,51,102,0.1)] overflow-hidden"
+              className="group relative bg-white/[0.02] backdrop-blur-xl border border-white/5 rounded-[2rem] p-8 text-center transition-all duration-300 hover:bg-white/[0.04] hover:-translate-y-2 shadow-glass hover:shadow-primary-glow-lg overflow-hidden"
             >
               {/* Subtle top border glow on hover */}
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
