@@ -11,7 +11,6 @@ interface SceneSectionProps {
   onSceneAdd: (sceneData: Partial<Scene>) => void;
   onSceneUpdate: (id: string, updates: Partial<Scene>) => void;
   onSceneDelete: (id: string) => void;
-  onClose: () => void;
 }
 
 export const SceneSection: React.FC<SceneSectionProps> = ({
@@ -20,8 +19,7 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   conflicts,
   onSceneAdd,
   onSceneUpdate,
-  onSceneDelete,
-  onClose
+  onSceneDelete
 }) => {
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [viewingSceneId, setViewingSceneId] = useState<string | null>(null);

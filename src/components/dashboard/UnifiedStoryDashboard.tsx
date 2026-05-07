@@ -117,7 +117,6 @@ export const UnifiedStoryDashboard: React.FC = () => {
                   onSceneAdd={addScene}
                   onSceneUpdate={updateScene}
                   onSceneDelete={deleteScene}
-                  onClose={() => setActiveTab('overview')}
                 />
               </ErrorBoundary>
             )}
