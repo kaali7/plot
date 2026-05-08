@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import type { Dialogue, Character } from '../../../types/story.types';
-import { FiTrash2, FiChevronUp, FiChevronDown, FiMessageSquare, FiZap } from 'react-icons/fi';
+import { FiChevronDown, FiChevronUp, FiSend, FiTrash2, FiUser, FiZap } from 'react-icons/fi';
 
 interface SceneScriptFormProps {
   data: Dialogue[];
@@ -15,11 +15,10 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
 }) => {
   const [activeEntry, setActiveEntry] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  
   const [newBeat, setNewBeat] = useState<{
-    type: 'dialogue' | 'action',
-    content: string,
-    characterId: string
+    type: 'dialogue' | 'action';
+    content: string;
+    characterId: string;
   }>({
     type: 'dialogue',
     content: '',
@@ -37,7 +36,9 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
       .filter((_, i) => i !== index)
       .map((entry, i) => ({ ...entry, order: i }));
     onUpdate(newDialogue);
-    if (activeEntry === index) setActiveEntry(null);
+    if (activeEntry === index) {
+      setActiveEntry(null);
+    }
   };
 
   const moveEntry = (index: number, direction: 'up' | 'down') => {
@@ -50,8 +51,7 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
     newDialogue[index] = newDialogue[newIndex];
     newDialogue[newIndex] = temp;
 
-    const orderedDialogue = newDialogue.map((entry, i) => ({ ...entry, order: i }));
-    onUpdate(orderedDialogue);
+    onUpdate(newDialogue.map((entry, i) => ({ ...entry, order: i })));
     setActiveEntry(newIndex);
   };
 
@@ -69,20 +69,26 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
 
   const submitNewBeat = () => {
     if (newBeat.content.trim() === '') return;
-    
+
     const entry: Dialogue = {
       characterId: newBeat.type === 'action' ? '' : newBeat.characterId,
       content: newBeat.content,
       order: data.length,
       type: newBeat.type
     };
+
     onUpdate([...data, entry]);
-    setNewBeat(prev => ({ ...prev, content: '' }));
-    
+    setNewBeat(prev => ({
+      ...prev,
+      content: '',
+      characterId: prev.characterId || characters[0]?.id || ''
+    }));
+
     setTimeout(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }
+      setActiveEntry(data.length);
     }, 100);
   };
 
@@ -93,11 +99,13 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
     }
   };
 
-  // Avatar color helper
+  const autoResize = (target: HTMLTextAreaElement, maxHeight = 220) => {
+    target.style.height = 'auto';
+    target.style.height = `${Math.min(target.scrollHeight, maxHeight)}px`;
+  };
+
   const getAvatarColor = (name: string) => {
-    const colors = [
-      '#ed4245', '#5865f2', '#3ba55c', '#faa61a', '#eb459e', '#7289da'
-    ];
+    const colors = ['#ed4245', '#5865f2', '#3ba55c', '#faa61a', '#eb459e', '#7289da'];
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
       hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -105,189 +113,226 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
     return colors[Math.abs(hash) % colors.length];
   };
 
-  return (
-    <div className="flex flex-col h-full bg-[#313338] relative overflow-hidden">
-      {/* Discord-like Header */}
-      <div className="flex items-center px-4 h-12 border-b border-[#26272d] bg-[#313338] shrink-0 shadow-sm z-20">
-        <div className="flex items-center space-x-2 text-[#949ba4]">
-          <FiMessageSquare className="text-[#80848e]" />
-          <span className="font-bold text-white text-sm">chronicle-script</span>
-          <div className="h-6 w-[1px] bg-white/10 mx-2" />
-          <p className="text-xs font-medium truncate max-w-md hidden md:block">The tactical flow of voices and events.</p>
-        </div>
-      </div>
+  const getCharacterName = (characterId: string) =>
+    characters.find(c => c.id === characterId)?.name || 'Narrator';
 
-      {/* Beats List (Chat Area) */}
-      <div 
-        className="flex-1 overflow-y-auto custom-scrollbar px-1 pt-4 pb-48 flex flex-col-reverse" 
-        style={{ scrollBehavior: 'smooth' }}
+  return (
+    <div className="relative flex h-full flex-col overflow-hidden overflow-x-hidden bg-[#0f1014]">
+      <div
         ref={scrollRef}
+        className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(88,101,242,0.08),_transparent_35%),linear-gradient(180deg,_#11131a_0%,_#0b0c10_100%)] px-3 py-2.5 sm:px-4 sm:py-4"
+        style={{ scrollBehavior: 'smooth' }}
       >
-        <div className="flex flex-col justify-end min-h-full">
-          {data.length > 0 ? (
-            data.map((entry, idx) => {
+        {data.length > 0 ? (
+          <div className="space-y-3 pb-24 sm:space-y-4 sm:pb-28">
+            {data.map((entry, idx) => {
               const character = entry.characterId ? characters.find(c => c.id === entry.characterId) : null;
               const charName = character?.name || 'Narrator';
               const avatarColor = getAvatarColor(charName);
-              
+              const isAction = entry.type === 'action';
+              const isActive = activeEntry === idx;
+
               return (
-                <div 
+                <div
                   key={idx}
-                  className="group relative px-4 py-1 flex items-start space-x-4 hover:bg-[#2e3035] transition-colors"
+                  onClick={() => setActiveEntry(idx)}
+                  className="group transition-all duration-300"
                 >
-                  {/* Floating Action Menu on Hover */}
-                  <div className="absolute right-4 top-[-16px] opacity-0 group-hover:opacity-100 transition-all z-20">
-                    <div className="flex items-center bg-[#313338] border border-[#26272d] rounded shadow-xl overflow-hidden">
-                      <button onClick={() => moveEntry(idx, 'up')} className="p-1.5 hover:bg-[#3f4147] text-[#b5bac1] hover:text-white"><FiChevronUp size={14} /></button>
-                      <button onClick={() => moveEntry(idx, 'down')} className="p-1.5 hover:bg-[#3f4147] text-[#b5bac1] hover:text-white"><FiChevronDown size={14} /></button>
-                      <button onClick={() => removeEntry(idx)} className="p-1.5 hover:bg-[#3f4147] text-[#ed4245]"><FiTrash2 size={14} /></button>
+                  {isAction ? (
+                    <div className="flex flex-col items-center">
+                      <div className="mb-1.5 flex items-center gap-2 text-[7px] sm:text-[8px] font-bold uppercase tracking-[0.24em] text-[#676d79]">
+                        <FiZap size={9} />
+                        <span>Beat {idx + 1}</span>
+                        <span>Action</span>
+                      </div>
+                      <div className={`w-full max-w-[240px] sm:max-w-[260px] rounded-[22px] bg-[#11131a] px-4 py-3 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)] transition ${isActive ? 'ring-1 ring-white/8' : ''}`}>
+                        <textarea
+                          value={entry.content}
+                          onChange={(e) => updateEntry(idx, { content: e.target.value })}
+                          onFocus={() => setActiveEntry(idx)}
+                          onKeyDown={(e) => handleKeyDown(e, idx)}
+                          rows={1}
+                          className="w-full resize-none bg-transparent px-0 py-0 text-center text-[12px] sm:text-[13px] italic leading-5 sm:leading-6 text-[#98a0af] outline-none"
+                          onInput={(e) => autoResize(e.target as HTMLTextAreaElement, 120)}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex flex-col">
+                      <div className="mb-1.5 flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span
+                            className="truncate text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.16em]"
+                            style={{ color: avatarColor }}
+                          >
+                            {charName}
+                          </span>
+                          <span className="text-[7px] sm:text-[8px] font-bold uppercase tracking-[0.16em] text-[#606774]">
+                            Beat {idx + 1}
+                          </span>
+                        </div>
 
-                  {/* Avatar */}
-                  <div 
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 mt-0.5 shadow-md"
-                    style={{ backgroundColor: entry.type === 'action' ? '#4e5058' : avatarColor }}
-                  >
-                    {entry.type === 'action' ? <FiZap size={18} /> : charName.charAt(0)}
-                  </div>
+                        <div className={`flex items-center gap-0.5 rounded-full bg-white/[0.03] p-0.5 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                          <button
+                            onClick={() => moveEntry(idx, 'up')}
+                            className="rounded-full p-1.5 text-[#9097a4] transition hover:bg-white/8 hover:text-white"
+                            aria-label="Move beat up"
+                          >
+                            <FiChevronUp size={12} />
+                          </button>
+                          <button
+                            onClick={() => moveEntry(idx, 'down')}
+                            className="rounded-full p-1.5 text-[#9097a4] transition hover:bg-white/8 hover:text-white"
+                            aria-label="Move beat down"
+                          >
+                            <FiChevronDown size={12} />
+                          </button>
+                          <button
+                            onClick={() => removeEntry(idx)}
+                            className="rounded-full p-1.5 text-[#f06b72] transition hover:bg-[#f06b72]/10 hover:text-[#ff8a91]"
+                            aria-label="Delete beat"
+                          >
+                            <FiTrash2 size={12} />
+                          </button>
+                        </div>
+                      </div>
 
-                  {/* Message Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline space-x-2">
-                      <span 
-                        className="font-bold hover:underline cursor-pointer transition-all"
-                        style={{ color: entry.type === 'action' ? '#949ba4' : avatarColor }}
-                      >
-                        {charName}
-                      </span>
-                      <span className="text-[10px] text-[#949ba4] font-medium uppercase tracking-tighter">
-                        Beat #{idx + 1}
-                      </span>
-                      {entry.type === 'action' && (
-                        <span className="bg-[#4e5058] text-[#ffffff] text-[8px] font-bold px-1 rounded-[3px] uppercase tracking-tighter h-3 flex items-center">
-                          Action
-                        </span>
+                      <div className={`rounded-[18px] bg-[linear-gradient(180deg,rgba(29,31,44,0.96)_0%,rgba(21,23,34,0.96)_100%)] px-3.5 py-3.5 sm:px-4 sm:py-4 shadow-[inset_0_0_0_1px_rgba(108,119,255,0.08)] transition ${isActive ? 'ring-1 ring-[#5865f2]/35' : ''}`}>
+                        <textarea
+                          value={entry.content}
+                          onChange={(e) => updateEntry(idx, { content: e.target.value })}
+                          onFocus={() => setActiveEntry(idx)}
+                          onKeyDown={(e) => handleKeyDown(e, idx)}
+                          rows={1}
+                          className="w-full resize-none bg-transparent px-0 py-0 text-[12px] sm:text-[13px] leading-5 sm:leading-6 text-[#edf1f8] outline-none"
+                          onInput={(e) => autoResize(e.target as HTMLTextAreaElement, 140)}
+                        />
+                      </div>
+
+                      {isActive && (
+                        <div className="mt-2 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="relative w-full sm:max-w-[174px]">
+                            <FiUser className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35" size={11} />
+                            <select
+                              value={entry.characterId}
+                              onChange={(e) => updateEntry(idx, { characterId: e.target.value })}
+                              className="w-full appearance-none rounded-full border border-white/8 bg-[#0d1017] py-1.5 pl-8 pr-8 text-[10px] font-medium text-white outline-none transition focus:border-[#5865f2]/70"
+                            >
+                              <option value="">Narrator</option>
+                              {characters.map(char => (
+                                <option key={char.id} value={char.id}>
+                                  {char.name}
+                                </option>
+                              ))}
+                            </select>
+                            <FiChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/35" size={11} />
+                          </div>
+                          <span className="text-[7px] sm:text-[8px] font-bold uppercase tracking-[0.18em] text-[#606774]">
+                            Speaker: {getCharacterName(entry.characterId)}
+                          </span>
+                        </div>
                       )}
                     </div>
-                    
-                    <div className="relative mt-1">
-                      <textarea
-                        value={entry.content}
-                        onChange={(e) => updateEntry(idx, { content: e.target.value })}
-                        onKeyDown={(e) => handleKeyDown(e, idx)}
-                        rows={1}
-                        className={`w-full bg-transparent border-none outline-none resize-none leading-snug ${
-                          entry.type === 'action' 
-                            ? 'text-[#b5bac1] italic text-sm' 
-                            : 'text-[#dbdee1] text-[15px]'
-                        }`}
-                        onInput={(e) => {
-                          const target = e.target as HTMLTextAreaElement;
-                          target.style.height = 'auto';
-                          target.style.height = target.scrollHeight + 'px';
-                        }}
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
               );
-            })
-          ) : (
-            <div className="px-12 py-20">
-              <div className="w-16 h-16 rounded-full bg-[#4e5058] flex items-center justify-center text-white/40 mb-6">
-                <FiMessageSquare size={32} />
-              </div>
-              <h2 className="text-3xl font-bold text-white mb-2">Welcome to the Chronicle</h2>
-              <p className="text-[#b5bac1] text-sm leading-relaxed max-w-md">
-                This is the beginning of your scene. Start by adding dialogue or actions using the input below.
+            })}
+          </div>
+        ) : (
+          <div className="flex min-h-full items-center justify-center px-4 py-12">
+            <div className="max-w-md rounded-[28px] border border-white/8 bg-white/[0.03] p-6 shadow-[0_25px_70px_rgba(0,0,0,0.28)] sm:p-8">
+              <h2 className="text-2xl font-bold text-white">Start the scene rhythm</h2>
+              <p className="mt-2 text-sm leading-7 text-[#b5bac1]">
+                Add dialogue or action beats below. Tap any beat later to change its speaker or refine the wording.
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Discord-like Message Input Box */}
-      <div className="px-4 pb-6 pt-2 shrink-0 z-10 bg-[#313338]">
-        <div className="bg-[#383a40] rounded-lg px-4 py-2.5 flex flex-col space-y-2">
-          {/* Top Row: Type Selector & Character */}
-          <div className="flex items-center justify-between pb-1">
-             <div className="flex items-center space-x-2">
+      <div className="sticky bottom-0 inset-x-0 bg-gradient-to-t from-[#090a0d] via-[#090a0df2] to-transparent px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5">
+        <div className="mx-auto rounded-[20px] bg-[#111319]/98 p-2 shadow-[0_18px_48px_rgba(0,0,0,0.38)] backdrop-blur-xl sm:rounded-[22px] sm:p-3">
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2 pb-0.5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="order-1 flex min-w-0 gap-1.5">
                 <button
                   onClick={() => setNewBeat(prev => ({ ...prev, type: 'action' }))}
-                  className={`flex items-center space-x-1 px-2 py-0.5 rounded transition-all text-[10px] font-bold uppercase tracking-wider
-                  ${newBeat.type === 'action' ? 'bg-[#4e5058] text-white' : 'text-[#b5bac1] hover:bg-[#3f4147] hover:text-white'}`}
+                  className={`rounded-full px-3 py-1.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.16em] transition ${
+                    newBeat.type === 'action'
+                      ? 'bg-[#3f4452] text-white shadow-[0_10px_24px_rgba(0,0,0,0.25)]'
+                      : 'bg-white/[0.04] text-[#9aa1ad] hover:bg-white/[0.07] hover:text-white'
+                  }`}
                 >
-                  <FiZap size={12} />
-                  <span>Action</span>
+                  <span className="flex items-center gap-2">
+                    <FiZap size={13} />
+                    Action
+                  </span>
                 </button>
                 <button
-                  onClick={() => setNewBeat(prev => ({ ...prev, type: 'dialogue' }))}
-                  className={`flex items-center space-x-1 px-2 py-0.5 rounded transition-all text-[10px] font-bold uppercase tracking-wider
-                  ${newBeat.type === 'dialogue' ? 'bg-[#5865f2] text-white' : 'text-[#b5bac1] hover:bg-[#3f4147] hover:text-white'}`}
+                  onClick={() => setNewBeat(prev => ({ ...prev, type: 'dialogue', characterId: prev.characterId || characters[0]?.id || '' }))}
+                  className={`rounded-full px-3 py-1.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.16em] transition ${
+                    newBeat.type === 'dialogue'
+                      ? 'bg-[linear-gradient(180deg,#7079ff_0%,#5865f2_100%)] text-white shadow-[0_10px_24px_rgba(88,101,242,0.35)]'
+                      : 'bg-white/[0.04] text-[#9aa1ad] hover:bg-white/[0.07] hover:text-white'
+                  }`}
                 >
-                  <FiMessageSquare size={12} />
-                  <span>Dialogue</span>
+                  <span className="flex items-center gap-2">
+                    Dialogue
+                  </span>
                 </button>
-             </div>
+              </div>
 
-             {newBeat.type === 'dialogue' && (
-               <div className="flex items-center space-x-2 text-[#b5bac1] text-[10px] font-bold uppercase tracking-wider">
-                 <span>Speaking as:</span>
-                 <select
-                   value={newBeat.characterId}
-                   onChange={(e) => setNewBeat(prev => ({ ...prev, characterId: e.target.value }))}
-                   className="bg-transparent text-white outline-none cursor-pointer border-b border-white/10"
-                 >
-                   <option value="" className="bg-[#313338]">Narrator</option>
-                   {characters.map(char => (
-                     <option key={char.id} value={char.id} className="bg-[#313338]">{char.name}</option>
-                   ))}
-                 </select>
-               </div>
-             )}
-          </div>
+              {newBeat.type === 'dialogue' && (
+                <div className="relative order-2 min-w-0 flex-1 basis-full sm:w-[176px] sm:basis-auto sm:flex-none">
+                  <FiUser className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35" size={11} />
+                  <select
+                    value={newBeat.characterId}
+                    onChange={(e) => setNewBeat(prev => ({ ...prev, characterId: e.target.value }))}
+                    className="w-full appearance-none rounded-full bg-[#1a1c24] py-1.5 pl-8 pr-8 text-[10px] font-medium text-white outline-none transition focus:ring-1 focus:ring-[#5865f2]/45"
+                  >
+                    <option value="">Narrator</option>
+                    {characters.map(char => (
+                      <option key={char.id} value={char.id}>
+                        {char.name}
+                      </option>
+                    ))}
+                  </select>
+                  <FiChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/35" size={11} />
+                </div>
+              )}
+            </div>
 
-          {/* Main Input Row */}
-          <div className="flex items-end space-x-3">
-            <button className="p-1 rounded-full bg-[#b5bac1]/10 text-[#b5bac1] hover:bg-[#b5bac1]/20 hover:text-white transition-all shrink-0">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-lg leading-none">+</div>
-            </button>
-            
-            <textarea
-              value={newBeat.content}
-              onChange={(e) => setNewBeat(prev => ({ ...prev, content: e.target.value }))}
-              onKeyDown={handleNewBeatKeyDown}
-              placeholder={newBeat.type === 'action' ? "Describe action..." : "Enter dialogue..."}
-              className="flex-1 bg-transparent text-white text-[15px] outline-none resize-none max-h-40 py-0.5 custom-scrollbar"
-              rows={1}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = Math.min(target.scrollHeight, 160) + 'px';
-              }}
-            />
-            
-            <div className="flex items-center space-x-2 shrink-0">
-               <button 
-                 onClick={submitNewBeat}
-                 disabled={newBeat.content.trim() === ''}
-                 className={`p-1.5 rounded transition-all ${
-                   newBeat.content.trim() !== '' 
-                     ? 'text-[#5865f2] hover:scale-110' 
-                     : 'text-[#b5bac1]/20'
-                 }`}
-               >
-                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                   <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                 </svg>
-               </button>
+            <div className="rounded-[16px] bg-[#0d1017] px-3 py-2">
+              <div className="flex items-end gap-2">
+                <textarea
+                  value={newBeat.content}
+                  onChange={(e) => setNewBeat(prev => ({ ...prev, content: e.target.value }))}
+                  onKeyDown={handleNewBeatKeyDown}
+                  placeholder={newBeat.type === 'action' ? 'Describe the action beat...' : 'Write the next line...'}
+                  rows={1}
+                  className="max-h-20 min-h-[20px] flex-1 resize-none bg-transparent text-[12px] sm:text-[14px] leading-5 text-white outline-none placeholder:text-[#5f6673]"
+                  onInput={(e) => autoResize(e.target as HTMLTextAreaElement, 80)}
+                />
+                <button
+                  onClick={submitNewBeat}
+                  disabled={newBeat.content.trim() === ''}
+                  className={`flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full transition ${
+                    newBeat.content.trim() !== ''
+                      ? 'bg-[linear-gradient(180deg,#7079ff_0%,#5865f2_100%)] text-white shadow-[0_12px_28px_rgba(88,101,242,0.4)] hover:brightness-110'
+                      : 'bg-white/[0.05] text-white/25'
+                  }`}
+                  aria-label="Add beat"
+                >
+                  <FiSend size={13} />
+                </button>
+              </div>
             </div>
           </div>
+
+          <p className="mt-1 px-1 text-[8px] sm:text-[9px] text-[#8c93a1]">
+            Press <span className="font-bold text-white/80">Enter</span> to add. Use <span className="font-bold text-white/80">Shift + Enter</span> for a new line.
+          </p>
         </div>
-        <p className="text-[10px] text-[#949ba4] mt-2 px-1">
-          <span className="font-bold">Shift + Enter</span> for new line • <span className="font-bold">Enter</span> to send
-        </p>
       </div>
     </div>
   );

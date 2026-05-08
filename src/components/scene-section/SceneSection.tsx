@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 // import { SceneGrid } from './SceneGrid';
 import { SceneModal } from './SceneModal';
 import { SceneDetailView } from './SceneDetailView';
@@ -11,6 +11,7 @@ interface SceneSectionProps {
   onSceneAdd: (sceneData: Partial<Scene>) => void;
   onSceneUpdate: (id: string, updates: Partial<Scene>) => void;
   onSceneDelete: (id: string) => void;
+  onViewingSceneChange?: (isOpen: boolean) => void;
 }
 
 export const SceneSection: React.FC<SceneSectionProps> = ({
@@ -19,13 +20,18 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   conflicts,
   onSceneAdd,
   onSceneUpdate,
-  onSceneDelete
+  onSceneDelete,
+  onViewingSceneChange
 }) => {
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [viewingSceneId, setViewingSceneId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
   const viewingScene = scenes.find(s => s.id === viewingSceneId) || null;
+
+  useEffect(() => {
+    onViewingSceneChange?.(Boolean(viewingSceneId));
+  }, [onViewingSceneChange, viewingSceneId]);
 
   const handleSceneClick = (scene: Scene) => {
     setViewingSceneId(scene.id);
@@ -57,8 +63,8 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   return (
     <div className="flex h-full overflow-hidden relative">
       {/* Sidebar Navigation - Scene List */}
-      <div className={`relative h-full flex flex-col border-r border-black/20 bg-[#0b0c10] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] z-20
-        ${viewingSceneId ? 'w-20' : 'w-full border-white/5 bg-[#0b0c10]'}`}>
+      <div className={`relative h-full flex flex-col border-r border-black/20 bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] z-20
+        ${viewingSceneId ? 'w-20' : 'w-full border-white/5 bg-[#050507]'}`}>
         
         {/* Full Header - Only shown when no selection */}
         {!viewingSceneId && (
@@ -141,19 +147,19 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
         </div>
       </div>
 
-      {/* Detail View Close Button - Repositioned to Top Left (above sidebar) */}
+      {/* Detail View Close Button */}
       {viewingSceneId && (
         <button 
           onClick={() => setViewingSceneId(null)}
-          className="absolute top-6 left-4 w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-500 z-50 shadow-2xl hover:scale-110 active:scale-95"
+          className="absolute top-4 right-4 md:top-6 md:left-4 md:right-auto w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-500 z-50 shadow-2xl hover:scale-110 active:scale-95"
           title="Back to Chronicle"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       )}
 
       {/* Integrated Scene Detail View */}
-      <div className={`flex-1 h-full bg-[#0b0c10] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden
+      <div className={`flex-1 h-full bg-[#262A30] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden overscroll-none
         fixed inset-0 z-40 md:static md:inset-auto md:z-auto
         ${viewingSceneId ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:translate-x-full'}`}>
         

@@ -5,9 +5,10 @@ import { FiBook, FiUsers, FiFilm, FiEdit3, FiArchive, FiArrowLeft } from 'react-
 interface NavigationTabsProps {
   activeTab: 'overview' | 'characters' | 'scenes' | 'writing' | 'resources';
   onTabChange: (tab: string) => void;
+  hideMobileNav?: boolean;
 }
 
-export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTabChange }) => {
+export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTabChange, hideMobileNav = false }) => {
   const navigate = useNavigate();
   const tabs = [
     { id: 'overview', label: 'Story Bible', icon: <FiBook className="w-6 h-6" /> },
@@ -59,7 +60,7 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
       </div>
 
       {/* Mobile Premium Curved Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] h-20 pointer-events-none">
+      <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-[100] h-20 pointer-events-none transition-all duration-300 ${hideMobileNav ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
         {/* SVG Curved Background */}
         <div className="absolute inset-0 pointer-events-auto">
           <svg 

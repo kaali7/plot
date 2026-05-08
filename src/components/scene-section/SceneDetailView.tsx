@@ -29,51 +29,53 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
     .filter(r => r.linked_entities?.scenes?.includes(scene.id))
     .map(r => r.id);
 
-  const viewContent = (
-    <div className={`flex flex-col h-full bg-[#313338] ${!isIntegrated ? 'relative w-full max-w-5xl h-[85vh] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-right duration-500 ease-out rounded-sm overflow-hidden' : 'w-full rounded-tl-[3rem] border-l border-t border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]'}`}>
-      {/* Streamlined Typographic Header */}
-      <div className="pt-10 md:pt-12 px-6 md:px-10 pb-6 border-b border-white/[0.03] flex items-center justify-between z-30 relative bg-[#313338]">
-        <div className="flex items-center space-x-6">
+   const viewContent = (
+     <div className={`flex w-full max-w-full flex-col h-full overflow-x-hidden bg-[#050507] ${!isIntegrated ? 'relative h-[85vh] max-w-5xl border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-right duration-500 ease-out rounded-sm overflow-hidden' : 'rounded-tl-[2rem] md:rounded-tl-[3rem] border-l border-t border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]'}`}>
+       {/* Streamlined Typographic Header */}
+       <div className="px-4 md:px-10 pt-4 md:pt-7 pb-3 md:pb-4 border-b border-white/[0.03] flex items-center justify-between z-30 relative bg-[#050507]">
+        <div className="flex min-w-0 items-center space-x-3 md:space-x-4">
           {/* Scene Identity Icon */}
-          <div className="relative shrink-0 w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-2xl overflow-hidden group">
+          <div className="relative shrink-0 w-8 h-8 md:w-9 md:h-9 bg-white rounded-lg flex items-center justify-center shadow-2xl overflow-hidden group">
             <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
-            <span className="text-[14px] font-mono font-bold text-black tracking-tighter">
+            <span className="text-[10px] md:text-[11px] font-mono font-bold text-black tracking-tighter">
               {String(scene.order !== undefined ? scene.order + 1 : 1).padStart(2, '0')}
             </span>
           </div>
 
-          <div>
-            <h2 className="text-2xl md:text-3xl font-serif font-black text-white tracking-tight uppercase leading-none">
+          <div className="min-w-0">
+            <h2 className="truncate text-base md:text-xl font-serif font-black text-white tracking-tight uppercase leading-none">
               {scene.title}
             </h2>
-            <div className="flex flex-wrap items-center gap-2 mt-3">
-              <span className="text-[9px] font-bold text-[#5865f2] uppercase tracking-wider bg-[#5865f2]/10 border border-[#5865f2]/20 px-2 py-0.5 rounded">Active Folio</span>
-              <span className="text-[9px] font-bold text-[#949ba4] uppercase tracking-wider bg-white/5 border border-white/10 px-2 py-0.5 rounded">Conflict</span>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5 md:mt-2 md:gap-2">
+              <span className="text-[7px] md:text-[8px] font-bold text-[#5865f2] uppercase tracking-[0.16em] bg-[#5865f2]/10 border border-[#5865f2]/20 px-1.5 py-0.5 rounded">Active Folio</span>
+              <span className="text-[7px] md:text-[8px] font-bold text-[#949ba4] uppercase tracking-[0.16em] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">Conflict</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Modern Pill Tabs */}
-      <div className="flex items-center space-x-2 px-6 py-4 bg-[#313338] border-b border-white/[0.02]">
+      <div className="px-4 md:px-6 py-2 md:py-3 bg-[#050507] border-b border-white/[0.02]">
+        <div className="inline-flex w-full max-w-[252px] md:max-w-[284px] items-center rounded-[16px] bg-[#12151d] p-[3px] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]">
         <button
           onClick={() => setActiveTab('script')}
-          className={`px-6 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all
-          ${activeTab === 'script' 
-            ? 'bg-[#5865f2] text-white shadow-lg' 
-            : 'text-[#949ba4] hover:text-white hover:bg-white/5'}`}
+          className={`flex flex-1 items-center justify-center px-2.5 md:px-3 py-1 rounded-[13px] md:rounded-xl text-center text-[7px] md:text-[9px] font-bold uppercase tracking-[0.14em] md:tracking-[0.16em] leading-none transition-all
+            ${activeTab === 'script'
+              ? 'bg-white/[0.08] text-white shadow-[0_8px_20px_rgba(0,0,0,0.2)]'
+              : 'text-[#7e8490] hover:text-white hover:bg-white/[0.03]'}`}
         >
-          Draft Scripts
+          Scripts
         </button>
         <button
           onClick={() => setActiveTab('details')}
-          className={`px-6 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all
+          className={`flex flex-1 items-center justify-center px-2.5 md:px-3 py-1 rounded-[13px] md:rounded-xl text-center text-[7px] md:text-[9px] font-bold uppercase tracking-[0.14em] md:tracking-[0.16em] leading-none transition-all
           ${activeTab === 'details' 
-            ? 'bg-[#4e5058] text-white shadow-lg' 
-            : 'text-[#949ba4] hover:text-white hover:bg-white/5'}`}
+            ? 'bg-white/[0.08] text-white shadow-[0_8px_20px_rgba(0,0,0,0.2)]' 
+            : 'text-[#7e8490] hover:text-white hover:bg-white/[0.03]'}`}
         >
-          Scene Foundation
+          Foundation
         </button>
+        </div>
       </div>
 
       {/* Content Area - Improved Space Utilization */}

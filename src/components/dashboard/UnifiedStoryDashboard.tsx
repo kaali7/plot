@@ -23,6 +23,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
   } = useStory();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'characters' | 'scenes' | 'writing' | 'resources'>('overview');
+  const [isSceneDetailOpen, setIsSceneDetailOpen] = useState(false);
 
   if (loading && !story) {
     return (
@@ -71,6 +72,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
         <NavigationTabs 
           activeTab={activeTab} 
           onTabChange={(tab) => setActiveTab(tab as any)}
+          hideMobileNav={activeTab === 'scenes' && isSceneDetailOpen}
         />
       </nav>
 
@@ -117,6 +119,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
                   onSceneAdd={addScene}
                   onSceneUpdate={updateScene}
                   onSceneDelete={deleteScene}
+                  onViewingSceneChange={setIsSceneDetailOpen}
                 />
               </ErrorBoundary>
             )}
