@@ -14,7 +14,6 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
     { id: 'overview', label: 'Story Bible', icon: <FiBook className="w-6 h-6" /> },
     { id: 'characters', label: 'Character Forge', icon: <FiUsers className="w-6 h-6" /> },
     { id: 'scenes', label: 'Scene Editor', icon: <FiFilm className="w-6 h-6" /> },
-    { id: 'writing', label: 'Manuscript', icon: <FiEdit3 className="w-6 h-6" /> },
     { id: 'resources', label: 'Library', icon: <FiArchive className="w-6 h-6" /> }
   ];
 
@@ -22,7 +21,7 @@ export const NavigationTabs: React.FC<NavigationTabsProps> = ({ activeTab, onTab
   const displayIndex = activeIndex + 1; // 0 is back button
   
   // Calculate the center percentage for the dip
-  const dipPosition = (displayIndex * 100) / 6 + (100 / 12);
+  const dipPosition = (displayIndex * 100) / 5 + (100 / 10);
 
   return (
     <>

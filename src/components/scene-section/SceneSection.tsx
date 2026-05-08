@@ -12,6 +12,7 @@ interface SceneSectionProps {
   onSceneUpdate: (id: string, updates: Partial<Scene>) => void;
   onSceneDelete: (id: string) => void;
   onViewingSceneChange?: (isOpen: boolean) => void;
+  onOpenManuscript?: () => void;
 }
 
 export const SceneSection: React.FC<SceneSectionProps> = ({
@@ -21,7 +22,8 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   onSceneAdd,
   onSceneUpdate,
   onSceneDelete,
-  onViewingSceneChange
+  onViewingSceneChange,
+  onOpenManuscript
 }) => {
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [viewingSceneId, setViewingSceneId] = useState<string | null>(null);
@@ -68,9 +70,27 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
         
         {/* Full Header - Only shown when no selection */}
         {!viewingSceneId && (
-          <div className="p-6 md:p-10 border-b border-white/5 animate-in fade-in slide-in-from-top duration-700 flex flex-col">
-            <h2 className="text-white font-serif font-black text-2xl md:text-3xl tracking-tight">CHRONICLE GRID</h2>
-            <p className="text-[10px] font-mono text-[#949ba4] uppercase tracking-[0.3em] mt-2 opacity-50">Narrative Sequence Archive</p>
+          <div className="p-6 md:p-10 border-b border-white/5 animate-in fade-in slide-in-from-top duration-700 flex items-start justify-between">
+            <div className="flex flex-col">
+              <h2 className="text-white font-serif font-black text-2xl md:text-3xl tracking-tight">CHRONICLE GRID</h2>
+              <p className="text-[10px] font-mono text-[#949ba4] uppercase tracking-[0.3em] mt-2 opacity-50">Narrative Sequence Archive</p>
+            </div>
+
+            {onOpenManuscript && (
+              <button
+                onClick={onOpenManuscript}
+                title="Open Manuscript Mode"
+                className="group flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 
+                           hover:bg-primary/10 hover:border-primary/30 hover:text-primary 
+                           text-[#949ba4] transition-all duration-300 text-[10px] font-mono uppercase tracking-[0.2em] 
+                           shrink-0 mt-1"
+              >
+                <svg className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span className="hidden sm:inline">Manuscript</span>
+              </button>
+            )}
           </div>
         )}
 
@@ -147,14 +167,14 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
         </div>
       </div>
 
-      {/* Detail View Close Button */}
+      {/* Detail View Close Button - Desktop Only */}
       {viewingSceneId && (
         <button 
           onClick={() => setViewingSceneId(null)}
-          className="absolute top-4 right-4 md:top-6 md:left-4 md:right-auto w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-500 z-50 shadow-2xl hover:scale-110 active:scale-95"
+          className="hidden md:flex absolute top-6 left-6 w-12 h-12 rounded-full bg-white/5 border border-white/10 items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-500 z-50 shadow-2xl hover:scale-110 active:scale-95"
           title="Back to Chronicle"
         >
-          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       )}
 

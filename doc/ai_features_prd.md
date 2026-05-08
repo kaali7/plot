@@ -1,619 +1,631 @@
-# AI Features — Implementation Plan
+# AI Features - Implementation Plan
 
-**Project:** Plot App (`f:\_product\Plot\plot-app`)  
-**Date:** 2026-05-05  
-**PRD Ref:** Section 6 — Future Scope (items 1–3)
-
----
-
-## Executive Summary
-
-Three AI features to be added to the Plot storytelling app:
-
-| # | Feature | Integration Point | User Value |
-|---|---------|-------------------|------------|
-| 1 | **AI-Assisted Writing** | Writing Section (Manuscript Mode) | Expand, rewrite, continue prose from structured data |
-| 2 | **AI Character/Scene Generation** | Character Section + Scene Section | Generate full character profiles or scene blueprints from minimal input |
-| 3 | **AI Image Prompt Generation** | Character Cards, Scene Cards, Resources | Produce detailed image-gen prompts from story context |
+**Project:** Plot App (`F:\_product\Plot\plot-app`)  
+**Updated:** 2026-05-08  
+**Source of truth:** current React/Supabase codebase in `src/` and `supabase/`
 
 ---
 
-## Architecture Decision
+## 1. Purpose
 
-### AI Backend Strategy
+This document updates the earlier AI plan to match the code that already exists in this repository.
 
-> [!IMPORTANT]
-> The frontend is a Vite SPA deployed on Vercel. API keys **cannot** be exposed client-side. We need a secure proxy.
+The app is no longer a blank Vite starter. It already includes:
 
-**Chosen approach: Supabase Edge Functions**
+- Auth flows and protected routes
+- A unified story workspace with tabs for overview, characters, scenes, writing, and resources
+- A Supabase-backed CRUD layer in `src/lib/api.ts`
+- Story state management in `src/hooks/useStoryData.ts` and `src/context/StoryContext.tsx`
+- A custom writing editor in `src/components/writing-section/WritingEditor.tsx`
+- Supabase schema and RPCs in `supabase/migrations/combined_migrations.sql`
 
-```mermaid
-graph LR
-    A["React Frontend"] -->|"invoke()"| B["Supabase Edge Function"]
-    B -->|"API Key in secrets"| C["Gemini / OpenAI API"]
-    C -->|"Streamed response"| B
-    B -->|"SSE / JSON"| A
+The AI work should extend this architecture instead of introducing a parallel stack.
+
+---
+
+## 2. Current Codebase Reality
+
+### Frontend status
+
+- React + Vite + TypeScript are in place.
+- Tailwind-based UI is implemented.
+- `react-hook-form` is installed and already fits the modal-heavy CRUD flows.
+- There is **no TipTap** dependency in `package.json`.
+- The writing surface is a custom `contentEditable` editor, not a structured rich-text editor.
+
+### Data and state status
+
+- `src/lib/api.ts` already owns story, character, scene, resource, and writing-session CRUD.
+- `useStoryManager()` provides optimistic updates and feeds `StoryContext`.
+- The main extension point for AI actions is the existing dashboard flow:
+  - `src/components/dashboard/UnifiedStoryDashboard.tsx`
+  - `src/components/character-section/CharacterSection.tsx`
+  - `src/components/scene-section/SceneSection.tsx`
+  - `src/components/writing-section/WritingSection.tsx`
+  - `src/components/resources-section/ResourcesSection.tsx`
+
+### Backend status
+
+- Supabase is already the backend of record.
+- The schema already contains `stories`, `characters`, `scenes`, `conflicts`, `resources`, `writing_sessions`, and `writing_versions`.
+- There is currently **no AI function layer** under `supabase/functions/`.
+
+### Delivery implications
+
+- AI features should be added as thin, well-scoped extensions.
+- Avoid proposing a backend rewrite or separate service unless Supabase Edge Functions prove insufficient.
+- The writing AI plan must account for raw HTML content coming from `contentEditable`.
+
+---
+
+## 3. AI Features In Scope
+
+These remain the same product features, but the implementation path changes:
+
+1. **AI-assisted writing**
+2. **AI character generation**
+3. **AI scene generation**
+4. **AI image prompt generation**
+
+Not in scope for this phase:
+
+- Direct AI image generation
+- Multi-provider orchestration UI
+- Per-plan billing logic
+- Full editor replacement
+
+---
+
+## 4. Recommended Architecture
+
+### Backend choice
+
+Use **Supabase Edge Functions** as the first implementation path.
+
+Reasons:
+
+- Fits the existing Supabase architecture
+- Keeps provider secrets off the client
+- Reuses auth context and story ownership rules
+- Minimizes new infrastructure
+
+### Provider abstraction
+
+The code should not hardwire product logic directly to one model API.
+
+Recommended starting point:
+
+- One provider at launch
+- One internal request/response format
+- One shared server-side prompt assembly layer
+
+Provider can be Gemini or OpenAI, but the code should expose an internal interface such as:
+
+```ts
+interface AIProvider {
+  generateText(input: AITextRequest): Promise<AITextResponse>;
+  generateObject<T>(input: AIObjectRequest): Promise<T>;
+  streamText?(input: AITextRequest): Promise<ReadableStream>;
+}
 ```
 
-**Why Edge Functions over a custom FastAPI backend:**
-- Zero new infrastructure — already using Supabase
-- Secrets managed via `supabase secrets set`
-- Built-in auth context (user JWT forwarded automatically)
-- Sub-100ms cold start (Deno runtime)
-- Streaming support via `ReadableStream`
+### Frontend integration rule
 
-**Provider choice:** Start with **Google Gemini 2.5 Flash** (cost-effective, fast, large context). Abstract the provider interface so OpenAI can be swapped in later.
+Do not bypass the existing story stack with ad hoc `fetch()` calls scattered across components.
+
+Frontend AI calls should flow through:
+
+1. `src/lib/ai-config.ts`
+2. `src/lib/ai-service.ts`
+3. section-level components and modals
 
 ---
 
-## Phase 0 — Foundation Layer
+## 5. Proposed File Additions
 
-> Core infrastructure shared by all three features.
+### Frontend
 
-### Task 0.1 — Environment & Config
+- `src/lib/ai-config.ts`
+- `src/lib/ai-service.ts`
+- `src/types/ai.types.ts`
+- `src/lib/ai-context.ts`
+- `src/components/ai/AIActionButton.tsx`
+- `src/components/ai/AIGenerationPreview.tsx`
+- `src/components/ai/AIErrorNotice.tsx`
+- `src/components/writing-section/AIWritingPanel.tsx`
+- `src/components/character-section/AICharacterGenerateModal.tsx`
+- `src/components/scene-section/AISceneGenerateModal.tsx`
+- `src/components/ai/ImagePromptModal.tsx`
 
-| Item | Detail |
-|---|---|
-| New env var | `VITE_SUPABASE_FUNCTIONS_URL` (auto-derived from `VITE_SUPABASE_URL`) |
-| Supabase secret | `GEMINI_API_KEY` — set via `supabase secrets set GEMINI_API_KEY=<key>` |
-| Config file | `src/lib/ai-config.ts` — models, token limits, feature flags |
+### Supabase
 
-**`src/lib/ai-config.ts`**
-```typescript
+- `supabase/functions/_shared/cors.ts`
+- `supabase/functions/_shared/auth.ts`
+- `supabase/functions/_shared/provider.ts`
+- `supabase/functions/ai-writing/index.ts`
+- `supabase/functions/ai-generate-character/index.ts`
+- `supabase/functions/ai-generate-scene/index.ts`
+- `supabase/functions/ai-image-prompt/index.ts`
+
+### Migration
+
+- new SQL migration for AI usage logging if we choose to track usage now
+
+---
+
+## 6. Proposed File Modifications
+
+- `src/components/writing-section/WritingSection.tsx`
+- `src/components/writing-section/EditorToolbar.tsx`
+- `src/components/writing-section/WritingEditor.tsx`
+- `src/components/character-section/CharacterSection.tsx`
+- `src/components/scene-section/SceneSection.tsx`
+- `src/components/resources-section/ResourcesSection.tsx` if prompt output should be savable as a resource
+- `src/lib/api.ts` only if resource-save helpers need a cleaner wrapper
+- `src/hooks/useStoryData.ts` only if AI-generated save flows need reusable optimistic helpers
+- `.env.example`
+
+---
+
+## 7. Shared Foundation Work
+
+### Phase 0.1 - AI config
+
+Add `src/lib/ai-config.ts` with:
+
+- feature flags
+- function names
+- timeout values
+- simple rate-limit settings
+- provider labels for UI copy
+
+Example:
+
+```ts
 export const AI_CONFIG = {
-  enabled: true,
-  provider: 'gemini' as const,
-  models: {
-    writing: 'gemini-2.5-flash',
-    generation: 'gemini-2.5-flash',
-    imagePrompt: 'gemini-2.5-flash',
+  enabled: import.meta.env.VITE_AI_ENABLED === 'true',
+  functions: {
+    writing: 'ai-writing',
+    character: 'ai-generate-character',
+    scene: 'ai-generate-scene',
+    imagePrompt: 'ai-image-prompt',
   },
   limits: {
-    maxInputTokens: 8000,
-    maxOutputTokens: 4000,
-    requestsPerMinute: 10,
+    maxSelectionChars: 4000,
+    maxContextScenes: 8,
+    maxContextCharacters: 12,
   },
-};
+} as const;
 ```
 
-### Task 0.2 — AI Service Layer (`src/lib/ai-service.ts`)
+### Phase 0.2 - Shared types
 
-Central client that calls Supabase Edge Functions:
+Add `src/types/ai.types.ts` with payloads derived from real app entities in `src/types/story.types.ts`.
 
-```typescript
-// Key exports:
-export const aiService = {
-  assistWriting(payload: WritingAssistPayload): Promise<ReadableStream<string>>,
-  generateCharacter(payload: CharGenPayload): Promise<GeneratedCharacter>,
-  generateScene(payload: SceneGenPayload): Promise<GeneratedScene>,
-  generateImagePrompt(payload: ImagePromptPayload): Promise<string>,
-};
-```
+Important: the current story model includes:
 
-- Uses `supabase.functions.invoke()` for non-streaming
-- Uses `fetch()` with SSE for streaming responses
-- Includes retry logic (max 2 retries with exponential backoff)
-- Rate limiting via existing `src/lib/rate-limiter.ts`
+- `world_settings`
+- scene `setting`, `events`, `conflicts`, `dialogue`, `background`, `context`, `situation_details`, `outcome`
+- character `motivation`, `traits`, `relationships`, `arc`
+- resource `linked_entities`
 
-### Task 0.3 — Shared AI Types (`src/types/ai.types.ts`)
+The AI payloads must reflect those exact shapes.
 
-```typescript
-export interface AIRequestBase {
-  storyId: string;
-  storyContext: StoryContextSnapshot;
+### Phase 0.3 - Story context builder
+
+Add `src/lib/ai-context.ts` to build prompt-safe context snapshots from live story data.
+
+This should:
+
+- accept `story`, `characters`, `scenes`, `conflicts`, `resources`
+- prioritize high-signal context
+- trim large fields
+- strip unsafe HTML from writing content before sending it to the backend
+
+This is important because `WritingEditor` stores `innerHTML`, not plain text.
+
+### Phase 0.4 - Frontend service layer
+
+Add `src/lib/ai-service.ts` to centralize:
+
+- invoking Supabase functions
+- consistent request shape
+- consistent error mapping
+- cancellation via `AbortController` where practical
+
+This avoids embedding provider/network logic inside UI components.
+
+---
+
+## 8. Feature 1 - AI-Assisted Writing
+
+### Current integration point
+
+Primary files:
+
+- `src/components/writing-section/WritingSection.tsx`
+- `src/components/writing-section/EditorToolbar.tsx`
+- `src/components/writing-section/WritingEditor.tsx`
+
+### Current editor constraint
+
+The editor is a custom `contentEditable` surface using `document.execCommand()` and `innerHTML`.
+
+That means:
+
+- selection handling is limited
+- range replacement will need careful DOM work
+- AI output should probably be inserted at a coarse level first
+
+### Recommended first version
+
+Implement AI writing as a **side panel or modal preview flow**, not as deep inline editing on day one.
+
+Why:
+
+- lower risk with the current editor
+- easier accept/discard flow
+- avoids fragile DOM-range replacement bugs
+
+### V1 writing actions
+
+- Continue
+- Rewrite selected text
+- Expand selected text
+- Generate dialogue from selected scene context
+- Describe setting from scene context
+
+### UX plan
+
+1. Add an `AI Assist` action in `EditorToolbar.tsx`
+2. Open `AIWritingPanel.tsx`
+3. Read current editor selection where available
+4. Show generated output in preview
+5. Let user:
+   - replace selection
+   - append to manuscript
+   - copy output
+   - discard
+
+### Technical notes
+
+- `WritingSection.tsx` should own the AI panel state
+- `WritingEditor.tsx` may need a small API for:
+  - reading selected HTML/text
+  - replacing selected content
+  - inserting content at cursor
+- If direct replacement is too unstable, ship append/copy first and defer selection replacement
+
+### Backend function
+
+`supabase/functions/ai-writing/index.ts`
+
+Input:
+
+- story context snapshot
+- current manuscript excerpt
+- selected text if any
+- requested action
+- optional custom instruction
+
+Output:
+
+- plain text or sanitized HTML
+
+### Important decision
+
+Do **not** stream in the first pass unless the Edge Function implementation is already straightforward.
+
+For this codebase, a non-streaming response with solid accept/discard UX is more valuable than partial streaming complexity.
+
+---
+
+## 9. Feature 2 - AI Character Generation
+
+### Current integration point
+
+Primary files:
+
+- `src/components/character-section/CharacterSection.tsx`
+- `src/components/character-section/CharacterModal.tsx`
+- `src/components/character-section/CharacterDetailView.tsx`
+
+### Recommended UX
+
+Add an `AI Generate` entry near the existing add-character flow in `CharacterSection.tsx`.
+
+Flow:
+
+1. User opens `AICharacterGenerateModal`
+2. Provides optional seed fields:
+   - name
+   - role
+   - short concept
+3. Frontend sends story context plus seed
+4. Preview generated character
+5. User chooses:
+   - save directly
+   - open standard `CharacterModal` prefilled for editing
+   - regenerate
+
+### Backend function
+
+`supabase/functions/ai-generate-character/index.ts`
+
+It should return JSON aligned with the current `Character` shape:
+
+```ts
+{
+  name,
+  role,
+  description,
+  motivation,
+  traits,
+  conflicts,
+  relationships,
+  arc
 }
+```
 
-export interface StoryContextSnapshot {
-  title: string;
-  theme?: string;
-  description?: string;
-  worldSettings: WorldSettings;
-  characters: CharacterSummary[];
-  scenes: SceneSummary[];
-  conflicts: ConflictSummary[];
+### Save path
+
+Use the existing `onCharacterAdd` flow through `StoryContext` / `useStoryManager`.
+
+That preserves:
+
+- optimistic updates
+- existing CRUD wiring
+- one consistent source of state updates
+
+---
+
+## 10. Feature 3 - AI Scene Generation
+
+### Current integration point
+
+Primary files:
+
+- `src/components/scene-section/SceneSection.tsx`
+- `src/components/scene-section/SceneModal.tsx`
+- `src/components/scene-section/SceneDetailView.tsx`
+
+### Recommended UX
+
+Add `AI Generate` next to the existing scene creation flow.
+
+Inputs:
+
+- title seed
+- scene type
+- optional placement hint
+- optional POV character
+- include dialogue toggle
+
+### Backend function
+
+`supabase/functions/ai-generate-scene/index.ts`
+
+Return JSON aligned with the current `Scene` model:
+
+```ts
+{
+  title,
+  type,
+  goal,
+  pov_character_id,
+  setting,
+  characters,
+  events,
+  conflicts,
+  dialogue,
+  background,
+  context,
+  situation_details,
+  outcome,
+  impact
 }
-
-// Feature-specific payloads extend AIRequestBase
-export interface WritingAssistPayload extends AIRequestBase {
-  action: 'continue' | 'expand' | 'rewrite' | 'dialogue' | 'describe';
-  selectedText?: string;
-  cursorContext?: string; // surrounding 500 chars
-  instructions?: string;
-}
-
-export interface CharGenPayload extends AIRequestBase {
-  seed: { name?: string; role?: string; description?: string };
-  style: 'detailed' | 'minimal';
-}
-
-export interface SceneGenPayload extends AIRequestBase {
-  seed: { title?: string; type?: string; afterSceneId?: string };
-  includeDialogue: boolean;
-}
-
-export interface ImagePromptPayload extends AIRequestBase {
-  entityType: 'character' | 'scene' | 'world';
-  entityId: string;
-  style: 'photorealistic' | 'illustration' | 'concept-art' | 'anime';
-  aspectRatio: '1:1' | '16:9' | '9:16' | '3:4';
-}
-
-export interface GeneratedCharacter {
-  name: string;
-  role: Character['role'];
-  description: string;
-  motivation: Character['motivation'];
-  traits: Character['traits'];
-  conflicts: Character['conflicts'];
-  arc: Character['arc'];
-}
-
-export interface GeneratedScene {
-  title: string;
-  type: Scene['type'];
-  goal: string;
-  setting: Scene['setting'];
-  context: string;
-  situation_details: string;
-  events: Scene['events'];
-  conflicts: Scene['conflicts'];
-  dialogue: Scene['dialogue'];
-  outcome: string;
-}
 ```
 
-### Task 0.4 — Context Builder Utility (`src/utils/ai-context-builder.ts`)
+### Important implementation detail
 
-Builds a `StoryContextSnapshot` from current `StoryContext` data, with token-budgeting:
+The function should prefer existing character IDs when generating:
 
-- Truncates long descriptions to stay within `maxInputTokens`
-- Prioritizes: characters by role (main > antagonist > supporting) → scenes by order → conflicts
-- Character summaries: name + role + 1-line description + traits
-- Scene summaries: title + type + goal + setting
+- `pov_character_id`
+- `dialogue[].characterId`
+- `characters[].characterId`
 
-### Task 0.5 — Supabase Edge Function Scaffold
+If the model cannot map confidently, return empty IDs instead of fabricated IDs.
 
-Create `supabase/functions/` directory with shared utilities:
+### Save path
 
-```
-supabase/functions/
-├── _shared/
-│   ├── cors.ts          # CORS headers
-│   ├── auth.ts          # JWT verification
-│   └── gemini-client.ts # Gemini API wrapper
-├── ai-writing-assist/
-│   └── index.ts
-├── ai-generate-entity/
-│   └── index.ts
-└── ai-image-prompt/
-    └── index.ts
-```
+Use the existing `onSceneAdd` handler through `StoryContext`.
 
-Each function: validates JWT → parses body → calls Gemini → returns response.
-
-### Task 0.6 — AI Usage Tracking Table (Migration)
-
-```sql
-CREATE TABLE ai_usage (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) NOT NULL,
-  story_id UUID REFERENCES stories(id),
-  feature TEXT NOT NULL, -- 'writing_assist' | 'char_gen' | 'scene_gen' | 'image_prompt'
-  model TEXT NOT NULL,
-  input_tokens INT,
-  output_tokens INT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- RLS: users can only see their own usage
-ALTER TABLE ai_usage ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users see own usage" ON ai_usage
-  FOR SELECT USING (auth.uid() = user_id);
-```
+The frontend should set `order` based on current scene count unless the backend explicitly leaves ordering to the client.
 
 ---
 
-## Phase 1 — AI-Assisted Writing
+## 11. Feature 4 - AI Image Prompt Generation
 
-> Inline AI assistance in the Manuscript Mode editor.
+### Current integration point
 
-### Task 1.1 — Edge Function: `ai-writing-assist`
+This feature can attach to:
 
-**Endpoint:** `POST /functions/v1/ai-writing-assist`
+- character detail actions
+- scene detail actions
+- resource creation flow
 
-**System prompt strategy:**
-```
-You are a creative writing assistant for a storytelling app called Plot.
-You have access to the story's characters, scenes, conflicts, and world settings.
-Your task is to {action} the following text while maintaining consistency with 
-the story's established tone, character voices, and narrative arc.
-```
+The existing codebase does not yet have a dedicated prompt UI, so this should be introduced as a modal.
 
-**Actions supported:**
+### Recommended UX
 
-| Action | Input | Output |
-|---|---|---|
-| `continue` | Last 500 chars + story context | Next 200-400 words |
-| `expand` | Selected paragraph + context | Expanded version (2-3x length) |
-| `rewrite` | Selected text + instructions | Rewritten version |
-| `dialogue` | Scene context + characters present | 3-5 dialogue exchanges |
-| `describe` | Scene setting/mood | Atmospheric description paragraph |
+`ImagePromptModal.tsx` should:
 
-**Streaming:** Yes — returns SSE stream for `continue` and `expand`.
+- show the current entity context
+- allow style selection
+- generate a prompt
+- support copy
+- optionally save prompt as a `note` resource
 
-### Task 1.2 — AI Writing Toolbar Component
+### Backend function
 
-**File:** `src/components/writing-section/AIWritingToolbar.tsx`
+`supabase/functions/ai-image-prompt/index.ts`
 
-A floating toolbar that appears when text is selected or via a dedicated button:
+Input:
 
-```
-┌─────────────────────────────────────────┐
-│  ✨ AI Assist                           │
-│  [Continue ▸] [Expand] [Rewrite]        │
-│  [Add Dialogue] [Describe Setting]      │
-│  ┌──────────────────────────────────┐   │
-│  │ Custom instruction...            │   │
-│  └──────────────────────────────────┘   │
-│                          [Generate ▸]   │
-└─────────────────────────────────────────┘
-```
+- entity type
+- entity payload
+- story context
+- requested visual style
 
-**Behavior:**
-- Shows inline below cursor when no selection (offers `continue`)
-- Shows as floating popover on text selection (offers `expand`, `rewrite`)
-- Streaming output renders in a diff-preview panel below the toolbar
-- User clicks "Accept" to insert or "Discard" to cancel
-- Keyboard shortcut: `Ctrl+Space` to toggle
+Output:
 
-### Task 1.3 — AI Streaming Preview Component
+- plain-text prompt
 
-**File:** `src/components/writing-section/AIStreamPreview.tsx`
+### Save-as-resource path
 
-- Renders streaming tokens with a typing animation
-- Shows a subtle magenta border to distinguish AI-generated text
-- Accept / Discard / Regenerate buttons
-- Token count display
+Reuse existing resource creation through the current CRUD layer.
 
-### Task 1.4 — Integrate into WritingSection
+Suggested behavior:
 
-**Modify:** `src/components/writing-section/WritingSection.tsx`
-
-- Add AI toolbar toggle state
-- Pass selection state and cursor context to `AIWritingToolbar`
-- Handle accept/discard callbacks to update `contentChunks`
-- Add "AI Assist" button to `EditorToolbar.tsx` alongside "Forge Skeleton"
-
-### Task 1.5 — Integrate into EditorToolbar
-
-**Modify:** `src/components/writing-section/EditorToolbar.tsx`
-
-- Add `onAIAssist` prop
-- New button with sparkle icon: `✨ AI Assist`
-- Style consistent with existing "Forge Skeleton" button
+- create a `note` resource
+- title format: `Image Prompt - {entity name}`
+- optionally attach entity linkage in `linked_entities`
 
 ---
 
-## Phase 2 — AI Character & Scene Generation
+## 12. Security and Data Handling
 
-> Generate complete character profiles or scene blueprints from minimal seeds.
+### Required
 
-### Task 2.1 — Edge Function: `ai-generate-entity`
+- No provider API keys in Vite env
+- All model calls go through Supabase functions
+- Functions must validate authenticated user
+- Functions must verify story ownership before using story context
 
-**Endpoint:** `POST /functions/v1/ai-generate-entity`
+### Content handling
 
-**Body:** `{ type: 'character' | 'scene', seed: {...}, storyContext: {...} }`
+Because writing content is stored as HTML:
 
-**System prompt for characters:**
-```
-Generate a detailed character for a story with the following context.
-Return a JSON object matching this exact schema: { name, role, description, 
-motivation: { goal, fear, desire }, traits: { strengths[], weaknesses[], 
-personality[] }, conflicts: { internal, external }, arc: { start, end } }.
-Ensure the character fits naturally into the existing story world and 
-creates interesting dynamics with existing characters.
-```
+- sanitize HTML before sending to AI
+- prefer prompt-safe plain text extracts
+- sanitize any returned HTML before insertion if HTML insertion is allowed
 
-**System prompt for scenes:**
-```
-Generate a detailed scene blueprint. Return JSON matching: { title, type, 
-goal, setting: { location, time, environment }, context, situation_details, 
-events: { main, turningPoint }, conflicts: { internal, external }, 
-dialogue: [{ characterId, content, type }], outcome }.
-Use existing character IDs in dialogue. Place the scene logically 
-in the story's narrative arc.
-```
+### Logging
 
-**Response:** Validated JSON matching `GeneratedCharacter` or `GeneratedScene`.
+At minimum, log:
 
-### Task 2.2 — AI Generate Button for Characters
+- user id
+- story id
+- feature type
+- request timestamp
+- provider/model
+- success/failure
 
-**Modify:** `src/components/character-section/CharacterSection.tsx`
-
-- Add `✨ AI Generate` button next to "Forge New Identity"
-- Opens `AICharacterGenerateModal`
-
-### Task 2.3 — AI Character Generate Modal
-
-**File:** `src/components/character-section/AICharacterGenerateModal.tsx`
-
-```
-┌──────────────────────────────────────────┐
-│  ✨ AI Character Forge                   │
-│                                          │
-│  Name (optional):  [________________]    │
-│  Role:             [Main        ▼   ]    │
-│  Brief idea:       [________________]    │
-│  Style:     ○ Detailed   ○ Minimal       │
-│                                          │
-│  ┌──────────────────────────────────┐    │
-│  │  Generated Preview               │    │
-│  │  Name: ...                        │    │
-│  │  Role: ...                        │    │
-│  │  Traits: ...                      │    │
-│  │  [full preview of all fields]     │    │
-│  └──────────────────────────────────┘    │
-│                                          │
-│  [Regenerate 🔄]  [Edit & Save] [Accept] │
-└──────────────────────────────────────────┘
-```
-
-**Flow:**
-1. User provides minimal seed → clicks Generate
-2. Shows loading state with shimmer animation
-3. Preview rendered in read-only CharacterDetailView style
-4. "Edit & Save" opens the standard CharacterModal pre-filled with AI data
-5. "Accept" saves directly via `addCharacter()`
-
-### Task 2.4 — AI Generate Button for Scenes
-
-**Modify:** `src/components/scene-section/SceneSection.tsx`
-
-- Add `✨ AI Generate` button next to "Chronicle New Scene"
-- Opens `AISceneGenerateModal`
-
-### Task 2.5 — AI Scene Generate Modal
-
-**File:** `src/components/scene-section/AISceneGenerateModal.tsx`
-
-Similar UX to character generation:
-- Seed: title, type, "place after scene X"
-- Toggle: include dialogue or not
-- Preview: scene detail view style
-- Accept / Edit & Save / Regenerate
-
-### Task 2.6 — Generation Preview Components
-
-**File:** `src/components/ai/AIGenerationPreview.tsx`
-
-Shared preview component with:
-- Shimmer loading skeleton
-- JSON → styled card renderer
-- Diff highlighting (for regeneration comparisons)
+Token logging is useful but optional for phase 1.
 
 ---
 
-## Phase 3 — AI Image Prompt Generation
+## 13. Database Changes
 
-> Generate detailed image-generation prompts from character/scene data.
+### Optional but recommended
 
-### Task 3.1 — Edge Function: `ai-image-prompt`
+Add an `ai_usage` table if we want visibility into usage and failures.
 
-**Endpoint:** `POST /functions/v1/ai-image-prompt`
+Suggested fields:
 
-**System prompt:**
-```
-You are an expert at writing image generation prompts. Given the following 
-{character/scene/world} data from a story, create a detailed, visually rich 
-prompt suitable for AI image generation tools like Midjourney, DALL-E, or 
-Stable Diffusion. Include: subject description, composition, lighting, 
-color palette, mood, art style ({style}), and aspect ratio ({aspectRatio}).
-Return only the prompt text, no explanations.
-```
+- `id`
+- `user_id`
+- `story_id`
+- `feature`
+- `provider`
+- `model`
+- `status`
+- `input_size`
+- `output_size`
+- `error_message`
+- `created_at`
 
-**Response:** Plain text prompt string (200-400 words).
-
-### Task 3.2 — Image Prompt Button on Character Cards
-
-**Modify:** `src/components/character-section/CharacterCard.tsx`
-
-- Add `🎨` icon button in card actions
-- Opens `ImagePromptModal` with `entityType='character'`
-
-### Task 3.3 — Image Prompt Button on Scene Cards
-
-**Modify:** `src/components/scene-section/SceneCard.tsx`
-
-- Add `🎨` icon button in card actions
-- Opens `ImagePromptModal` with `entityType='scene'`
-
-### Task 3.4 — Image Prompt Modal
-
-**File:** `src/components/ai/ImagePromptModal.tsx`
-
-```
-┌──────────────────────────────────────────┐
-│  🎨 Image Prompt Forge                   │
-│                                          │
-│  Entity: "Marcus Rivera" (Character)     │
-│                                          │
-│  Style:  [Photorealistic ▼]              │
-│  Ratio:  ○ 1:1  ○ 16:9  ○ 9:16  ○ 3:4  │
-│                                          │
-│  [Generate Prompt ✨]                    │
-│                                          │
-│  ┌──────────────────────────────────┐    │
-│  │ A weathered detective in his      │    │
-│  │ late 40s, sharp jawline with a    │    │
-│  │ three-day stubble, wearing a      │    │
-│  │ worn leather jacket over a dark   │    │
-│  │ henley shirt. Deep-set hazel      │    │
-│  │ eyes that carry the weight of...  │    │
-│  └──────────────────────────────────┘    │
-│                                          │
-│  [📋 Copy]  [🔄 Regenerate]  [💾 Save]  │
-└──────────────────────────────────────────┘
-```
-
-**Actions:**
-- **Copy** — copies prompt to clipboard
-- **Regenerate** — calls API again with same params
-- **Save as Resource** — creates a new Resource (type: `note`, title: `Image Prompt — {entity name}`) linked to the entity
-
-### Task 3.5 — Save Prompt as Resource Integration
-
-Uses existing `resourceAPI.createResource()` + `resourceAPI.linkResourceToEntity()` — no new API needed.
+This is not a blocker for shipping the first feature if speed matters.
 
 ---
 
-## Phase 4 — UI Polish & Error Handling
+## 14. Delivery Order
 
-### Task 4.1 — AI Loading States
+### Phase 1
 
-**File:** `src/components/ai/AILoadingOverlay.tsx`
+- shared AI config
+- shared AI types
+- story context builder
+- `ai-writing` function
+- `AI Assist` entry in writing toolbar
+- preview-only writing generation flow
 
-- Shimmer skeleton matching each output type
-- Animated sparkle/wand icon
-- "Thinking..." → "Generating..." → "Polishing..." progressive status
+### Phase 2
 
-### Task 4.2 — Error Handling & Fallbacks
+- `ai-generate-character`
+- `AICharacterGenerateModal`
+- save to existing character flow
 
-- Network errors → retry with toast notification
-- Rate limit hit → show cooldown timer
-- API key missing → graceful degradation (hide AI buttons)
-- Invalid response → show raw text with "couldn't parse" message
+### Phase 3
 
-### Task 4.3 — AI Feature Flag Toggle
+- `ai-generate-scene`
+- `AISceneGenerateModal`
+- save to existing scene flow
 
-**Modify:** `src/lib/ai-config.ts`
+### Phase 4
 
-- Check `AI_CONFIG.enabled` before rendering any AI buttons
-- Gate on `VITE_AI_ENABLED=true` env var for easy toggling
+- `ai-image-prompt`
+- image prompt modal
+- save prompt as resource
 
-### Task 4.4 — Mobile Responsive AI Modals
+### Phase 5
 
-- All AI modals use existing mobile modal patterns (full-screen on mobile)
-- Touch-friendly buttons (min 44px tap targets)
-- Streaming preview scrolls to bottom on new tokens
-
-### Task 4.5 — Token Usage Display
-
-**File:** `src/components/ai/AIUsageBadge.tsx`
-
-- Small badge in the AI modals showing tokens used
-- Optional: daily usage summary accessible from settings
-
----
-
-## Phase 5 — Testing & Deployment
-
-### Task 5.1 — Edge Function Deployment
-
-```bash
-supabase functions deploy ai-writing-assist
-supabase functions deploy ai-generate-entity
-supabase functions deploy ai-image-prompt
-supabase secrets set GEMINI_API_KEY=<key>
-```
-
-### Task 5.2 — Environment Setup
-
-Update `.env.example`:
-```
-VITE_SUPABASE_URL="https://your-project.supabase.co"
-VITE_SUPABASE_ANON_KEY="your-anon-key-here"
-VITE_AI_ENABLED="true"
-```
-
-### Task 5.3 — Integration Testing Checklist
-
-| Test Case | Expected |
-|---|---|
-| AI writing continue with no text | Generates opening paragraph |
-| AI writing with selection | Offers expand/rewrite |
-| Character gen with empty seed | Generates from story context alone |
-| Character gen with name only | Fills all fields consistently |
-| Scene gen "after scene 3" | Fits narrative arc logically |
-| Image prompt for character | Includes physical traits, mood |
-| Image prompt for scene | Includes setting, lighting, atmosphere |
-| Rate limit exceeded | Shows cooldown timer |
-| Network failure mid-stream | Shows partial + retry button |
-| AI disabled via config | No AI buttons visible |
-
-### Task 5.4 — Vercel Deployment Verification
-
-- Ensure Edge Functions are accessible from Vercel-hosted frontend
-- Verify CORS headers in `_shared/cors.ts`
-- Test streaming responses through Vercel's edge network
+- usage tracking
+- tighter error states
+- optional streaming
+- optional regeneration history
 
 ---
 
-## Task Summary
+## 15. Explicit Changes From The Previous Plan
 
-| Phase | Tasks | Description |
-|---|---|---|
-| **Phase 0** | 6 tasks | Foundation: config, types, service layer, edge function scaffold, DB |
-| **Phase 1** | 5 tasks | AI-assisted writing in Manuscript Mode |
-| **Phase 2** | 6 tasks | AI character & scene generation |
-| **Phase 3** | 5 tasks | AI image prompt generation |
-| **Phase 4** | 5 tasks | Polish, errors, mobile, feature flags |
-| **Phase 5** | 4 tasks | Deployment & testing |
-| **Total** | **31 tasks** | |
+The earlier version of this document is no longer accurate in these areas:
 
----
-
-## File Impact Summary
-
-### New Files (14)
-
-| File | Purpose |
-|---|---|
-| `src/lib/ai-config.ts` | AI configuration & feature flags |
-| `src/lib/ai-service.ts` | Frontend AI service client |
-| `src/types/ai.types.ts` | AI-specific TypeScript types |
-| `src/utils/ai-context-builder.ts` | Story context serialization for prompts |
-| `src/components/writing-section/AIWritingToolbar.tsx` | Inline AI toolbar for editor |
-| `src/components/writing-section/AIStreamPreview.tsx` | Streaming response preview |
-| `src/components/character-section/AICharacterGenerateModal.tsx` | Character generation modal |
-| `src/components/scene-section/AISceneGenerateModal.tsx` | Scene generation modal |
-| `src/components/ai/ImagePromptModal.tsx` | Image prompt generation modal |
-| `src/components/ai/AIGenerationPreview.tsx` | Shared generation preview |
-| `src/components/ai/AILoadingOverlay.tsx` | Loading states |
-| `src/components/ai/AIUsageBadge.tsx` | Token usage display |
-| `supabase/functions/_shared/*` | Shared Edge Function utilities (3 files) |
-| `supabase/functions/ai-*/index.ts` | 3 Edge Functions |
-
-### Modified Files (7)
-
-| File | Change |
-|---|---|
-| `src/components/writing-section/WritingSection.tsx` | Add AI toolbar integration |
-| `src/components/writing-section/EditorToolbar.tsx` | Add AI Assist button |
-| `src/components/character-section/CharacterSection.tsx` | Add AI Generate button |
-| `src/components/character-section/CharacterCard.tsx` | Add image prompt button |
-| `src/components/scene-section/SceneSection.tsx` | Add AI Generate button |
-| `src/components/scene-section/SceneCard.tsx` | Add image prompt button |
-| `.env.example` | Add `VITE_AI_ENABLED` |
+- It assumed a mostly greenfield app. The app already has the full story workspace.
+- It referenced TipTap-style editor assumptions. The current editor is custom `contentEditable`.
+- It implied AI could be added without accounting for raw HTML manuscript storage.
+- It underused the existing `StoryContext` and `src/lib/api.ts` integration points.
+- It treated some UI additions as standalone features instead of extensions to existing sections.
+- It leaned harder into streaming than this codebase currently justifies.
 
 ---
 
-## Dependencies
+## 16. Main Risks
 
-### New NPM Packages: **None**
+1. **Editor fragility**
+   Selection replacement inside `contentEditable` can be error-prone. Start with preview and append/copy flows if needed.
 
-All AI calls go through Supabase Edge Functions. No new frontend dependencies needed — `@supabase/supabase-js` already supports `functions.invoke()`.
+2. **Schema drift**
+   AI payloads must match `src/types/story.types.ts`, not idealized structures from older planning docs.
 
-### Supabase Requirements
+3. **Prompt bloat**
+   Story context can become large quickly. The context builder needs aggressive trimming rules.
 
-- **Edge Functions** enabled on the Supabase project
-- **Supabase CLI** installed for function deployment
-- **Gemini API Key** stored in Supabase secrets
+4. **Untrusted model output**
+   Never trust generated IDs or HTML directly.
+
+5. **No existing test harness**
+   The project currently lacks lint/test setup, so manual verification burden will be higher unless tooling is added.
 
 ---
 
-## Open Questions
+## 17. Recommended Next Build Step
 
-1. **Provider preference** — Start with Gemini Flash? Or prefer OpenAI GPT-4o-mini?
-2. **Usage limits** — Should there be a daily token cap per user? Free tier vs premium?
-3. **Streaming** — Should all responses stream, or only writing assistance?
-4. **Image generation** — Should Phase 3 also include *actual* image generation (calling DALL-E/Imagen), or just prompt text for now?
+Start with **AI-assisted writing V1** because:
+
+- it creates immediate visible value
+- it exercises the full AI path end to end
+- it does not require new database entities
+- it surfaces the editor integration constraints early
+
+If this phase works cleanly, character and scene generation can reuse most of the shared AI infrastructure.

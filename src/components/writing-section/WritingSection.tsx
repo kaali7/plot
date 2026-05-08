@@ -11,6 +11,7 @@ interface WritingSectionProps {
   scenes: Scene[];
   isSaving: boolean;
   onWritingUpdate: (content: string) => Promise<void>;
+  onClose?: () => void;
 }
 
 const FormatButton: React.FC<{
@@ -43,7 +44,8 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   characters,
   scenes,
   isSaving,
-  onWritingUpdate 
+  onWritingUpdate,
+  onClose
 }) => {
   const { conflicts, resources } = useStory();
   const [contentChunks, setContentChunks] = useState<string[]>(writingSession?.content ? [writingSession.content] : ['']);
@@ -164,12 +166,24 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
     <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Writing Header */}
       <div className="flex items-center justify-between px-4 lg:px-12 py-3 lg:py-10 border-b border-black/20 bg-[#0b0c10] z-40 sticky top-0">
-        <div className="flex flex-col">
-          <div className="flex items-center space-x-3 mb-1 lg:mb-2">
-            <h2 className="text-lg lg:text-3xl font-serif font-bold text-white tracking-tight">
-              Manuscript Mode
-            </h2>
-          </div>
+        <div className="flex items-center space-x-4 lg:space-x-8">
+          {onClose && (
+            <button 
+              onClick={onClose}
+              className="group flex items-center justify-center w-8 h-8 lg:w-12 lg:h-12 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+              title="Return to Story Grid"
+            >
+              <svg className="w-4 h-4 lg:w-6 lg:h-6 text-white/40 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+          <div className="flex flex-col">
+            <div className="flex items-center space-x-3 mb-1 lg:mb-2">
+              <h2 className="text-lg lg:text-3xl font-serif font-bold text-white tracking-tight">
+                Manuscript Mode
+              </h2>
+            </div>
           <div className="flex items-center space-x-2 lg:space-x-3 opacity-60">
             <div className="flex items-center text-[8px] lg:text-[10px] uppercase tracking-[0.3em] font-sans font-bold opacity-60">
               <div className="relative flex items-center justify-center mr-2 lg:mr-3">
@@ -188,6 +202,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
             )}
           </div>
         </div>
+      </div>
 
         <div className="flex items-center space-x-4">
           <EditorToolbar 

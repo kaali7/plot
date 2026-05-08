@@ -63,11 +63,11 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
       <div className={`relative h-full flex flex-col border-r border-black/20 bg-[#0b0c10] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] z-20
         ${viewingCharacterId ? 'w-24' : 'w-full px-10 pt-12'}`}>
         
-        {/* Detail View Close Button - Repositioned to Top Left (above sidebar) */}
+        {/* Detail View Close Button - Desktop Only */}
         {viewingCharacterId && (
           <button 
             onClick={() => setViewingCharacterId(null)}
-            className="absolute top-6 left-6 w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-500 z-50 shadow-2xl hover:scale-110 active:scale-95"
+            className="hidden md:flex absolute top-6 left-6 w-12 h-12 rounded-full bg-white/5 border border-white/10 items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-500 z-50 shadow-2xl hover:scale-110 active:scale-95"
             title="Back to Forge"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -78,7 +78,7 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
         {!viewingCharacterId && (
           <div className="flex items-end justify-between pb-8 mb-8 md:mb-12 border-b border-white/5 animate-in fade-in slide-in-from-top duration-700">
             <div>
-              <h2 className="text-3xl md:text-5xl font-serif font-black text-white tracking-tight uppercase">Character Forge</h2>
+              <h2 className="text-2xl md:text-4xl font-serif font-black text-white tracking-tight uppercase">Character Forge</h2>
               <p className="text-[10px] font-mono text-primary/40 uppercase tracking-[0.5em] mt-3 font-bold">Architecture of Persona ({characters.length})</p>
             </div>
           </div>
@@ -157,15 +157,6 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
         fixed inset-0 z-50 md:static md:inset-auto md:z-auto
         ${viewingCharacterId ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:translate-y-0 md:translate-x-full'}`}>
         
-        {/* Mobile Close Button */}
-        {viewingCharacterId && (
-          <button 
-            onClick={handleCloseDetail}
-            className="md:hidden absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-300 z-[60]"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        )}
 
         {selectedCharacter && (
           <CharacterDetailView 

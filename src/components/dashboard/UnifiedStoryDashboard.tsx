@@ -65,7 +65,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
   return (
     <div className="flex flex-col lg:flex-row h-screen w-full overflow-hidden bg-background">
       {/* Sidebar/Bottom Navigation */}
-      <nav className="w-full lg:w-24 bg-[#0b0c10] border-t lg:border-t-0 lg:border-r border-black/20 flex lg:flex-col items-center justify-between lg:justify-start px-6 lg:px-0 py-2 lg:py-12 z-50 transition-all duration-500">
+      <nav className={`w-full lg:w-24 bg-[#0b0c10] border-t lg:border-t-0 lg:border-r border-black/20 flex lg:flex-col items-center justify-between lg:justify-start px-6 lg:px-0 py-2 lg:py-12 z-50 transition-all duration-500 ${activeTab === 'writing' ? 'hidden' : ''}`}>
         <div className="hidden lg:block w-full">
           <DashboardHeader story={story} />
         </div>
@@ -77,7 +77,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
       </nav>
 
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0 overflow-hidden bg-background relative pb-20 lg:pb-0">
+      <div className={`flex-1 min-w-0 overflow-hidden bg-background relative lg:pb-0 ${activeTab === 'writing' ? 'pb-0' : 'pb-20'}`}>
         <div className="flex flex-col h-full">
           {/* Section Content */}
           <div className="flex-1 overflow-hidden">
@@ -120,6 +120,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
                   onSceneUpdate={updateScene}
                   onSceneDelete={deleteScene}
                   onViewingSceneChange={setIsSceneDetailOpen}
+                  onOpenManuscript={() => setActiveTab('writing')}
                 />
               </ErrorBoundary>
             )}
@@ -132,6 +133,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
                   scenes={scenes}
                   isSaving={loading}
                   onWritingUpdate={updateWriting}
+                  onClose={() => setActiveTab('scenes')}
                 />
               </ErrorBoundary>
             )}
