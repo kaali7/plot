@@ -9,10 +9,10 @@ DECLARE
     v_story_id UUID := gen_random_uuid();
 BEGIN
     -- Find the specific user for seeding
-    SELECT id INTO v_user_id FROM auth.users WHERE email = 'sonikali1479@gmail.com' LIMIT 1;
+    SELECT id INTO v_user_id FROM auth.users LIMIT 1;
 
     IF v_user_id IS NULL THEN
-        RAISE NOTICE 'User sonikali1479@gmail.com not found. Please ensure you are signed up.';
+        RAISE NOTICE 'No users found. Please sign up first before running seed.';
         RETURN;
     END IF;
 
