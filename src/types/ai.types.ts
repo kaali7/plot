@@ -102,6 +102,7 @@ export interface AISceneGenerateResponse {
   events: string;
   conflicts: { internal: string; external: string };
   dialogue: Array<{ characterId: string; type: string; content: string }>;
+  characters: Array<{ characterId: string; role: 'lead' | 'support' | 'antagonist' | 'background' }>;
   background: string;
   context: string;
   situation_details: string;

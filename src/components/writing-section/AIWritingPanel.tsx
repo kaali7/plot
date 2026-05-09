@@ -150,7 +150,7 @@ export const AIWritingPanel: React.FC<AIWritingPanelProps> = ({
         <div className="space-y-4">
           {error && <AIErrorNotice message={error} />}
           <AIGenerationPreview
-            content={generatedAIContent}
+            content={generatedContent}
             isLoading={isLoading}
             emptyLabel="Generate a draft to preview it here."
           />

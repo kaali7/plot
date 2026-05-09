@@ -55,9 +55,10 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
       type: 'note',
       content: prompt,
       linked_entities: {
-        characters: [],
+        characters: scene.characters.map(c => c.characterId),
         scenes: [scene.id],
-        locations: []
+        conflicts: [],
+        worldSettings: []
       }
     });
   };
@@ -66,7 +67,7 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
     let contentToCopy = '';
     
     if (visualSpec) {
-      contentToCopy = visualSpec.content;
+      contentToCopy = visualSpec.content || '';
     } else {
       // Fallback: Copy core scene data as a prompt
       const castNames = scene.characters?.map(c => characters.find(char => char.id === c.characterId)?.name).filter(Boolean).join(', ') || 'None';

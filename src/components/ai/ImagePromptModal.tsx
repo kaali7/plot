@@ -61,6 +61,7 @@ export const ImagePromptModal: React.FC<ImagePromptModalProps> = ({
         context,
         entityType,
         entityPayload,
+        worldSettings: [],
         style: selectedStyle,
       } as any, abortControllerRef.current.signal);
       setResult(response);

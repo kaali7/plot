@@ -51,7 +51,8 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
       linked_entities: {
         characters: [character.id],
         scenes: [],
-        locations: []
+        conflicts: [],
+        worldSettings: []
       }
     });
   };
@@ -60,7 +61,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
     let contentToCopy = '';
     
     if (visualSpec) {
-      contentToCopy = visualSpec.content;
+      contentToCopy = visualSpec.content || '';
     } else {
       // Fallback: Copy core character data as a prompt
       contentToCopy = `A ${character.role} character named ${character.name}. ${character.description || ''}. Strengths: ${character.traits.strengths.join(', ')}.`;
