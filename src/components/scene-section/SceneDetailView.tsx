@@ -30,6 +30,7 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
   const [activeTab, setActiveTab] = useState<'script' | 'details'>('script');
   const [showImagePrompt, setShowImagePrompt] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [scriptCopied, setScriptCopied] = useState(false);
   const { story, scenes, conflicts, resources, addResource } = useStory();
 
   const linkedResources = resources.filter(r => r.linked_entities?.scenes?.includes(scene.id));
@@ -79,6 +80,25 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
     }
   };
 
+  const handleCopyScript = async () => {
+    if (!scene.dialogue || scene.dialogue.length === 0) return;
+    
+    const contentToCopy = scene.dialogue.map(entry => {
+      if (entry.type === 'action') {
+        return `[ACTION]\n${entry.content}`;
+      } else {
+        const charName = characters.find(c => c.id === entry.characterId)?.name || 'Narrator';
+        return `${charName.toUpperCase()}\n${entry.content}`;
+      }
+    }).join('\n\n');
+
+    const success = await copyToClipboard(contentToCopy);
+    if (success) {
+      setScriptCopied(true);
+      setTimeout(() => setScriptCopied(false), 2000);
+    }
+  };
+
    const viewContent = (
       <div className={`flex w-full max-w-full flex-col h-full overflow-x-hidden bg-[#050507] ${!isIntegrated ? 'relative h-[85vh] max-w-5xl border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-right duration-500 ease-out rounded-sm overflow-hidden' : 'rounded-tl-[2rem] md:rounded-tl-[3rem] border-l border-t border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]'}`}>
         {/* Mobile Close Button - Left Side */}
@@ -89,37 +109,52 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
 
-        {/* Streamlined Typographic Header */}
-        <div className="pl-16 pr-4 md:pl-24 md:pr-10 pt-4 md:pt-7 pb-3 md:pb-4 border-b border-white/[0.03] flex items-center justify-between z-30 relative bg-[#050507]">
-          <div className="flex min-w-0 items-center space-x-3 md:space-x-4">
-            {/* Scene Identity Icon */}
-            <div className="relative shrink-0 w-8 h-8 md:w-9 md:h-9 bg-white rounded-lg flex items-center justify-center shadow-2xl overflow-hidden group">
+        {/* Streamlined Typographic Header - Aggressively Compact for Mobile */}
+        <div className="pl-14 pr-3 md:pl-24 md:pr-10 pt-2.5 md:pt-7 pb-2.5 md:pb-4 border-b border-white/[0.03] flex items-center justify-between gap-3 z-30 relative bg-[#050507]">
+          <div className="flex min-w-0 items-center gap-2">
+            {/* Mobile Scene Number */}
+            <span className="md:hidden text-[10px] font-mono font-bold text-white/30 shrink-0">
+              #{String(scene.order !== undefined ? scene.order + 1 : 1).padStart(2, '0')}
+            </span>
+
+            {/* Desktop Identity Icon */}
+            <div className="hidden md:flex relative shrink-0 w-9 h-9 bg-white rounded flex items-center justify-center shadow-2xl overflow-hidden group">
               <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
-              <span className="text-[10px] md:text-[11px] font-mono font-bold text-black tracking-tighter">
+              <span className="text-[11px] font-mono font-bold text-black tracking-tighter">
                 {String(scene.order !== undefined ? scene.order + 1 : 1).padStart(2, '0')}
               </span>
             </div>
 
             <div className="min-w-0">
-              <h2 className="truncate text-base md:text-xl font-serif font-black text-white tracking-tight uppercase leading-none">
+              <h2 className="truncate text-xs md:text-xl font-serif font-black text-white tracking-tight uppercase leading-none">
                 {scene.title}
               </h2>
-              <div className="mt-1.5 flex flex-wrap items-center gap-1.5 md:mt-2 md:gap-2">
-                <span className="text-[7px] md:text-[8px] font-bold text-[#5865f2] uppercase tracking-[0.16em] bg-[#5865f2]/10 border border-[#5865f2]/20 px-1.5 py-0.5 rounded">Active Folio</span>
-                <span className="text-[7px] md:text-[8px] font-bold text-[#949ba4] uppercase tracking-[0.16em] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">Conflict</span>
+              {/* Hide tags on mobile to save vertical space */}
+              <div className="hidden md:flex mt-2 flex-wrap items-center gap-2">
+                <span className="text-[8px] font-bold text-[#5865f2] uppercase tracking-[0.12em] bg-[#5865f2]/10 border border-[#5865f2]/20 px-1.5 py-0.5 rounded">Active Folio</span>
+                <span className="text-[8px] font-bold text-[#949ba4] uppercase tracking-[0.12em] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">Conflict</span>
               </div>
             </div>
           </div>
 
-          {/* Action Buttons - Moved to Header */}
-          <div className="flex items-center gap-3">
+          {/* Action Buttons - Very Compact */}
+          <div className="flex items-center gap-1.5 md:gap-3">
+            <button
+              onClick={handleCopyScript}
+              className="flex items-center justify-center w-8 h-8 md:w-auto md:px-3 md:py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
+              title="Copy Script"
+            >
+              {scriptCopied ? <FiCheck size={12} className="text-primary" /> : <FiCopy size={12} />}
+              <span className="hidden sm:inline ml-2">{scriptCopied ? 'Copied' : 'Copy Script'}</span>
+            </button>
+
             <button
               onClick={handleCopyPrompt}
-              className="flex items-center space-x-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
+              className="flex items-center justify-center w-8 h-8 md:w-auto md:px-3 md:py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
               title="Copy Visual Prompt"
             >
               {copied ? <FiCheck size={12} className="text-primary" /> : <FiCopy size={12} />}
-              <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy Prompt'}</span>
+              <span className="hidden sm:inline ml-2">{copied ? 'Copied' : 'Copy Prompt'}</span>
             </button>
 
             <AIActionButton
@@ -131,16 +166,16 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
 
             <button
               onClick={onEdit}
-              className="flex items-center space-x-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
+              className="flex items-center justify-center w-8 h-8 md:w-auto md:px-3 md:py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-              <span className="hidden sm:inline">Edit Foundation</span>
+              <span className="hidden sm:inline ml-2">Edit Foundation</span>
             </button>
           </div>
         </div>
 
-      {/* Modern Pill Tabs */}
-      <div className="px-4 md:px-6 py-2 md:py-3 bg-[#050507] border-b border-white/[0.02]">
+      {/* Modern Pill Tabs - Compact Vertical */}
+      <div className="px-4 md:px-6 py-1.5 md:py-3 bg-[#050507] border-b border-white/[0.02]">
         <div className="inline-flex w-full md:max-w-xs items-center rounded-2xl bg-[#12151d] p-[3px] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]">
         <button
           onClick={() => setActiveTab('script')}

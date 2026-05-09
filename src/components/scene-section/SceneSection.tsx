@@ -5,7 +5,7 @@ import { AISceneGenerateModal } from './AISceneGenerateModal';
 import type { Scene, Character, Conflict } from '../../types/story.types';
 import { useStory } from '../../context/StoryContext';
 import { buildAIContextSnapshot } from '../../lib/ai-context';
-import { FiPlus, FiCpu } from 'react-icons/fi';
+import { FiPlus, FiCpu, FiSearch } from 'react-icons/fi';
 
 interface SceneSectionProps {
   scenes: Scene[];
@@ -35,6 +35,17 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   const [showAIModal, setShowAIModal] = useState(false);
   const [initialAIResult, setInitialAIResult] = useState<Partial<Scene> | null>(null);
   const [showQuickAddMenu, setShowQuickAddMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+
+  const filteredScenes = useMemo(() => {
+    if (!searchQuery.trim()) return scenes;
+    const query = searchQuery.toLowerCase();
+    return scenes.filter(s => 
+      s.title.toLowerCase().includes(query) || 
+      (s.context && s.context.toLowerCase().includes(query))
+    );
+  }, [scenes, searchQuery]);
 
   const viewingScene = scenes.find(s => s.id === viewingSceneId) || null;
 
@@ -74,7 +85,7 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
     handleCloseModals();
   };
 
-  const handleDeleteScene = () => {
+  const handleSceneDelete = () => {
     if (selectedScene) {
       onSceneDelete(selectedScene.id);
       handleCloseModals();
@@ -89,7 +100,7 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
   return (
     <div className="flex h-full overflow-hidden relative">
       {/* Sidebar Navigation - Scene List */}
-      <div className={`relative h-full flex flex-col border-r border-black/20 bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] z-50
+      <div className={`relative h-full flex flex-col border-r border-black/20 bg-[#050507] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] z-30 md:z-50
         ${viewingSceneId ? 'w-20' : 'w-full border-white/5 bg-[#050507]'}`}>
         
         {/* Full Header - Only shown when no selection */}
@@ -97,10 +108,31 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
           <div className="p-6 md:p-10 border-b border-white/5 animate-in fade-in slide-in-from-top duration-700 flex items-start justify-between">
             <div className="flex flex-col">
               <h2 className="text-white font-serif font-black text-2xl md:text-3xl tracking-tight">CHRONICLE GRID</h2>
-              <p className="text-[10px] font-mono text-[#949ba4] uppercase tracking-[0.3em] mt-2 opacity-50">Narrative Sequence Archive</p>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className={`flex items-center transition-all duration-300 overflow-hidden ${showSearch ? 'w-48 md:w-64 opacity-100 mr-2' : 'w-0 opacity-0'}`}>
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Filter scenes..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-1.5 text-xs font-mono text-white placeholder:text-white/20 outline-none focus:border-primary/50 transition-all"
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowSearch(!showSearch);
+                  if (showSearch) setSearchQuery('');
+                }}
+                className={`p-2 rounded-lg transition-all mt-1 ${showSearch ? 'bg-primary text-white shadow-primary-glow' : 'bg-white/5 border border-white/10 text-[#949ba4] hover:bg-white/10 hover:text-white'}`}
+                title="Search Scene"
+              >
+                <FiSearch size={14} />
+              </button>
+
               {onOpenManuscript && (
                 <button
                   onClick={onOpenManuscript}
@@ -133,7 +165,7 @@ export const SceneSection: React.FC<SceneSectionProps> = ({
 
         <div className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-700 ${viewingSceneId ? 'pt-2' : 'pt-8 md:pt-12'}`}>
           <div className={`flex flex-col transition-all duration-700 ${viewingSceneId ? 'space-y-4 items-center' : 'space-y-1 px-6 md:px-10 pb-20'}`}>
-            {[...scenes].sort((a, b) => {
+            {[...filteredScenes].sort((a, b) => {
               if (a.order !== b.order) return a.order - b.order;
               return a.id.localeCompare(b.id);
             }).map((scene, index) => {

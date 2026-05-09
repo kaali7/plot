@@ -4,6 +4,7 @@ import { ResourceModal } from './ResourceModal';
 import { ResourceDetailView } from './ResourceDetailView';
 import { ImagePromptModal } from '../ai/ImagePromptModal';
 import { AIActionButton } from '../ai/AIActionButton';
+import { FiSearch } from 'react-icons/fi';
 import type { Resource } from '../../types/story.types';
 import { useStory } from '../../context/StoryContext';
 import { buildAIContextSnapshot } from '../../lib/ai-context';
@@ -28,6 +29,18 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImagePrompt, setShowImagePrompt] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+
+  const filteredResources = useMemo(() => {
+    if (!searchQuery.trim()) return resources;
+    const query = searchQuery.toLowerCase();
+    return resources.filter(r => 
+      r.title.toLowerCase().includes(query) || 
+      (r.content && r.content.toLowerCase().includes(query)) ||
+      r.type.toLowerCase().includes(query)
+    );
+  }, [resources, searchQuery]);
 
   const selectedResource = resources.find(r => r.id === viewingResourceId) || null;
 
@@ -111,22 +124,40 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           <div className="flex items-end justify-between pb-8 mb-8 md:mb-12 border-b border-white/5 animate-in fade-in slide-in-from-top duration-700">
             <div>
               <h2 className="text-2xl md:text-4xl font-serif font-black text-white tracking-tight uppercase">Narrative Library</h2>
-              <p className="text-[10px] font-mono text-primary/40 uppercase tracking-[0.5em] mt-3 font-bold">Repository of Knowledge & Inspiration ({resources.length})</p>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className={`flex items-center transition-all duration-300 overflow-hidden ${showSearch ? 'w-48 md:w-64 opacity-100 mr-2' : 'w-0 opacity-0'}`}>
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Filter library..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs font-mono text-white placeholder:text-white/20 outline-none focus:border-primary/50 transition-all"
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowSearch(!showSearch);
+                  if (showSearch) setSearchQuery('');
+                }}
+                className={`p-2 rounded-full transition-all ${showSearch ? 'bg-primary text-white shadow-primary-glow' : 'bg-white/5 border border-white/10 text-white/40 hover:bg-white/10 hover:text-white'}`}
+                title="Search Library"
+              >
+                <FiSearch size={14} />
+              </button>
+
+              <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-mono font-bold text-white/40 shrink-0">
+                TOTAL: {filteredResources.length}
+              </div>
+              
               <AIActionButton
                 onClick={() => setShowImagePrompt(true)}
                 label="World Visual"
                 variant="primary"
               />
-              
-              <button 
-                onClick={() => setShowAddModal(true)}
-                className="group flex items-center space-x-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-all"
-              >
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Add Resource</span>
-              </button>
             </div>
           </div>
         )}
@@ -135,7 +166,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
         <div className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-700 ${viewingResourceId ? 'pt-20' : ''}`}>
           {viewingResourceId ? (
             <div className={`flex flex-col transition-all duration-700 space-y-1`}>
-              {resources.map(res => (
+              {filteredResources.map(res => (
                 <div 
                   key={res.id} 
                   onClick={() => handleResourceClick(res)}
@@ -177,7 +208,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           ) : (
             <div className="pr-4 md:pr-6 pb-32">
               <ResourceManager 
-                resources={resources}
+                resources={filteredResources}
                 onResourceClick={handleResourceClick}
                 onAddClick={() => setShowAddModal(true)}
               />

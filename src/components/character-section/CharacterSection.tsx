@@ -6,7 +6,7 @@ import { AICharacterGenerateModal } from './AICharacterGenerateModal';
 import type { Character } from '../../types/story.types';
 import { useStory } from '../../context/StoryContext';
 import { buildAIContextSnapshot } from '../../lib/ai-context';
-import { FiPlus } from 'react-icons/fi';
+import { FiPlus, FiSearch } from 'react-icons/fi';
 
 interface CharacterSectionProps {
   characters: Character[];
@@ -30,6 +30,18 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [initialAIResult, setInitialAIResult] = useState<Partial<Character> | null>(null);
   const [showQuickAddMenu, setShowQuickAddMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+
+  const filteredCharacters = useMemo(() => {
+    if (!searchQuery.trim()) return characters;
+    const query = searchQuery.toLowerCase();
+    return characters.filter(c => 
+      c.name.toLowerCase().includes(query) || 
+      c.role.toLowerCase().includes(query) ||
+      (c.description && c.description.toLowerCase().includes(query))
+    );
+  }, [characters, searchQuery]);
 
   const aiContext = useMemo(() => {
     if (!story) return null;
@@ -91,7 +103,7 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
   return (
     <div className="flex h-full overflow-hidden relative">
       {/* Sidebar Navigation - Character List */}
-      <div className={`relative h-full flex flex-col border-r border-black/20 bg-[#0b0c10] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] z-50
+      <div className={`relative h-full flex flex-col border-r border-black/20 bg-[#0b0c10] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] z-30 md:z-50
         ${viewingCharacterId ? 'w-24' : 'w-full px-10 pt-12'}`}>
         
         
@@ -102,10 +114,34 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
               <h2 className="text-xl md:text-2xl font-serif font-black text-white tracking-tight uppercase">Character Forge</h2>
             </div>
             
-            <div className="flex items-center space-x-3 bg-black/40 border border-white/10 px-4 py-1.5 rounded-full shadow-inner">
-              <span className="text-[9px] font-mono text-white/40 uppercase tracking-[0.2em] font-bold">Total</span>
-              <div className="w-1 h-1 rounded-full bg-primary shadow-[0_0_8px_rgba(97,175,239,0.8)]"></div>
-              <span className="text-sm font-mono text-white font-bold">{characters.length}</span>
+            <div className="flex items-center gap-3">
+              <div className={`flex items-center transition-all duration-300 overflow-hidden ${showSearch ? 'w-48 md:w-64 opacity-100 mr-2' : 'w-0 opacity-0'}`}>
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Filter persona..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs font-mono text-white placeholder:text-white/20 outline-none focus:border-primary/50 transition-all"
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowSearch(!showSearch);
+                  if (showSearch) setSearchQuery('');
+                }}
+                className={`p-2 rounded-full transition-all ${showSearch ? 'bg-primary text-white' : 'bg-white/5 border border-white/10 text-white/40 hover:bg-white/10 hover:text-white'}`}
+                title="Search Persona"
+              >
+                <FiSearch size={14} />
+              </button>
+
+              <div className="flex items-center space-x-3 bg-black/40 border border-white/10 px-4 py-1.5 rounded-full shadow-inner shrink-0">
+                <span className="text-[9px] font-mono text-white/40 uppercase tracking-[0.2em] font-bold">Total</span>
+                <div className="w-1 h-1 rounded-full bg-primary shadow-[0_0_8px_rgba(97,175,239,0.8)]"></div>
+                <span className="text-sm font-mono text-white font-bold">{filteredCharacters.length}</span>
+              </div>
             </div>
           </div>
         )}
@@ -124,7 +160,7 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
               </button>
 
               <div className="flex flex-col w-full space-y-1">
-              {characters.map(char => (
+              {filteredCharacters.map(char => (
                 <div 
                   key={char.id} 
                   onClick={() => handleCharacterClick(char)}
@@ -169,7 +205,7 @@ export const CharacterSection: React.FC<CharacterSectionProps> = ({
           ) : (
             <div className="pr-4 md:pr-6 pb-32">
               <CharacterGrid 
-                characters={characters}
+                characters={filteredCharacters}
                 onCharacterClick={handleCharacterClick}
                 onAddClick={() => setShowAddModal(true)}
                 onAIClick={() => setShowAIModal(true)}

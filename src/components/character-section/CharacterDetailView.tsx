@@ -24,6 +24,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
   const [activeTab, setActiveTab] = useState<'profile' | 'arc' | 'relationships'>('profile');
   const [showImagePrompt, setShowImagePrompt] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [detailCopied, setDetailCopied] = useState(false);
   const { story, characters, scenes, conflicts, resources, addResource } = useStory();
 
   const linkedResources = resources.filter(r => r.linked_entities?.characters?.includes(character.id));
@@ -72,6 +73,29 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
     }
   };
 
+  const handleCopyDetail = async () => {
+    const contentToCopy = `
+NAME: ${character.name}
+ROLE: ${character.role}
+
+DESCRIPTION:
+${character.description || 'N/A'}
+
+STRENGTHS: ${character.traits.strengths.join(', ') || 'None'}
+WEAKNESSES: ${character.traits.weaknesses.join(', ') || 'None'}
+
+NARRATIVE ARC:
+Start: ${character.arc.start || 'N/A'}
+End: ${character.arc.end || 'N/A'}
+    `.trim();
+
+    const success = await copyToClipboard(contentToCopy);
+    if (success) {
+      setDetailCopied(true);
+      setTimeout(() => setDetailCopied(false), 2000);
+    }
+  };
+
   const viewContent = (
     <div className={`flex flex-col h-full bg-[#050507] ${!isIntegrated ? 'relative w-full max-w-5xl h-[85vh] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-right duration-500 ease-out rounded-sm overflow-hidden' : 'w-full rounded-tl-[3rem] border-l border-t border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]'}`}>
       {/* Mobile Close Button - Left Side */}
@@ -104,6 +128,15 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
 
         {/* Action Buttons - Moved to Header */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleCopyDetail}
+            className="flex items-center justify-center w-8 h-8 md:w-auto md:px-3 md:py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
+            title="Copy Detail"
+          >
+            {detailCopied ? <FiCheck size={12} className="text-primary" /> : <FiCopy size={12} />}
+            <span className="hidden sm:inline ml-2">{detailCopied ? 'Copied' : 'Copy Detail'}</span>
+          </button>
+
           <button
             onClick={handleCopyPrompt}
             className="flex items-center space-x-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
@@ -140,7 +173,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
                 ? 'bg-primary text-white shadow-primary-glow'
                 : 'text-[#7e8490] hover:text-white hover:bg-white/[0.03]'}`}
           >
-            Character Profile
+            Profile
           </button>
           <button
             onClick={() => setActiveTab('arc')}
@@ -149,7 +182,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
                 ? 'bg-primary text-white shadow-primary-glow'
                 : 'text-[#7e8490] hover:text-white hover:bg-white/[0.03]'}`}
           >
-            Narrative Arc
+            Narrative
           </button>
           <button
             onClick={() => setActiveTab('relationships')}
@@ -158,7 +191,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
                 ? 'bg-primary text-white shadow-primary-glow'
                 : 'text-[#7e8490] hover:text-white hover:bg-white/[0.03]'}`}
           >
-            Relationship Matrix
+            Relationship
           </button>
         </div>
       </div>

@@ -120,7 +120,7 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
     <div className="relative flex h-full flex-col overflow-hidden overflow-x-hidden bg-[#0f1014]">
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(88,101,242,0.08),_transparent_35%),linear-gradient(180deg,_#11131a_0%,_#0b0c10_100%)] px-3 py-2.5 sm:px-4 sm:py-4"
+        className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(88,101,242,0.08),_transparent_35%),linear-gradient(180deg,_#11131a_0%,_#0b0c10_100%)] px-2 py-2 sm:px-4 sm:py-4"
         style={{ scrollBehavior: 'smooth' }}
       >
         {data.length > 0 ? (
@@ -139,21 +139,46 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
                   className="group transition-all duration-300"
                 >
                   {isAction ? (
-                    <div className="flex flex-col items-center">
-                      <div className="mb-1.5 flex items-center gap-2 text-[7px] sm:text-[8px] font-bold uppercase tracking-[0.24em] text-[#676d79]">
-                        <FiZap size={9} />
-                        <span>Beat {idx + 1}</span>
-                        <span>Action</span>
+                    <div className="flex flex-col">
+                      <div className="mb-1.5 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-[7px] sm:text-[8px] font-bold uppercase tracking-[0.24em] text-[#676d79]">
+                          <FiZap size={9} />
+                          <span>Beat {idx + 1}</span>
+                          <span>Action</span>
+                        </div>
+                        <div className={`flex items-center gap-0.5 rounded-full bg-white/[0.03] p-0.5 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); moveEntry(idx, 'up'); }}
+                            className="rounded-full p-1.5 text-[#9097a4] transition hover:bg-white/8 hover:text-white"
+                            aria-label="Move beat up"
+                          >
+                            <FiChevronUp size={12} />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); moveEntry(idx, 'down'); }}
+                            className="rounded-full p-1.5 text-[#9097a4] transition hover:bg-white/8 hover:text-white"
+                            aria-label="Move beat down"
+                          >
+                            <FiChevronDown size={12} />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeEntry(idx); }}
+                            className="rounded-full p-1.5 text-[#f06b72] transition hover:bg-[#f06b72]/10 hover:text-[#ff8a91]"
+                            aria-label="Delete beat"
+                          >
+                            <FiTrash2 size={12} />
+                          </button>
+                        </div>
                       </div>
-                      <div className={`w-full max-w-[240px] sm:max-w-[260px] rounded-[22px] bg-[#11131a] px-4 py-3 text-center shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)] transition ${isActive ? 'ring-1 ring-white/8' : ''}`}>
+                      <div className={`w-full rounded-[18px] bg-[#11131a] px-3 py-2.5 sm:px-5 sm:py-4 border transition-all duration-300 ${isActive ? 'border-white/10 bg-[#161821]' : 'border-transparent shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]'}`}>
                         <textarea
                           value={entry.content}
                           onChange={(e) => updateEntry(idx, { content: e.target.value })}
                           onFocus={() => setActiveEntry(idx)}
                           onKeyDown={(e) => handleKeyDown(e, idx)}
                           rows={1}
-                          className="w-full resize-none bg-transparent px-0 py-0 text-center text-[12px] sm:text-[13px] italic leading-5 sm:leading-6 text-[#98a0af] outline-none"
-                          onInput={(e) => autoResize(e.target as HTMLTextAreaElement, 120)}
+                          className="w-full resize-none overflow-hidden bg-transparent px-0 py-0 text-[13px] sm:text-[14px] italic leading-6 text-[#a3a9b5] outline-none"
+                          onInput={(e) => autoResize(e.target as HTMLTextAreaElement, 9999)}
                         />
                       </div>
                     </div>
@@ -174,21 +199,21 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
 
                         <div className={`flex items-center gap-0.5 rounded-full bg-white/[0.03] p-0.5 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                           <button
-                            onClick={() => moveEntry(idx, 'up')}
+                            onClick={(e) => { e.stopPropagation(); moveEntry(idx, 'up'); }}
                             className="rounded-full p-1.5 text-[#9097a4] transition hover:bg-white/8 hover:text-white"
                             aria-label="Move beat up"
                           >
                             <FiChevronUp size={12} />
                           </button>
                           <button
-                            onClick={() => moveEntry(idx, 'down')}
+                            onClick={(e) => { e.stopPropagation(); moveEntry(idx, 'down'); }}
                             className="rounded-full p-1.5 text-[#9097a4] transition hover:bg-white/8 hover:text-white"
                             aria-label="Move beat down"
                           >
                             <FiChevronDown size={12} />
                           </button>
                           <button
-                            onClick={() => removeEntry(idx)}
+                            onClick={(e) => { e.stopPropagation(); removeEntry(idx); }}
                             className="rounded-full p-1.5 text-[#f06b72] transition hover:bg-[#f06b72]/10 hover:text-[#ff8a91]"
                             aria-label="Delete beat"
                           >
@@ -197,15 +222,15 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
                         </div>
                       </div>
 
-                      <div className={`rounded-[18px] bg-[linear-gradient(180deg,rgba(29,31,44,0.96)_0%,rgba(21,23,34,0.96)_100%)] px-3.5 py-3.5 sm:px-4 sm:py-4 shadow-[inset_0_0_0_1px_rgba(108,119,255,0.08)] transition ${isActive ? 'ring-1 ring-[#5865f2]/35' : ''}`}>
+                      <div className={`rounded-2xl bg-[#1a1d24] px-3 py-3 sm:px-5 sm:py-4 border transition-all duration-300 ${isActive ? 'border-[#5865f2]/50 bg-[#1e212b] shadow-[0_4px_20px_-4px_rgba(88,101,242,0.15)]' : 'border-white/5 shadow-sm'}`}>
                         <textarea
                           value={entry.content}
                           onChange={(e) => updateEntry(idx, { content: e.target.value })}
                           onFocus={() => setActiveEntry(idx)}
                           onKeyDown={(e) => handleKeyDown(e, idx)}
                           rows={1}
-                          className="w-full resize-none bg-transparent px-0 py-0 text-[12px] sm:text-[13px] leading-5 sm:leading-6 text-[#edf1f8] outline-none"
-                          onInput={(e) => autoResize(e.target as HTMLTextAreaElement, 140)}
+                          className="w-full resize-none overflow-hidden bg-transparent px-0 py-0 text-[13px] sm:text-[14px] leading-6 text-[#edf1f8] outline-none"
+                          onInput={(e) => autoResize(e.target as HTMLTextAreaElement, 9999)}
                         />
                       </div>
 
@@ -240,9 +265,9 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
           </div>
         ) : (
           <div className="flex min-h-full items-center justify-center px-4 py-12">
-            <div className="max-w-md rounded-[28px] border border-white/8 bg-white/[0.03] p-6 shadow-[0_25px_70px_rgba(0,0,0,0.28)] sm:p-8">
-              <h2 className="text-2xl font-bold text-white">Start the scene rhythm</h2>
-              <p className="mt-2 text-sm leading-7 text-[#b5bac1]">
+            <div className="max-w-md rounded-[24px] border border-white/8 bg-white/[0.03] p-5 shadow-[0_25px_70px_rgba(0,0,0,0.28)] sm:p-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-white">Start the scene rhythm</h2>
+              <p className="mt-2 text-xs sm:text-sm leading-6 sm:leading-7 text-[#b5bac1]">
                 Add dialogue or action beats below. Tap any beat later to change its speaker or refine the wording.
               </p>
             </div>
@@ -250,45 +275,43 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
         )}
       </div>
 
-      <div className="sticky bottom-0 inset-x-0 bg-gradient-to-t from-[#090a0d] via-[#090a0df2] to-transparent px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5">
-        <div className="mx-auto rounded-[20px] bg-[#111319]/98 p-2 shadow-[0_18px_48px_rgba(0,0,0,0.38)] backdrop-blur-xl sm:rounded-[22px] sm:p-3">
+      <div className="sticky bottom-0 inset-x-0 bg-gradient-to-t from-[#090a0d] via-[#090a0df2] to-transparent px-2 pb-2 pt-2 sm:px-4 sm:pb-4 sm:pt-5">
+        <div className="mx-auto rounded-[18px] bg-[#111319]/98 p-1.5 shadow-[0_18px_48px_rgba(0,0,0,0.38)] backdrop-blur-xl sm:rounded-[22px] sm:p-3">
           <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-3 pb-0.5">
-              <div className="flex min-w-0 gap-1.5">
+            <div className="flex flex-wrap items-center gap-2 pb-0.5">
+              <div className="flex min-w-0 gap-1">
                 <button
                   onClick={() => setNewBeat(prev => ({ ...prev, type: 'action' }))}
-                  className={`rounded-full px-3 py-1.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.16em] transition ${
+                  className={`rounded-full px-2.5 py-1 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.16em] transition ${
                     newBeat.type === 'action'
                       ? 'bg-[#3f4452] text-white shadow-[0_10px_24px_rgba(0,0,0,0.25)]'
                       : 'bg-white/[0.04] text-[#9aa1ad] hover:bg-white/[0.07] hover:text-white'
                   }`}
                 >
-                  <span className="flex items-center gap-2">
-                    <FiZap size={13} />
+                  <span className="flex items-center gap-1.5">
+                    <FiZap size={11} />
                     Action
                   </span>
                 </button>
                 <button
                   onClick={() => setNewBeat(prev => ({ ...prev, type: 'dialogue', characterId: prev.characterId || characters[0]?.id || '' }))}
-                  className={`rounded-full px-3 py-1.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.16em] transition ${
+                  className={`rounded-full px-2.5 py-1 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.16em] transition ${
                     newBeat.type === 'dialogue'
                       ? 'bg-[linear-gradient(180deg,#7079ff_0%,#5865f2_100%)] text-white shadow-[0_10px_24px_rgba(88,101,242,0.35)]'
                       : 'bg-white/[0.04] text-[#9aa1ad] hover:bg-white/[0.07] hover:text-white'
                   }`}
                 >
-                  <span className="flex items-center gap-2">
-                    Dialogue
-                  </span>
+                  Dialogue
                 </button>
               </div>
 
               {newBeat.type === 'dialogue' && (
                 <div className="relative min-w-0 w-full sm:w-[176px]">
-                  <FiUser className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35" size={11} />
+                  <FiUser className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-white/35" size={10} />
                   <select
                     value={newBeat.characterId}
                     onChange={(e) => setNewBeat(prev => ({ ...prev, characterId: e.target.value }))}
-                    className="w-full appearance-none rounded-full bg-[#1a1c24] py-1.5 pl-8 pr-8 text-[10px] font-medium text-white outline-none transition focus:ring-1 focus:ring-[#5865f2]/45"
+                    className="w-full appearance-none rounded-full bg-[#1a1c24] py-1 pl-7 pr-7 text-[9px] font-medium text-white outline-none transition focus:ring-1 focus:ring-[#5865f2]/45"
                   >
                     <option value="">Narrator</option>
                     {characters.map(char => (
@@ -297,7 +320,7 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
                       </option>
                     ))}
                   </select>
-                  <FiChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/35" size={11} />
+                  <FiChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-white/35" size={10} />
                 </div>
               )}
             </div>
