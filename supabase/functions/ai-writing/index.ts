@@ -1,24 +1,26 @@
-import { corsHeaders } from '../_shared/cors.ts';
+import { getCorsHeaders } from '../_shared/cors.ts';
 import { createAuthedClient } from '../_shared/auth.ts';
 import { generateWithGemini, logAIUsage } from '../_shared/provider.ts';
+import { checkRateLimit } from '../_shared/rate-limit.ts';
+import { sanitizePromptInput, validateStoryId, validateAction } from '../_shared/validate.ts';
 import type { AIWritingRequest, AIWritingResponse } from '../../../src/types/ai.types.ts';
 
-const json = (body: unknown, status = 200) =>
+const json = (body: unknown, status = 200, request?: Request) =>
   new Response(JSON.stringify(body), {
     status,
     headers: {
-      ...corsHeaders,
+      ...(request ? getCorsHeaders(request) : { 'Access-Control-Allow-Origin': '*' }),
       'Content-Type': 'application/json',
     },
   });
 
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(request) });
   }
 
   if (request.method !== 'POST') {
-    return json({ error: 'Method not allowed.' }, 405);
+    return json({ error: 'Method not allowed.' }, 405, request);
   }
 
   try {
@@ -29,13 +31,20 @@ Deno.serve(async (request) => {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return json({ error: 'Unauthorized.' }, 401);
+      return json({ error: 'Unauthorized.' }, 401, request);
     }
 
     const payload = (await request.json()) as AIWritingRequest;
 
-    if (!payload?.storyId || !payload?.action || !payload?.context?.story?.id) {
-      return json({ error: 'Invalid AI writing request.' }, 400);
+    // Validate inputs
+    if (!validateStoryId(payload?.storyId) || !validateAction(payload?.action, ['continue', 'expand', 'rewrite', 'dialogue', 'describe'])) {
+      return json({ error: 'Invalid AI writing request parameters.' }, 400, request);
+    }
+
+    // Rate Limit Check
+    const rateCheck = await checkRateLimit(supabase, user.id, 'writing');
+    if (!rateCheck.allowed) {
+      return json({ error: rateCheck.error }, 429, request);
     }
 
     const { data: story, error: storyError } = await supabase
@@ -45,7 +54,7 @@ Deno.serve(async (request) => {
       .single();
 
     if (storyError || !story || story.user_id !== user.id) {
-      return json({ error: 'Story not found or access denied.' }, 403);
+      return json({ error: 'Story not found or access denied.' }, 403, request);
     }
 
     const prompt = buildWritingPrompt(payload, story.name, story.theme, story.description);
@@ -65,11 +74,11 @@ Deno.serve(async (request) => {
       },
     };
 
-    return json(response);
+    return json(response, 200, request);
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected AI function error.';
-    return json({ error: message }, 500);
+    return json({ error: message }, 500, request);
   }
 });
 
@@ -81,16 +90,24 @@ function buildWritingPrompt(
 ): string {
   const { action, context, manuscript, selection, instructions } = payload;
 
-  const base = `You are a creative writing assistant for a story titled "${storyName}".
-Theme: ${storyTheme ?? 'not specified'}.
-Description: ${storyDescription ?? ''}.
-Characters: ${context.characters.map(c => `${c.name} (${c.role})`).join(', ')}.
+  // Sanitize all inputs used in the prompt
+  const safeName = sanitizePromptInput(storyName, 200);
+  const safeTheme = sanitizePromptInput(storyTheme || 'not specified', 200);
+  const safeDesc = sanitizePromptInput(storyDescription || '', 1000);
+  const safeManuscript = sanitizePromptInput(manuscript?.text || '', 3000);
+  const safeSelection = sanitizePromptInput(selection?.text || '', 1000);
+  const safeInstructions = sanitizePromptInput(instructions || '', 1000);
+
+  const base = `You are a creative writing assistant for a story titled "${safeName}".
+Theme: ${safeTheme}.
+Description: ${safeDesc}.
+Characters: ${context.characters.map(c => `${sanitizePromptInput(c.name, 50)} (${c.role})`).join(', ')}.
 
 Current manuscript excerpt:
-${manuscript.text.slice(0, 3000)}
+${safeManuscript}
 
-${selection?.text ? `Selected passage:\n${selection.text}\n` : ''}
-${instructions ? `Author instruction: ${instructions}\n` : ''}
+${safeSelection ? `Selected passage:\n${safeSelection}\n` : ''}
+${safeInstructions ? `Author instruction: ${safeInstructions}\n` : ''}
 Task: ${action === 'continue' ? 'Continue the story naturally from where it ends.' :
        action === 'expand' ? 'Expand the selected passage with more detail.' :
        action === 'rewrite' ? 'Rewrite the selected passage, preserving intent.' :
