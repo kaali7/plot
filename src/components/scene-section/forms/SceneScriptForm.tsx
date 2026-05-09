@@ -253,8 +253,8 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
       <div className="sticky bottom-0 inset-x-0 bg-gradient-to-t from-[#090a0d] via-[#090a0df2] to-transparent px-3 pb-3 pt-4 sm:px-4 sm:pb-4 sm:pt-5">
         <div className="mx-auto rounded-[20px] bg-[#111319]/98 p-2 shadow-[0_18px_48px_rgba(0,0,0,0.38)] backdrop-blur-xl sm:rounded-[22px] sm:p-3">
           <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-2 pb-0.5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="order-1 flex min-w-0 gap-1.5">
+            <div className="flex flex-wrap items-center gap-3 pb-0.5">
+              <div className="flex min-w-0 gap-1.5">
                 <button
                   onClick={() => setNewBeat(prev => ({ ...prev, type: 'action' }))}
                   className={`rounded-full px-3 py-1.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.16em] transition ${
@@ -283,7 +283,7 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
               </div>
 
               {newBeat.type === 'dialogue' && (
-                <div className="relative order-2 min-w-0 flex-1 basis-full sm:w-[176px] sm:basis-auto sm:flex-none">
+                <div className="relative min-w-0 w-full sm:w-[176px]">
                   <FiUser className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35" size={11} />
                   <select
                     value={newBeat.characterId}
@@ -328,10 +328,6 @@ export const SceneScriptForm: React.FC<SceneScriptFormProps> = ({
               </div>
             </div>
           </div>
-
-          <p className="mt-1 px-1 text-[8px] sm:text-[9px] text-[#8c93a1]">
-            Press <span className="font-bold text-white/80">Enter</span> to add. Use <span className="font-bold text-white/80">Shift + Enter</span> for a new line.
-          </p>
         </div>
       </div>
     </div>

@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Character } from '../../types/story.types';
 import { InlineResourceAttacher } from '../resources-section/InlineResourceAttacher';
 import { useStory } from '../../context/StoryContext';
+import { ImagePromptModal } from '../ai/ImagePromptModal';
+import { AIActionButton } from '../ai/AIActionButton';
+import { buildAIContextSnapshot } from '../../lib/ai-context';
+import { copyToClipboard } from '../../lib/clipboard';
+import { FiCopy, FiCheck } from 'react-icons/fi';
 
 interface CharacterDetailViewProps {
   character: Character;
@@ -17,11 +22,55 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
   isIntegrated = false
 }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'arc' | 'relationships'>('profile');
-  const { resources } = useStory();
+  const [showImagePrompt, setShowImagePrompt] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { story, characters, scenes, conflicts, resources, addResource } = useStory();
 
-  const linkedResourceIds = resources
-    .filter(r => r.linked_entities?.characters?.includes(character.id))
-    .map(r => r.id);
+  const linkedResources = resources.filter(r => r.linked_entities?.characters?.includes(character.id));
+  const linkedResourceIds = linkedResources.map(r => r.id);
+  
+  const visualSpec = linkedResources.find(r => r.title.startsWith('Visual Spec:'));
+
+  const aiContext = useMemo(() => {
+    if (!story) return null;
+    return buildAIContextSnapshot({
+      story,
+      characters,
+      scenes,
+      conflicts,
+      resources,
+    });
+  }, [story, characters, scenes, conflicts, resources]);
+
+  const handleSaveAsResource = (prompt: string) => {
+    addResource({
+      title: `Visual Spec: ${character.name}`,
+      type: 'note',
+      content: prompt,
+      linked_entities: {
+        characters: [character.id],
+        scenes: [],
+        locations: []
+      }
+    });
+  };
+
+  const handleCopyPrompt = async () => {
+    let contentToCopy = '';
+    
+    if (visualSpec) {
+      contentToCopy = visualSpec.content;
+    } else {
+      // Fallback: Copy core character data as a prompt
+      contentToCopy = `A ${character.role} character named ${character.name}. ${character.description || ''}. Strengths: ${character.traits.strengths.join(', ')}.`;
+    }
+
+    const success = await copyToClipboard(contentToCopy);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const viewContent = (
     <div className={`flex flex-col h-full bg-[#050507] ${!isIntegrated ? 'relative w-full max-w-5xl h-[85vh] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-right duration-500 ease-out rounded-sm overflow-hidden' : 'w-full rounded-tl-[3rem] border-l border-t border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]'}`}>
@@ -34,7 +83,7 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
       </button>
 
       {/* Streamlined Typographic Header */}
-      <div className="pt-12 md:pt-16 pl-20 pr-6 md:pl-28 md:pr-12 pb-5 md:pb-10 border-b border-white/[0.03] flex items-center justify-between z-30 relative">
+      <div className="pt-8 md:pt-10 pl-20 pr-6 md:pl-24 md:pr-12 pb-4 md:pb-6 border-b border-white/[0.03] flex items-center justify-between z-30 relative">
         {/* Folio Merge Point Decoration */}
         {isIntegrated && (
           <div className="absolute top-0 left-0 w-24 h-24 border-tl border-white/20 rounded-tl-[3rem] -translate-x-1 -translate-y-1 opacity-20 pointer-events-none hidden md:block" />
@@ -53,14 +102,32 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
           </div>
         </div>
 
-        {/* Edit Button - Moved to Header */}
-        <button
-          onClick={onEdit}
-          className="flex items-center space-x-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-primary hover:text-white hover:border-primary transition-all shrink-0"
-        >
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-          <span className="hidden sm:inline">Edit Persona</span>
-        </button>
+        {/* Action Buttons - Moved to Header */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleCopyPrompt}
+            className="flex items-center space-x-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
+            title="Copy Visual Prompt"
+          >
+            {copied ? <FiCheck size={12} className="text-primary" /> : <FiCopy size={12} />}
+            <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy Prompt'}</span>
+          </button>
+
+          <AIActionButton
+            onClick={() => setShowImagePrompt(true)}
+            label="Image Gen"
+            mobileLabel="AI"
+            variant="secondary"
+          />
+          
+          <button
+            onClick={onEdit}
+            className="flex items-center space-x-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+            <span className="hidden sm:inline">Edit Persona</span>
+          </button>
+        </div>
       </div>
 
       {/* Modern Pill Tabs */}
@@ -97,19 +164,19 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar bg-black/[0.05]">
-        <div className="p-4 md:p-8">
+      <div className="flex-1 overflow-y-auto lg:overflow-hidden custom-scrollbar bg-black/[0.05]">
+        <div className="p-4 md:p-6 h-full flex flex-col">
 
           {activeTab === 'profile' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-6 md:space-y-8">
-              <div className="grid grid-cols-12 gap-6 md:gap-8">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 h-full flex flex-col">
+              <div className="grid grid-cols-12 gap-6 h-full">
                 {/* Visual Anchor */}
-                <div className="col-span-12 lg:col-span-4">
-                  <div className="aspect-[3/4] rounded-2xl bg-white/[0.02] border border-white/10 overflow-hidden relative group max-w-[240px] md:max-w-none mx-auto lg:mx-0">
+                <div className="col-span-12 lg:col-span-4 flex flex-col">
+                  <div className="aspect-[3/4] lg:aspect-auto lg:flex-1 rounded-2xl bg-white/[0.02] border border-white/10 overflow-hidden relative group max-w-[240px] md:max-w-none mx-auto lg:mx-0 shadow-2xl">
                     {character.image_url ? (
-                      <img src={character.image_url} alt={character.name} className="w-full h-full object-cover grayscale" />
+                      <img src={character.image_url} alt={character.name} className="w-full h-full object-cover grayscale transition-transform duration-700 group-hover:scale-110" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/10 text-6xl italic font-serif">
+                      <div className="w-full h-full flex items-center justify-center text-white/5 text-8xl italic font-serif">
                         {character.name.charAt(0)}
                       </div>
                     )}
@@ -118,34 +185,34 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
                 </div>
 
                 {/* Persona Data */}
-                <div className="col-span-12 lg:col-span-8 space-y-6 md:space-y-8">
+                <div className="col-span-12 lg:col-span-8 flex flex-col justify-between space-y-4">
                   <section>
-                    <h4 className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] font-bold mb-4 opacity-50">Identity Description</h4>
-                    <p className="text-lg md:text-xl font-serif text-white/90 italic leading-relaxed border-l border-primary/30 pl-6 md:pl-8">
+                    <h4 className="text-[9px] font-mono text-primary uppercase tracking-[0.3em] font-bold mb-3 opacity-50">Identity Description</h4>
+                    <p className="text-base md:text-lg font-serif text-white/90 italic leading-relaxed border-l border-primary/30 pl-6 md:pl-8">
                       "{character.description || 'This identity remains a mystery in the narrative shadows...'}"
                     </p>
                   </section>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
-                    <section className="p-5 md:p-6 bg-white/[0.02] border border-white/5 rounded-2xl">
-                      <h4 className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] font-bold mb-4 md:mb-6">Strengths</h4>
-                      <div className="flex flex-wrap gap-2">
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                    <section className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col">
+                      <h4 className="text-[9px] font-mono text-primary uppercase tracking-[0.3em] font-bold mb-3">Strengths</h4>
+                      <div className="flex flex-wrap gap-1.5 overflow-y-auto no-scrollbar max-h-[120px]">
                         {character.traits.strengths.map((s, i) => (
-                          <span key={i} className="px-3 md:px-4 py-1.5 md:py-2 bg-white/[0.03] border border-white/10 rounded-full text-[9px] md:text-[10px] font-mono text-white/70 uppercase tracking-widest">{s}</span>
+                          <span key={i} className="px-3 py-1 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/70 uppercase tracking-widest">{s}</span>
                         ))}
                       </div>
                     </section>
-                    <section className="p-5 md:p-6 bg-white/[0.02] border border-white/5 rounded-2xl">
-                      <h4 className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] font-bold mb-4 md:mb-6">Weaknesses</h4>
-                      <div className="flex flex-wrap gap-2">
+                    <section className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col">
+                      <h4 className="text-[9px] font-mono text-primary uppercase tracking-[0.3em] font-bold mb-3">Weaknesses</h4>
+                      <div className="flex flex-wrap gap-1.5 overflow-y-auto no-scrollbar max-h-[120px]">
                         {character.traits.weaknesses.map((w, i) => (
-                          <span key={i} className="px-3 md:px-4 py-1.5 md:py-2 bg-red-500/5 border border-red-500/20 rounded-full text-[9px] md:text-[10px] font-mono text-red-400/60 uppercase tracking-widest">{w}</span>
+                          <span key={i} className="px-3 py-1 bg-red-500/5 border border-red-500/20 rounded-full text-[9px] font-mono text-red-400/60 uppercase tracking-widest">{w}</span>
                         ))}
                       </div>
                     </section>
                   </div>
 
-                  <section className="p-4 md:p-6 bg-black/20 border border-white/5 rounded-2xl">
+                  <section className="p-3 bg-black/20 border border-white/5 rounded-xl">
                     <InlineResourceAttacher
                       entityType="characters"
                       entityId={character.id}
@@ -206,6 +273,19 @@ export const CharacterDetailView: React.FC<CharacterDetailViewProps> = ({
           )}
         </div>
       </div>
+
+      {story && aiContext && (
+        <ImagePromptModal
+          isOpen={showImagePrompt}
+          onClose={() => setShowImagePrompt(false)}
+          entityType="character"
+          entityName={character.name}
+          entityPayload={character}
+          storyId={story.id}
+          context={aiContext}
+          onSaveAsResource={handleSaveAsResource}
+        />
+      )}
     </div>
   );
 

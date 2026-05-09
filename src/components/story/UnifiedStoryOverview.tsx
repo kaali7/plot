@@ -91,31 +91,21 @@ const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewDat
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h3 className="text-[10px] font-mono text-editor-text-muted uppercase tracking-[0.3em] font-bold">Narrative Dashboard</h3>
-        <button
-          onClick={() => setIsEditModalOpen(true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] uppercase tracking-widest py-2 px-4 rounded-sm transition-all shadow-lg shadow-purple-900/20"
-        >
-          Open Narrative Editor
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="h-full flex flex-col space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
         {/* Conflicts Summary */}
-        <div className="space-y-4">
-          <h4 className="text-[10px] font-mono text-primary uppercase tracking-widest font-bold">Core Engine</h4>
-          <div className="grid grid-cols-1 gap-4">
-            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-              <span className="text-[9px] font-mono text-editor-text-muted uppercase mb-2 block tracking-widest">Internal Conflict</span>
-              <p className="text-sm font-serif italic text-white/80 leading-relaxed">
+        <div className="space-y-3 flex flex-col">
+          <h4 className="text-[10px] font-mono text-primary uppercase tracking-[0.2em] font-bold opacity-80">Engine</h4>
+          <div className="space-y-3 flex-1">
+            <div className="p-4 bg-[#1a1b1e]/50 border border-white/5 rounded-xl hover:border-white/10 transition-colors">
+              <span className="text-[9px] font-mono text-editor-text-muted uppercase mb-2 block tracking-widest font-bold">Internal</span>
+              <p className="text-[13px] font-serif italic text-white/80 line-clamp-2 leading-relaxed">
                 {data.conflicts.internal || "Undiscovered..."}
               </p>
             </div>
-            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl">
-              <span className="text-[9px] font-mono text-editor-text-muted uppercase mb-2 block tracking-widest">External Conflict</span>
-              <p className="text-sm font-serif italic text-white/80 leading-relaxed">
+            <div className="p-4 bg-[#1a1b1e]/50 border border-white/5 rounded-xl hover:border-white/10 transition-colors">
+              <span className="text-[9px] font-mono text-editor-text-muted uppercase mb-2 block tracking-widest font-bold">External</span>
+              <p className="text-[13px] font-serif italic text-white/80 line-clamp-2 leading-relaxed">
                 {data.conflicts.external || "Undiscovered..."}
               </p>
             </div>
@@ -123,25 +113,35 @@ const UnifiedStoryOverview: React.FC<UnifiedStoryOverviewProps> = ({ overviewDat
         </div>
 
         {/* Acts Summary */}
-        <div className="space-y-4">
-          <h4 className="text-[10px] font-mono text-primary uppercase tracking-widest font-bold">Narrative Arc</h4>
-          <div className="space-y-3">
+        <div className="space-y-3 flex flex-col">
+          <h4 className="text-[10px] font-mono text-primary uppercase tracking-[0.2em] font-bold opacity-80">Arc</h4>
+          <div className="space-y-2 flex-1">
             {[
-              { key: 'setup', label: 'Act I', color: 'bg-purple-500/20 text-purple-400' },
-              { key: 'confrontation', label: 'Act II', color: 'bg-indigo-500/20 text-indigo-400' },
-              { key: 'resolution', label: 'Act III', color: 'bg-red-500/20 text-red-400' }
+              { key: 'setup', label: 'ACT I', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
+              { key: 'confrontation', label: 'ACT II', color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
+              { key: 'resolution', label: 'ACT III', color: 'text-red-400 bg-red-500/10 border-red-500/20' }
             ].map((act) => (
-              <div key={act.key} className="flex items-start space-x-4 p-3 bg-white/[0.01] hover:bg-white/[0.03] transition-colors rounded-lg border border-white/5">
-                <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase mt-1 ${act.color}`}>
+              <div key={act.key} className="flex items-center space-x-4 p-3 bg-[#1a1b1e]/50 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                <span className={`text-[9px] font-mono font-bold px-2 py-1 rounded border ${act.color} tracking-widest shadow-sm`}>
                   {act.label}
                 </span>
-                <p className="text-xs font-serif text-white/60 line-clamp-2">
+                <p className="text-[12px] font-serif text-white/70 line-clamp-2 flex-1 leading-relaxed">
                   {data.acts[act.key as keyof typeof data.acts] || "Drafting..."}
                 </p>
               </div>
             ))}
           </div>
         </div>
+      </div>
+      
+      <div className="flex justify-end pt-3">
+        <button
+          onClick={() => setIsEditModalOpen(true)}
+          className="text-[10px] font-mono text-primary/60 hover:text-primary uppercase tracking-[0.2em] transition-colors font-bold flex items-center space-x-1"
+        >
+          <span>Edit Narrative</span>
+          <span>→</span>
+        </button>
       </div>
 
       <Modal 

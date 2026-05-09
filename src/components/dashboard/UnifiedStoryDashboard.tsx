@@ -24,6 +24,8 @@ export const UnifiedStoryDashboard: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'overview' | 'characters' | 'scenes' | 'writing' | 'resources'>('overview');
   const [isSceneDetailOpen, setIsSceneDetailOpen] = useState(false);
+  const [isCharacterDetailOpen, setIsCharacterDetailOpen] = useState(false);
+  const [isResourceDetailOpen, setIsResourceDetailOpen] = useState(false);
 
   if (loading && !story) {
     return (
@@ -65,14 +67,14 @@ export const UnifiedStoryDashboard: React.FC = () => {
   return (
     <div className="flex flex-col lg:flex-row h-screen w-full overflow-hidden bg-background">
       {/* Sidebar/Bottom Navigation */}
-      <nav className={`w-full lg:w-24 bg-[#0b0c10] border-t lg:border-t-0 lg:border-r border-black/20 flex lg:flex-col items-center justify-between lg:justify-start px-6 lg:px-0 py-2 lg:py-12 z-50 transition-all duration-500 ${activeTab === 'writing' ? 'hidden' : ''}`}>
+      <nav className={`w-full lg:w-24 bg-[#0b0c10] border-t lg:border-t-0 lg:border-r border-black/20 flex lg:flex-col items-center justify-between lg:justify-start px-6 lg:px-0 py-2 lg:py-12 z-50 transition-all duration-500 ${(activeTab === 'writing') || (activeTab === 'characters' && isCharacterDetailOpen) || (activeTab === 'scenes' && isSceneDetailOpen) || (activeTab === 'resources' && isResourceDetailOpen) ? 'hidden' : ''}`}>
         <div className="hidden lg:block w-full">
           <DashboardHeader story={story} />
         </div>
         <NavigationTabs 
           activeTab={activeTab} 
           onTabChange={(tab) => setActiveTab(tab as any)}
-          hideMobileNav={activeTab === 'scenes' && isSceneDetailOpen}
+          hideMobileNav={(activeTab === 'scenes' && isSceneDetailOpen) || (activeTab === 'characters' && isCharacterDetailOpen) || (activeTab === 'resources' && isResourceDetailOpen)}
         />
       </nav>
 
@@ -83,7 +85,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
           <div className="flex-1 overflow-hidden">
             {activeTab === 'overview' && (
               <ErrorBoundary>
-                <div className="h-full overflow-y-auto custom-scrollbar">
+                <div className="h-full overflow-hidden">
                   <OverviewSection 
                     story={story} 
                     characters={characters}
@@ -106,6 +108,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
                   onCharacterAdd={addCharacter}
                   onCharacterUpdate={updateCharacter}
                   onCharacterDelete={deleteCharacter}
+                  onViewingCharacterChange={setIsCharacterDetailOpen}
                 />
               </ErrorBoundary>
             )}
@@ -145,6 +148,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
                   onResourceAdd={addResource}
                   onResourceUpdate={updateResource}
                   onResourceDelete={deleteResource}
+                  onViewingResourceChange={setIsResourceDetailOpen}
                 />
               </ErrorBoundary>
             )}

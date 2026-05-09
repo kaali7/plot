@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiBook, FiUsers, FiFilm, FiEdit3, FiArchive, FiArrowLeft } from 'react-icons/fi';
+import { FiBook, FiUsers, FiFilm, FiArchive, FiArrowLeft } from 'react-icons/fi';
 
 interface NavigationTabsProps {
   activeTab: 'overview' | 'characters' | 'scenes' | 'writing' | 'resources';

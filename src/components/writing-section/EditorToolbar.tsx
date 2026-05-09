@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { AIActionButton } from '../ai/AIActionButton';
 
 interface EditorToolbarProps {
   onSave: () => void;
   onExport: (format: string) => void;
   onDraftNarrative: () => void;
+  onAIAssist: () => void;
   onInsertReference: (type: 'character' | 'scene', id: string) => void;
   characters: any[];
   scenes: any[];
@@ -14,25 +16,37 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onSave,
   onExport,
   onDraftNarrative,
+  onAIAssist,
   isSaving: _isSaving
 }) => {
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
   return (
     <div className="flex items-center space-x-6">
-
+      <AIActionButton
+        onClick={onAIAssist}
+        label="AI Assist"
+        variant="outline"
+        className="hidden md:flex"
+        icon={
+          <svg className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3l1.912 5.813L20 10.5l-4.875 3.544L17 20l-5-3.5L7 20l1.875-5.956L4 10.5l6.088-1.687L12 3z" />
+          </svg>
+        }
+      />
 
       {/* Draft Narrative Action */}
-      <button
+      <AIActionButton
         onClick={onDraftNarrative}
-        className="hidden md:flex items-center space-x-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl border border-primary/20 transition-all group"
-        title="Forge Narrative from Structured Data"
-      >
-        <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-        <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Forge Skeleton</span>
-      </button>
+        label="Forge Skeleton"
+        variant="primary"
+        className="hidden md:flex"
+        icon={
+          <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        }
+      />
 
       {/* Export & Save Menu */}
       <div className="flex items-center space-x-4">

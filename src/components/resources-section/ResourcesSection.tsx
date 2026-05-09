@@ -1,27 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ResourceManager } from './ResourceManager';
 import { ResourceModal } from './ResourceModal';
 import { ResourceDetailView } from './ResourceDetailView';
+import { ImagePromptModal } from '../ai/ImagePromptModal';
+import { AIActionButton } from '../ai/AIActionButton';
 import type { Resource } from '../../types/story.types';
+import { useStory } from '../../context/StoryContext';
+import { buildAIContextSnapshot } from '../../lib/ai-context';
 
 interface ResourcesSectionProps {
   resources: Resource[];
   onResourceAdd: (resourceData: Partial<Resource>) => void;
   onResourceUpdate: (id: string, updates: Partial<Resource>) => void;
   onResourceDelete: (id: string) => void;
+  onViewingResourceChange?: (isViewing: boolean) => void;
 }
 
 export const ResourcesSection: React.FC<ResourcesSectionProps> = ({ 
   resources, 
   onResourceAdd, 
   onResourceUpdate, 
-  onResourceDelete 
+  onResourceDelete,
+  onViewingResourceChange 
 }) => {
+  const { story, characters, scenes, conflicts } = useStory();
   const [viewingResourceId, setViewingResourceId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImagePrompt, setShowImagePrompt] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const selectedResource = resources.find(r => r.id === viewingResourceId) || null;
+
+  useEffect(() => {
+    onViewingResourceChange?.(Boolean(viewingResourceId));
+  }, [onViewingResourceChange, viewingResourceId]);
+
+  const aiContext = useMemo(() => {
+    if (!story) return null;
+    return buildAIContextSnapshot({
+      story,
+      characters,
+      scenes,
+      conflicts,
+      resources,
+    });
+  }, [story, characters, scenes, conflicts, resources]);
 
   const handleResourceClick = (resource: Resource) => {
     setViewingResourceId(resource.id);
@@ -57,6 +80,15 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
     }
   };
 
+  const handleSaveAIImagePrompt = (prompt: string) => {
+    onResourceAdd({
+      title: `World Visual Spec: ${story?.name || 'Untitled'}`,
+      type: 'note',
+      content: prompt,
+      linked_entities: { characters: [], scenes: [], conflicts: [], worldSettings: [] }
+    });
+  };
+
   return (
     <div className="flex h-full overflow-hidden relative">
       {/* Sidebar Navigation - Resource List */}
@@ -66,7 +98,7 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
         {/* Detail View Close Button - Top Left */}
         {viewingResourceId && (
           <button 
-            onClick={() => setViewingResourceId(null)}
+            onClick={handleCloseDetail}
             className="absolute top-6 left-6 w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-500 z-50 shadow-2xl hover:scale-110 active:scale-95"
             title="Back to Library"
           >
@@ -81,10 +113,23 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
               <h2 className="text-2xl md:text-4xl font-serif font-black text-white tracking-tight uppercase">Narrative Library</h2>
               <p className="text-[10px] font-mono text-primary/40 uppercase tracking-[0.5em] mt-3 font-bold">Repository of Knowledge & Inspiration ({resources.length})</p>
             </div>
+            
+            <div className="flex items-center gap-4">
+              <AIActionButton
+                onClick={() => setShowImagePrompt(true)}
+                label="World Visual"
+                variant="primary"
+              />
+              
+              <button 
+                onClick={() => setShowAddModal(true)}
+                className="group flex items-center space-x-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl border border-white/10 transition-all"
+              >
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Add Resource</span>
+              </button>
+            </div>
           </div>
         )}
-
-        {/* Removed Close Button from sidebar as it was hidden behind the detail view */}
 
         {/* Navigation Area */}
         <div className={`flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-700 ${viewingResourceId ? 'pt-20' : ''}`}>
@@ -164,6 +209,19 @@ export const ResourcesSection: React.FC<ResourcesSectionProps> = ({
           onSave={handleSaveResource}
           onDelete={handleDeleteResource}
           onClose={handleCloseModal}
+        />
+      )}
+
+      {story && aiContext && (
+        <ImagePromptModal
+          isOpen={showImagePrompt}
+          onClose={() => setShowImagePrompt(false)}
+          entityType="world"
+          entityName={story.name}
+          entityPayload={story}
+          storyId={story.id}
+          context={aiContext}
+          onSaveAsResource={handleSaveAIImagePrompt}
         />
       )}
     </div>

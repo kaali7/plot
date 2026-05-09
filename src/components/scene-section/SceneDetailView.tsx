@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SceneScriptForm } from './forms/SceneScriptForm';
+import { AIActionButton } from '../ai/AIActionButton';
 import type { Scene, Character, Conflict } from '../../types/story.types';
 import { InlineResourceAttacher } from '../resources-section/InlineResourceAttacher';
 import { useStory } from '../../context/StoryContext';
+import { ImagePromptModal } from '../ai/ImagePromptModal';
+import { buildAIContextSnapshot } from '../../lib/ai-context';
+import { copyToClipboard } from '../../lib/clipboard';
+import { FiCopy, FiCheck } from 'react-icons/fi';
 
 interface SceneDetailViewProps {
   scene: Scene;
@@ -23,11 +28,56 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
   isIntegrated = false
 }) => {
   const [activeTab, setActiveTab] = useState<'script' | 'details'>('script');
-  const { resources } = useStory();
+  const [showImagePrompt, setShowImagePrompt] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { story, scenes, conflicts, resources, addResource } = useStory();
 
-  const linkedResourceIds = resources
-    .filter(r => r.linked_entities?.scenes?.includes(scene.id))
-    .map(r => r.id);
+  const linkedResources = resources.filter(r => r.linked_entities?.scenes?.includes(scene.id));
+  const linkedResourceIds = linkedResources.map(r => r.id);
+
+  const visualSpec = linkedResources.find(r => r.title.startsWith('Visual Spec:'));
+
+  const aiContext = useMemo(() => {
+    if (!story) return null;
+    return buildAIContextSnapshot({
+      story,
+      characters,
+      scenes,
+      conflicts,
+      resources,
+    });
+  }, [story, characters, scenes, conflicts, resources]);
+
+  const handleSaveAsResource = (prompt: string) => {
+    addResource({
+      title: `Visual Spec: ${scene.title}`,
+      type: 'note',
+      content: prompt,
+      linked_entities: {
+        characters: [],
+        scenes: [scene.id],
+        locations: []
+      }
+    });
+  };
+
+  const handleCopyPrompt = async () => {
+    let contentToCopy = '';
+    
+    if (visualSpec) {
+      contentToCopy = visualSpec.content;
+    } else {
+      // Fallback: Copy core scene data as a prompt
+      const castNames = scene.characters?.map(c => characters.find(char => char.id === c.characterId)?.name).filter(Boolean).join(', ') || 'None';
+      contentToCopy = `A scene titled "${scene.title}". Goal: ${scene.goal || ''}. Setting: ${scene.setting?.location || ''}. Cast: ${castNames}.`;
+    }
+
+    const success = await copyToClipboard(contentToCopy);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
    const viewContent = (
       <div className={`flex w-full max-w-full flex-col h-full overflow-x-hidden bg-[#050507] ${!isIntegrated ? 'relative h-[85vh] max-w-5xl border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-right duration-500 ease-out rounded-sm overflow-hidden' : 'rounded-tl-[2rem] md:rounded-tl-[3rem] border-l border-t border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]'}`}>
@@ -61,14 +111,32 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
             </div>
           </div>
 
-          {/* Edit Button - Moved to Header */}
-          <button
-            onClick={onEdit}
-            className="flex items-center space-x-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-primary hover:text-white hover:border-primary transition-all shrink-0"
-          >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-            <span className="hidden sm:inline">Edit Foundation</span>
-          </button>
+          {/* Action Buttons - Moved to Header */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCopyPrompt}
+              className="flex items-center space-x-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
+              title="Copy Visual Prompt"
+            >
+              {copied ? <FiCheck size={12} className="text-primary" /> : <FiCopy size={12} />}
+              <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy Prompt'}</span>
+            </button>
+
+            <AIActionButton
+              onClick={() => setShowImagePrompt(true)}
+              label="Image Gen"
+              mobileLabel="AI"
+              variant="secondary"
+            />
+
+            <button
+              onClick={onEdit}
+              className="flex items-center space-x-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+              <span className="hidden sm:inline">Edit Foundation</span>
+            </button>
+          </div>
         </div>
 
       {/* Modern Pill Tabs */}
@@ -205,6 +273,19 @@ export const SceneDetailView: React.FC<SceneDetailViewProps> = ({
             </div>
         )}
       </div>
+
+      {story && aiContext && (
+        <ImagePromptModal
+          isOpen={showImagePrompt}
+          onClose={() => setShowImagePrompt(false)}
+          entityType="scene"
+          entityName={scene.title}
+          entityPayload={scene}
+          storyId={story.id}
+          context={aiContext}
+          onSaveAsResource={handleSaveAsResource}
+        />
+      )}
     </div>
   );
 

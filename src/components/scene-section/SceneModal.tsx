@@ -14,6 +14,7 @@ import { Modal } from '../ui/Modal';
 
 interface SceneModalProps {
   scene: Scene | null;
+  initialData?: Partial<Scene>;
   characters: any[]; // Character type
   conflicts: any[]; // Conflict type
   onSave: (sceneData: Partial<Scene>) => void;
@@ -23,26 +24,27 @@ interface SceneModalProps {
 
 type TabId = 'basic' | 'setting' | 'characters' | 'events' | 'conflicts' | 'script' | 'outcome' | 'resources';
 
-export const SceneModal: React.FC<SceneModalProps> = ({ scene, characters, conflicts, onSave, onDelete, onClose }) => {
+export const SceneModal: React.FC<SceneModalProps> = ({ scene, initialData, characters, conflicts, onSave, onDelete, onClose }) => {
   const [activeTab, setActiveTab] = useState<TabId>('basic');
   
   const [formData, setFormData] = useState<Partial<Scene>>({
-    title: scene?.title || '',
-    type: scene?.type || 'transition',
-    order: scene?.order || 0,
-    pov_character_id: scene?.pov_character_id || undefined,
-    goal: scene?.goal || '',
-    setting: scene?.setting || { location: undefined, time: undefined, environment: undefined },
-    characters: scene?.characters || [],
-    events: scene?.events || { main: undefined, turningPoint: undefined },
-    conflicts: scene?.conflicts || { internal: undefined, external: undefined },
-    dialogue: scene?.dialogue || [],
-    background: scene?.background || '',
-    context: scene?.context || '',
-    situation_details: scene?.situation_details || '',
-    outcome: scene?.outcome || '',
-    impact: scene?.impact || ''
+    title: scene?.title || initialData?.title || '',
+    type: scene?.type || initialData?.type || 'transition',
+    order: scene?.order || initialData?.order || 0,
+    pov_character_id: scene?.pov_character_id || initialData?.pov_character_id || undefined,
+    goal: scene?.goal || initialData?.goal || '',
+    setting: scene?.setting || initialData?.setting || { location: undefined, time: undefined, environment: undefined },
+    characters: scene?.characters || initialData?.characters || [],
+    events: scene?.events || initialData?.events || { main: undefined, turningPoint: undefined },
+    conflicts: scene?.conflicts || initialData?.conflicts || { internal: undefined, external: undefined },
+    dialogue: scene?.dialogue || initialData?.dialogue || [],
+    background: scene?.background || initialData?.background || '',
+    context: scene?.context || initialData?.context || '',
+    situation_details: scene?.situation_details || initialData?.situation_details || '',
+    outcome: scene?.outcome || initialData?.outcome || '',
+    impact: scene?.impact || initialData?.impact || ''
   });
+
 
   const handleFormUpdate = (section: keyof Scene, data: any) => {
     setFormData(prev => ({

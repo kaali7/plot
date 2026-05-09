@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useStory } from '../../context/StoryContext';
-import { resourceAPI } from '../../lib/api';
 
 interface InlineResourceAttacherProps {
   entityType: 'characters' | 'scenes' | 'conflicts' | 'worldSettings';
@@ -8,6 +7,7 @@ interface InlineResourceAttacherProps {
   linkedResourceIds: string[];
   onLink?: (resourceId: string) => void;
   onUnlink?: (resourceId: string) => void;
+  compact?: boolean;
 }
 
 export const InlineResourceAttacher: React.FC<InlineResourceAttacherProps> = ({
@@ -16,8 +16,9 @@ export const InlineResourceAttacher: React.FC<InlineResourceAttacherProps> = ({
   linkedResourceIds,
   onLink,
   onUnlink,
+  compact = false,
 }) => {
-  const { resources, refetch } = useStory();
+  const { resources, updateResource } = useStory();
   const [isOpen, setIsOpen] = useState(false);
   const [isLinking, setIsLinking] = useState<string | null>(null);
 
@@ -27,9 +28,21 @@ export const InlineResourceAttacher: React.FC<InlineResourceAttacherProps> = ({
   const handleLink = async (resourceId: string) => {
     setIsLinking(resourceId);
     try {
-      await resourceAPI.linkResourceToEntity(resourceId, entityType, entityId);
+      const resource = resources.find(r => r.id === resourceId);
+      if (resource) {
+        const currentLinks = resource.linked_entities || { characters: [], scenes: [], conflicts: [], worldSettings: [] };
+        const entityLinks = currentLinks[entityType] || [];
+        
+        if (!entityLinks.includes(entityId)) {
+          await updateResource(resourceId, {
+            linked_entities: {
+              ...currentLinks,
+              [entityType]: [...entityLinks, entityId]
+            }
+          });
+        }
+      }
       if (onLink) onLink(resourceId);
-      await refetch();
     } catch (err) {
       console.error('Failed to link resource:', err);
     } finally {
@@ -40,17 +53,29 @@ export const InlineResourceAttacher: React.FC<InlineResourceAttacherProps> = ({
 
   const handleUnlink = async (resourceId: string) => {
     try {
-      await resourceAPI.unlinkResourceFromEntity(resourceId, entityType, entityId);
+      const resource = resources.find(r => r.id === resourceId);
+      if (resource) {
+        const currentLinks = resource.linked_entities || { characters: [], scenes: [], conflicts: [], worldSettings: [] };
+        const entityLinks = currentLinks[entityType] || [];
+        
+        if (entityLinks.includes(entityId)) {
+          await updateResource(resourceId, {
+            linked_entities: {
+              ...currentLinks,
+              [entityType]: entityLinks.filter(id => id !== entityId)
+            }
+          });
+        }
+      }
       if (onUnlink) onUnlink(resourceId);
-      await refetch();
     } catch (err) {
       console.error('Failed to unlink resource:', err);
     }
   };
 
   return (
-    <div className="mt-6 pt-6 border-t border-white/5">
-      <div className="flex items-center justify-between mb-4">
+    <div className={`${compact ? 'mt-3 pt-3' : 'mt-6 pt-6'} border-t border-white/5`}>
+      <div className={`flex items-center justify-between ${compact ? 'mb-2' : 'mb-4'}`}>
         <h4 className="text-[9px] font-mono text-editor-text-muted uppercase tracking-[0.3em] font-bold">
           Attached Resources ({linkedResources.length})
         </h4>

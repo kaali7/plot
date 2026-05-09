@@ -104,6 +104,7 @@ export const BasicInfoPanel: React.FC<BasicInfoPanelProps> = ({ story, onUpdate 
       
       <div className="pt-6 md:pt-10">
         <button
+          id="btn-edit-foundation"
           onClick={() => setIsModalOpen(true)}
           className="w-full md:w-fit px-8 py-4 md:py-3 bg-white/[0.02] border border-white/5 rounded-full text-[10px] font-mono text-white/40 uppercase tracking-[0.2em] hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all duration-300 flex items-center justify-center space-x-2"
         >

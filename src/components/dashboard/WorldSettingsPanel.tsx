@@ -105,6 +105,7 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ storyId,
 
       <div className="pt-4 md:pt-6">
         <button
+          id="btn-edit-setting"
           onClick={() => setIsModalOpen(true)}
           className="w-full md:w-fit px-8 py-4 md:py-3 bg-white/[0.02] border border-white/5 rounded-full text-[10px] font-mono text-white/40 uppercase tracking-[0.2em] hover:bg-green-500/10 hover:text-green-500 hover:border-green-500/30 transition-all duration-300 flex items-center justify-center"
         >

@@ -1,9 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { WritingEditor } from './WritingEditor';
+import type { WritingEditorHandle } from './WritingEditor';
 import { ReferencePanel } from './ReferencePanel';
 import { EditorToolbar } from './EditorToolbar';
+import { AIWritingPanel } from './AIWritingPanel';
 import type { WritingSession, Character, Scene } from '../../types/story.types';
 import { useStory } from '../../context/StoryContext';
+import { AI_CONFIG } from '@/lib/ai-config';
+import { aiService } from '@/lib/ai-service';
+import { buildAIContextSnapshot, plainTextFromHtml } from '@/lib/ai-context';
+import type { AIWritingAction } from '@/types/ai.types';
 
 interface WritingSectionProps {
   writingSession: WritingSession | null;
@@ -47,7 +53,9 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   onWritingUpdate,
   onClose
 }) => {
-  const { conflicts, resources } = useStory();
+  const { story, conflicts, resources } = useStory();
+  const editorRef = useRef<WritingEditorHandle>(null);
+  const aiAbortControllerRef = useRef<AbortController | null>(null);
   const [contentChunks, setContentChunks] = useState<string[]>(writingSession?.content ? [writingSession.content] : ['']);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [referencePanelOpen, setReferencePanelOpen] = useState(typeof window !== 'undefined' ? window.innerWidth > 1024 : false);
@@ -78,6 +86,11 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   const [isStyleMenuOpen, setIsStyleMenuOpen] = useState(false);
   const [isFormatMenuOpen, setIsFormatMenuOpen] = useState(false);
   const [isAlignMenuOpen, setIsAlignMenuOpen] = useState(false);
+  const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
+  const [selectedTextForAI, setSelectedTextForAI] = useState('');
+  const [generatedAIContent, setGeneratedAIContent] = useState('');
+  const [aiError, setAIError] = useState<string | null>(null);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   // Sync content with session
   useEffect(() => {
@@ -113,6 +126,112 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
     // Future: open detail view for the reference
   };
 
+  const openAIPanel = () => {
+    if (!AI_CONFIG.enabled) {
+      alert('AI features are disabled for this environment.');
+      return;
+    }
+
+    setSelectedTextForAI(editorRef.current?.getSelectionText() || '');
+    setGeneratedAIContent('');
+    setAIError(null);
+    setIsAIPanelOpen(true);
+  };
+
+  const handleCancelAI = useCallback(() => {
+    if (aiAbortControllerRef.current) {
+      aiAbortControllerRef.current.abort();
+      aiAbortControllerRef.current = null;
+      setIsGeneratingAI(false);
+    }
+  }, []);
+
+  const handleGenerateAI = async ({
+    action,
+    instructions,
+  }: {
+    action: AIWritingAction;
+    instructions: string;
+  }) => {
+    if (!writingSession) {
+      setAIError('Create or load a writing session before using AI assist.');
+      return;
+    }
+
+    if (!story) {
+      setAIError('Story context is unavailable.');
+      return;
+    }
+
+    try {
+      // Abort any existing request
+      if (aiAbortControllerRef.current) aiAbortControllerRef.current.abort();
+      aiAbortControllerRef.current = new AbortController();
+
+      setIsGeneratingAI(true);
+      setAIError(null);
+
+      const html = contentChunks.join('');
+      const plainText = plainTextFromHtml(html).slice(0, AI_CONFIG.limits.maxManuscriptChars);
+      const selectionText = selectedTextForAI.slice(0, AI_CONFIG.limits.maxSelectionChars);
+
+      const response = await aiService.assistWriting({
+        action,
+        storyId: story.id,
+        context: buildAIContextSnapshot({
+          story,
+          characters,
+          scenes,
+          conflicts,
+          resources,
+        }),
+        manuscript: {
+          html,
+          text: plainText,
+        },
+        selection: selectionText ? { text: selectionText } : undefined,
+        instructions: instructions.trim().slice(0, AI_CONFIG.limits.maxInstructionsChars),
+      }, aiAbortControllerRef.current.signal);
+
+      setGeneratedAIContent(response.content);
+    } catch (error: any) {
+      if (error?.name === 'AbortError') {
+        console.log('AI Generation Aborted');
+      } else {
+        setAIError(error instanceof Error ? error.message : 'Unable to generate AI draft.');
+      }
+    } finally {
+      setIsGeneratingAI(false);
+      aiAbortControllerRef.current = null;
+    }
+  };
+
+  const handleAcceptAI = () => {
+    if (!generatedAIContent.trim()) return;
+
+    let nextHtml = contentChunks.join('');
+    const normalized = generatedAIContent.replace(/\r\n/g, '\n');
+
+    if (selectedTextForAI.trim()) {
+      nextHtml = editorRef.current?.replaceSelectionWithText(normalized) || nextHtml;
+    } else {
+      const prefix = nextHtml.trim() ? '\n\n' : '';
+      nextHtml = editorRef.current?.insertTextAtCursor(`${prefix}${normalized}`) || nextHtml;
+    }
+
+    setContentChunks([nextHtml]);
+    setIsAIPanelOpen(false);
+    setGeneratedAIContent('');
+    setSelectedTextForAI('');
+    setAIError(null);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (aiAbortControllerRef.current) aiAbortControllerRef.current.abort();
+    };
+  }, []);
 
   const handleDraftNarrative = () => {
     if (!scenes || scenes.length === 0) {
@@ -209,6 +328,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
             onSave={() => onWritingUpdate(contentChunks.join('')).then(() => setLastSaved(new Date()))}
             onExport={(format) => alert(`Exporting as ${format}...`)}
             onDraftNarrative={handleDraftNarrative}
+            onAIAssist={openAIPanel}
             onInsertReference={(type, id) => console.log(`Inserting ${type} ${id}`)}
             characters={characters}
             scenes={scenes}
@@ -442,6 +562,7 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
             <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] lg:rounded-xl" />
             
             <WritingEditor 
+              ref={editorRef}
               value={contentChunks.join('')}
               onChange={(content) => setContentChunks([content])}
               onSelectionChange={setSelectionState}
@@ -503,6 +624,19 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
           </div>
         </div>
       </div>
+
+      <AIWritingPanel
+        isOpen={isAIPanelOpen}
+        onClose={() => setIsAIPanelOpen(false)}
+        onGenerate={handleGenerateAI}
+        onCancel={handleCancelAI}
+        onAccept={handleAcceptAI}
+        generatedContent={generatedAIContent}
+        selectedText={selectedTextForAI}
+        isLoading={isGeneratingAI}
+        error={aiError}
+        isReplaceMode={Boolean(selectedTextForAI.trim())}
+      />
     </div>
   );
 };

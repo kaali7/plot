@@ -18,23 +18,25 @@ interface CharacterModalProps {
   onSave: (characterData: Partial<Character>) => void;
   onDelete: () => void;
   onClose: () => void;
+  initialData?: Partial<Character>;
 }
 
-export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSave, onDelete, onClose }) => {
+export const CharacterModal: React.FC<CharacterModalProps> = ({ character, onSave, onDelete, onClose, initialData }) => {
   const [activeTab, setActiveTab] = useState<TabId>('basic');
   
   const [formData, setFormData] = useState<Partial<Character>>({
-    name: character?.name || '',
-    role: character?.role || 'supporting',
-    description: character?.description || '',
-    image_url: character?.image_url || '',
-    motivation: character?.motivation || { goal: undefined, fear: undefined, desire: undefined },
-    traits: character?.traits || { strengths: [], weaknesses: [], personality: [] },
-    conflicts: character?.conflicts || { internal: undefined, external: undefined },
-    relationships: character?.relationships || [],
-    arc: character?.arc || { start: undefined, end: undefined },
-    resources: character?.resources || []
+    name: character?.name || initialData?.name || '',
+    role: character?.role || initialData?.role || 'supporting',
+    description: character?.description || initialData?.description || '',
+    image_url: character?.image_url || initialData?.image_url || '',
+    motivation: character?.motivation || initialData?.motivation || { goal: undefined, fear: undefined, desire: undefined },
+    traits: character?.traits || initialData?.traits || { strengths: [], weaknesses: [], personality: [] },
+    conflicts: character?.conflicts || initialData?.conflicts || { internal: undefined, external: undefined },
+    relationships: character?.relationships || initialData?.relationships || [],
+    arc: character?.arc || initialData?.arc || { start: undefined, end: undefined },
+    resources: character?.resources || initialData?.resources || []
   });
+
 
   const handleFormUpdate = (section: keyof Character, data: any) => {
     setFormData(prev => ({
