@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 import type { Database } from '../types/story.types';
 import { getCurrentUserId } from './auth-helpers';
 import { sanitizeError } from './error-mapper';
+import { logger } from './logger';
 
 type Story = Database['public']['Tables']['stories']['Row'];
 type Conflict = Database['public']['Tables']['conflicts']['Row'];
@@ -19,7 +20,7 @@ const handleResponse = async <T>(promise: PromiseLike<any>): Promise<{ data: T |
     return { data, error: null };
   } catch (error) {
     // Log the actual error for developers
-    console.error('API Error:', error);
+    logger.error('API Error:', error);
     // Return a sanitized message for the user
     return { data: null, error: sanitizeError(error) };
   }
@@ -165,10 +166,27 @@ export const characterAPI = {
       supabase.from('characters').update(data).eq('id', characterId)
     );
 
-    // Note: This simple implementation doesn't handle unlinking. 
-    // In a full implementation, we'd diff the resources.
-    if (characterResources?.length) {
-      for (const resourceId of characterResources) {
+    // Diff-based resource link management
+    if (characterResources !== undefined) {
+      const newIds: string[] = characterResources || [];
+      
+      // Fetch currently linked resources for this character
+      const { data: allResources } = await supabase
+        .from('resources')
+        .select('id, linked_entities')
+        .contains('linked_entities', { characters: [characterId] });
+      
+      const currentlyLinked = (allResources || []).map(r => r.id);
+      
+      // Unlink removed resources
+      const toUnlink = currentlyLinked.filter(id => !newIds.includes(id));
+      for (const resourceId of toUnlink) {
+        await resourceAPI.unlinkResourceFromEntity(resourceId, 'characters', characterId);
+      }
+      
+      // Link newly added resources
+      const toLink = newIds.filter(id => !currentlyLinked.includes(id));
+      for (const resourceId of toLink) {
         await resourceAPI.linkResourceToEntity(resourceId, 'characters', characterId);
       }
     }
@@ -230,8 +248,27 @@ export const sceneAPI = {
       supabase.from('scenes').update(data).eq('id', sceneId)
     );
 
-    if (sceneResources?.length) {
-      for (const resourceId of sceneResources) {
+    // Diff-based resource link management
+    if (sceneResources !== undefined) {
+      const newIds: string[] = sceneResources || [];
+      
+      // Fetch currently linked resources for this scene
+      const { data: allResources } = await supabase
+        .from('resources')
+        .select('id, linked_entities')
+        .contains('linked_entities', { scenes: [sceneId] });
+      
+      const currentlyLinked = (allResources || []).map(r => r.id);
+      
+      // Unlink removed resources
+      const toUnlink = currentlyLinked.filter(id => !newIds.includes(id));
+      for (const resourceId of toUnlink) {
+        await resourceAPI.unlinkResourceFromEntity(resourceId, 'scenes', sceneId);
+      }
+      
+      // Link newly added resources
+      const toLink = newIds.filter(id => !currentlyLinked.includes(id));
+      for (const resourceId of toLink) {
         await resourceAPI.linkResourceToEntity(resourceId, 'scenes', sceneId);
       }
     }
@@ -247,21 +284,13 @@ export const sceneAPI = {
   },
   
   // Reorder scenes
-  reorderScenes: async (_storyId: string, sceneIds: string[]) => {
-    // Update each scene with correct order in parallel
-    // We remove the reset to 0 to avoid temporary collisions and redundant writes
-    const promises = sceneIds.map((id, index) =>
-      supabase.from('scenes').update({ order: index }).eq('id', id)
+  reorderScenes: async (storyId: string, sceneIds: string[]) => {
+    return handleResponse(
+      supabase.rpc('reorder_scenes', {
+        p_story_id: storyId,
+        p_new_order: sceneIds
+      })
     );
-    
-    const results = await Promise.all(promises);
-    const errors = results.map(r => r.error).filter(Boolean);
-    
-    if (errors.length > 0) {
-      return { data: null, error: errors[0]?.message || 'Error reordering scenes' };
-    }
-    
-    return { data: sceneIds, error: null };
   }
 };
 
@@ -389,9 +418,25 @@ export const writingAPI = {
   }
 };
 
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+  'application/pdf', 'text/plain', 'text/markdown',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 // Storage API
 export const storageAPI = {
   uploadFile: async (bucket: string, path: string, file: File) => {
+    // Validate file type
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return { data: null, error: `File type "${file.type}" is not allowed. Accepted: images, PDFs, text documents.` };
+    }
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      return { data: null, error: `File exceeds maximum size of 10MB.` };
+    }
     return handleResponse(
       supabase.storage.from(bucket).upload(path, file, {
         upsert: true

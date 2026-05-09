@@ -95,14 +95,6 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ storyId,
         )}
       </div>
 
-      <div className="pt-2">
-        <InlineResourceAttacher
-          entityType="worldSettings"
-          entityId={storyId}
-          linkedResourceIds={linkedResourceIds}
-        />
-      </div>
-
       <div className="pt-4 md:pt-6">
         <button
           id="btn-edit-setting"
@@ -204,6 +196,18 @@ export const WorldSettingsPanel: React.FC<WorldSettingsPanelProps> = ({ storyId,
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Resource Attachments */}
+          <div className="pt-4 border-t border-white/5">
+            <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-4">
+              Attached References
+            </label>
+            <InlineResourceAttacher
+              entityType="worldSettings"
+              entityId={storyId}
+              linkedResourceIds={linkedResourceIds}
+            />
           </div>
         </div>
       </Modal>

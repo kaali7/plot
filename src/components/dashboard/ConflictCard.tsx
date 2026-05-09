@@ -82,6 +82,11 @@ export const ConflictCard: React.FC<ConflictCardProps> = ({ conflict, onUpdate, 
             {conflict.type}
           </span>
           <h3 className="text-[14px] font-serif font-bold text-white/90 group-hover:text-orange-400 transition-colors leading-tight line-clamp-1">{conflict.title}</h3>
+          {linkedResourceIds.length > 0 && (
+            <span className="text-[8px] font-mono text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20 ml-auto">
+              {linkedResourceIds.length} ref{linkedResourceIds.length !== 1 ? 's' : ''}
+            </span>
+          )}
         </div>
         
         {conflict.description && (

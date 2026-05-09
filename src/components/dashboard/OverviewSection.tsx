@@ -3,12 +3,13 @@ import { BasicInfoPanel } from './BasicInfoPanel';
 import { WorldSettingsPanel } from './WorldSettingsPanel';
 import { ConflictBuilder } from './ConflictBuilder';
 import UnifiedStoryOverview from '../story/UnifiedStoryOverview';
-import type { Story, Character, WorldSettings, Conflict } from '../../types/story.types';
+import type { Story, Character, WorldSettings, Conflict, Resource } from '../../types/story.types';
 
 interface OverviewSectionProps {
   story: Story;
   characters: Character[];
   conflicts: Conflict[];
+  resources: Resource[];
   worldSettings: WorldSettings;
   onWorldSettingsUpdate: (settings: WorldSettings) => void;
   onStoryUpdate: (updates: Partial<Story>) => void;
@@ -21,6 +22,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
   story,
   characters,
   conflicts,
+  resources,
   worldSettings,
   onWorldSettingsUpdate,
   onStoryUpdate,
@@ -28,6 +30,17 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
   onConflictUpdate,
   onConflictDelete
 }) => {
+  // Compute linked resource counts
+  const worldRefCount = (resources || []).filter(r => 
+    r.linked_entities?.worldSettings?.includes(story.id)
+  ).length;
+  
+  const conflictResourceCounts = (conflicts || []).reduce((acc, c) => {
+    acc[c.id] = (resources || []).filter(r => 
+      r.linked_entities?.conflicts?.includes(c.id)
+    ).length;
+    return acc;
+  }, {} as Record<string, number>);
   return (
     <div className="h-full w-full p-4 lg:p-6 flex flex-col overflow-y-auto lg:overflow-hidden custom-scrollbar bg-background/50">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-full">
@@ -54,7 +67,18 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
                     </div>
                   )}
                   <p className="text-[12px] font-serif italic text-editor-text-muted line-clamp-3 leading-relaxed border-l-2 border-primary/30 pl-4 mt-2">
-                    {story.description?.startsWith('{') ? JSON.parse(story.description).premise : story.description || "No core premise established."}
+                    {(() => {
+                      if (!story.description) return "No core premise established.";
+                      if (story.description.startsWith('{')) {
+                        try {
+                          const parsed = JSON.parse(story.description);
+                          return parsed.premise || story.description;
+                        } catch {
+                          return story.description;
+                        }
+                      }
+                      return story.description;
+                    })()}
                   </p>
                 </div>
               </div>
@@ -77,6 +101,11 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
               <div className="flex items-center space-x-3 mb-4 pb-3 border-b border-white/5 relative">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></div>
                 <h2 className="text-[11px] font-mono text-editor-text-muted uppercase tracking-[0.3em] font-bold group-hover:text-green-500 transition-colors">Setting</h2>
+                {worldRefCount > 0 && (
+                  <span className="text-[8px] font-mono text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 ml-auto">
+                    {worldRefCount} ref{worldRefCount !== 1 ? 's' : ''}
+                  </span>
+                )}
                 <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-green-500 group-hover:w-full transition-all duration-500"></div>
               </div>
               <div className="flex-1 overflow-hidden flex flex-col space-y-4">

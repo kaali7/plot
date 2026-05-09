@@ -90,6 +90,7 @@ export const UnifiedStoryDashboard: React.FC = () => {
                     story={story} 
                     characters={characters}
                     conflicts={conflicts}
+                    resources={resources}
                     worldSettings={story.world_settings}
                     onWorldSettingsUpdate={updateWorldSettings}
                     onStoryUpdate={updateStory}

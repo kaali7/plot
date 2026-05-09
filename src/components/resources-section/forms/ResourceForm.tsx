@@ -69,6 +69,43 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ data, onUpdate, erro
 
   return (
     <div className="space-y-6">
+      {/* Prominent Upload Zone for Image/Document Types */}
+      {(data.type === 'image' || data.type === 'document') && !data.file_path && (
+        <div 
+          onClick={() => fileInputRef.current?.click()}
+          className="relative flex flex-col items-center justify-center p-8 md:p-12 border-2 border-dashed border-primary/30 rounded-2xl bg-primary/[0.02] hover:bg-primary/[0.05] hover:border-primary/50 transition-all cursor-pointer group"
+        >
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <FiUpload size={24} className="text-primary" />
+          </div>
+          <p className="text-sm font-sans font-bold text-white mb-1">
+            {data.type === 'image' ? 'Upload Image' : 'Upload Document'}
+          </p>
+          <p className="text-[10px] font-mono text-editor-text-muted uppercase tracking-widest">
+            Click to browse files
+          </p>
+        </div>
+      )}
+
+      {/* Uploaded File Banner */}
+      {data.file_path && (
+        <div className="flex items-center justify-between p-4 bg-green-500/5 border border-green-500/20 rounded-xl">
+          <div className="flex items-center space-x-3">
+            <FiCheck size={16} className="text-green-400" />
+            <span className="text-sm font-mono text-green-400 truncate max-w-[200px]">
+              {data.file_path.split('/').pop()}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onUpdate({ ...data, file_path: '', url: '' })}
+            className="p-2 text-red-500/50 hover:text-red-500 transition-colors"
+          >
+            <FiX size={16} />
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Resource Type</label>
@@ -125,55 +162,57 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ data, onUpdate, erro
           {errors.url && <p className="text-red-500 text-[10px] font-mono mt-1 uppercase tracking-wider">{errors.url}</p>}
         </div>
 
-        <div>
-          <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Resource Attachment</label>
-          <div className="flex items-center space-x-3">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg border border-dashed transition-all
-                ${uploading 
-                  ? 'bg-white/[0.02] border-white/10 text-white/20' 
-                  : data.file_path 
-                    ? 'bg-green-500/5 border-green-500/20 text-green-400' 
-                    : 'bg-white/[0.02] border-white/20 text-white/40 hover:border-white/40 hover:text-white'}`}
-            >
-              {uploading ? (
-                <>
-                  <FiLoader size={14} className="animate-spin" />
-                  <span className="text-[10px] font-mono uppercase tracking-widest">Uploading...</span>
-                </>
-              ) : data.file_path ? (
-                <>
-                  <FiCheck size={14} />
-                  <span className="text-[10px] font-mono uppercase tracking-widest line-clamp-1">{data.file_path.split('/').pop()}</span>
-                </>
-              ) : (
-                <>
-                  <FiUpload size={14} />
-                  <span className="text-[10px] font-mono uppercase tracking-widest">Upload Archive</span>
-                </>
-              )}
-            </button>
-            {data.file_path && (
+        {data.type !== 'image' && data.type !== 'document' && (
+          <div>
+            <label className="block text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-editor-text-muted mb-2">Resource Attachment</label>
+            <div className="flex items-center space-x-3">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                className="hidden"
+              />
               <button
                 type="button"
-                onClick={() => onUpdate({ ...data, file_path: '', url: '' })}
-                className="p-2 text-red-500/50 hover:text-red-500 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className={`flex-1 flex items-center justify-center space-x-2 px-4 py-2 rounded-lg border border-dashed transition-all
+                  ${uploading 
+                    ? 'bg-white/[0.02] border-white/10 text-white/20' 
+                    : data.file_path 
+                      ? 'bg-green-500/5 border-green-500/20 text-green-400' 
+                      : 'bg-white/[0.02] border-white/20 text-white/40 hover:border-white/40 hover:text-white'}`}
               >
-                <FiX size={16} />
+                {uploading ? (
+                  <>
+                    <FiLoader size={14} className="animate-spin" />
+                    <span className="text-[10px] font-mono uppercase tracking-widest">Uploading...</span>
+                  </>
+                ) : data.file_path ? (
+                  <>
+                    <FiCheck size={14} />
+                    <span className="text-[10px] font-mono uppercase tracking-widest line-clamp-1">{data.file_path.split('/').pop()}</span>
+                  </>
+                ) : (
+                  <>
+                    <FiUpload size={14} />
+                    <span className="text-[10px] font-mono uppercase tracking-widest">Upload Archive</span>
+                  </>
+                )}
               </button>
-            )}
+              {data.file_path && (
+                <button
+                  type="button"
+                  onClick={() => onUpdate({ ...data, file_path: '', url: '' })}
+                  className="p-2 text-red-500/50 hover:text-red-500 transition-colors"
+                >
+                  <FiX size={16} />
+                </button>
+              )}
+            </div>
+            {uploadError && <p className="text-red-500 text-[10px] font-mono mt-1 uppercase tracking-wider">{uploadError}</p>}
           </div>
-          {uploadError && <p className="text-red-500 text-[10px] font-mono mt-1 uppercase tracking-wider">{uploadError}</p>}
-        </div>
+        )}
       </div>
     </div>
   );

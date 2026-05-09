@@ -6,6 +6,7 @@ import { EditorToolbar } from './EditorToolbar';
 import { AIWritingPanel } from './AIWritingPanel';
 import type { WritingSession, Character, Scene } from '../../types/story.types';
 import { useStory } from '../../context/StoryContext';
+import api from '../../lib/api';
 import { AI_CONFIG } from '@/lib/ai-config';
 import { aiService } from '@/lib/ai-service';
 import { buildAIContextSnapshot, plainTextFromHtml } from '@/lib/ai-context';
@@ -53,9 +54,18 @@ export const WritingSection: React.FC<WritingSectionProps> = ({
   onWritingUpdate,
   onClose
 }) => {
-  const { story, conflicts, resources } = useStory();
+  const { story, conflicts, resources, refetch } = useStory();
   const editorRef = useRef<WritingEditorHandle>(null);
   const aiAbortControllerRef = useRef<AbortController | null>(null);
+
+  // Auto-create writing session if missing
+  useEffect(() => {
+    if (story && !writingSession) {
+      api.writing.createWritingSession(story.id).then((res) => {
+        if (!res.error) refetch();
+      });
+    }
+  }, [story?.id, writingSession, refetch]);
   const [contentChunks, setContentChunks] = useState<string[]>(writingSession?.content ? [writingSession.content] : ['']);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [referencePanelOpen, setReferencePanelOpen] = useState(typeof window !== 'undefined' ? window.innerWidth > 1024 : false);
