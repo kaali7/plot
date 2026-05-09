@@ -18,8 +18,16 @@ export const ResourceDetailView: React.FC<ResourceDetailViewProps> = ({
 
   const viewContent = (
     <div className={`flex flex-col h-full bg-[#050507] ${!isIntegrated ? 'relative w-full max-w-5xl h-[85vh] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in slide-in-from-right duration-500 ease-out rounded-sm overflow-hidden' : 'w-full rounded-tl-[3rem] border-l border-t border-white/5 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]'}`}>
+      {/* Mobile Close Button - Left Side */}
+      <button 
+        onClick={onClose}
+        className="md:hidden absolute top-6 left-6 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-primary hover:text-white backdrop-blur-md transition-all duration-300 z-[60]"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+
       {/* Streamlined Typographic Header */}
-      <div className="pt-12 md:pt-16 px-6 md:px-12 pb-5 md:pb-10 border-b border-white/[0.03] flex items-center justify-between z-30 relative">
+      <div className="pt-8 md:pt-10 pl-20 pr-6 md:pl-24 md:pr-12 pb-4 md:pb-6 border-b border-white/[0.03] flex items-center justify-between z-30 relative">
         {isIntegrated && (
           <div className="absolute top-0 left-0 w-24 h-24 border-tl border-white/20 rounded-tl-[3rem] -translate-x-1 -translate-y-1 opacity-20 pointer-events-none hidden md:block" />
         )}
@@ -36,51 +44,55 @@ export const ResourceDetailView: React.FC<ResourceDetailViewProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Action Buttons - Moved to Header */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onEdit}
+            className="flex items-center space-x-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[8px] md:text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all shrink-0"
+          >
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+            <span className="hidden sm:inline">Modify Archive</span>
+          </button>
+        </div>
       </div>
 
-      {/* Action Tabs */}
-      <div className="flex flex-wrap md:flex-nowrap items-center gap-2 md:space-x-3 px-4 md:px-6 py-2 md:py-3 bg-black/[0.1] border-b border-white/5">
-        <button
-          onClick={() => setActiveTab('content')}
-          className={`px-3 py-1.5 md:px-6 md:py-2 rounded-full text-[8px] md:text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap
-          ${activeTab === 'content' 
-            ? 'bg-primary text-white shadow-primary-glow' 
-            : 'text-editor-text-muted hover:text-white hover:bg-white/5 border border-white/10'}`}
-        >
-          Folio Content
-        </button>
-        <button
-          onClick={() => setActiveTab('connections')}
-          className={`px-3 py-1.5 md:px-6 md:py-2 rounded-full text-[8px] md:text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap
-          ${activeTab === 'connections' 
-            ? 'bg-primary text-white shadow-primary-glow' 
-            : 'text-editor-text-muted hover:text-white hover:bg-white/5 border border-white/10'}`}
-        >
-          Entity Connections
-        </button>
-        <button
-          onClick={() => setActiveTab('metadata')}
-          className={`px-3 py-1.5 md:px-6 md:py-2 rounded-full text-[8px] md:text-[9px] font-mono font-bold uppercase tracking-[0.15em] transition-all whitespace-nowrap
-          ${activeTab === 'metadata' 
-            ? 'bg-primary text-white shadow-primary-glow' 
-            : 'text-editor-text-muted hover:text-white hover:bg-white/5 border border-white/10'}`}
-        >
-          Source Metadata
-        </button>
+      {/* Modern Pill Tabs */}
+      <div className="px-4 md:px-6 py-2 md:py-3 bg-[#050507] border-b border-white/[0.02]">
+        <div className="inline-flex w-full md:max-w-md items-center rounded-2xl bg-[#12151d] p-[3px] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)] overflow-x-auto no-scrollbar">
+          <button
+            onClick={() => setActiveTab('content')}
+            className={`flex flex-1 items-center justify-center px-4 py-1.5 rounded-xl text-center text-[8px] md:text-[9px] font-bold uppercase tracking-[0.16em] leading-none transition-all whitespace-nowrap
+              ${activeTab === 'content'
+                ? 'bg-primary text-white shadow-primary-glow'
+                : 'text-[#7e8490] hover:text-white hover:bg-white/[0.03]'}`}
+          >
+            Content
+          </button>
+          <button
+            onClick={() => setActiveTab('connections')}
+            className={`flex flex-1 items-center justify-center px-4 py-1.5 rounded-xl text-center text-[8px] md:text-[9px] font-bold uppercase tracking-[0.16em] leading-none transition-all whitespace-nowrap
+              ${activeTab === 'connections'
+                ? 'bg-primary text-white shadow-primary-glow'
+                : 'text-[#7e8490] hover:text-white hover:bg-white/[0.03]'}`}
+          >
+            Connections
+          </button>
+          <button
+            onClick={() => setActiveTab('metadata')}
+            className={`flex flex-1 items-center justify-center px-4 py-1.5 rounded-xl text-center text-[8px] md:text-[9px] font-bold uppercase tracking-[0.16em] leading-none transition-all whitespace-nowrap
+              ${activeTab === 'metadata'
+                ? 'bg-primary text-white shadow-primary-glow'
+                : 'text-[#7e8490] hover:text-white hover:bg-white/[0.03]'}`}
+          >
+            Metadata
+          </button>
+        </div>
       </div>
 
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar bg-black/[0.05]">
-        <div className="p-8">
-          <div className="flex justify-end mb-6">
-            <button
-              onClick={onEdit}
-              className="flex items-center space-x-2 px-4 py-1.5 bg-white/[0.03] border border-white/10 rounded-full text-[9px] font-mono text-white/40 uppercase tracking-widest hover:bg-primary hover:text-white hover:border-primary transition-all"
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-              <span>Modify Archive</span>
-            </button>
-          </div>
+        <div className="p-4 md:p-8">
 
           {activeTab === 'content' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-8">
