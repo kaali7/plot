@@ -127,5 +127,22 @@ BEGIN
         1
     );
 
+    -- 6. Insert a Sample Resource
+    INSERT INTO resources (
+        story_id,
+        title,
+        type,
+        content,
+        url,
+        linked_entities
+    ) VALUES (
+        v_story_id,
+        'The Great Reset of 2142',
+        'note',
+        'A digital archive of the events leading to the memory hegemony.',
+        'https://history.under-net.local/reset',
+        jsonb_build_object('worldSettings', jsonb_build_array(v_story_id))
+    );
+
     RAISE NOTICE 'Seed data successfully inserted for story: The Neon Manuscript';
 END $$;

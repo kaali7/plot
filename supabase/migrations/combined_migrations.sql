@@ -1,5 +1,5 @@
--- Combined Supabase Migrations (Fixed & Simplified)
--- Generated on 2026-05-04
+-- Combined Supabase Migrations (Fixed, Simplified & Hardened)
+-- Updated on 2026-05-09
 
 -- 1. Create profiles table that extends auth.users
 CREATE TABLE IF NOT EXISTS profiles (
@@ -221,6 +221,19 @@ CREATE TABLE IF NOT EXISTS writing_versions (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create AI Usage Tracking Table
+CREATE TABLE IF NOT EXISTS public.ai_usage (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    story_id UUID REFERENCES public.stories(id) ON DELETE SET NULL,
+    feature_name TEXT NOT NULL, -- 'writing', 'character', 'scene', 'image-prompt'
+    model_name TEXT NOT NULL,
+    prompt_tokens INTEGER,
+    completion_tokens INTEGER,
+    total_tokens INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- Enable Row Level Security
 ALTER TABLE stories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE conflicts ENABLE ROW LEVEL SECURITY;
@@ -229,6 +242,7 @@ ALTER TABLE scenes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE resources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE writing_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE writing_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ai_usage ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
 DROP POLICY IF EXISTS "Users can only access own story conflicts" ON conflicts;
@@ -265,6 +279,14 @@ CREATE POLICY "Users can only access own writing versions" ON writing_versions F
    )
 );
 
+CREATE POLICY "Users can view their own AI usage" 
+ON public.ai_usage FOR SELECT 
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can log their own AI usage" 
+ON public.ai_usage FOR INSERT 
+WITH CHECK (auth.uid() = user_id);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_stories_user_id ON stories(user_id);
 CREATE INDEX IF NOT EXISTS idx_characters_story_id ON characters(story_id);
@@ -273,6 +295,9 @@ CREATE INDEX IF NOT EXISTS idx_scenes_order ON scenes(story_id, "order");
 CREATE INDEX IF NOT EXISTS idx_conflicts_story_id ON conflicts(story_id);
 CREATE INDEX IF NOT EXISTS idx_resources_story_id ON resources(story_id);
 CREATE INDEX IF NOT EXISTS idx_writing_sessions_story_id ON writing_sessions(story_id);
+CREATE INDEX IF NOT EXISTS ai_usage_user_id_idx ON public.ai_usage (user_id);
+CREATE INDEX IF NOT EXISTS ai_usage_story_id_idx ON public.ai_usage (story_id);
+CREATE INDEX IF NOT EXISTS ai_usage_created_at_idx ON public.ai_usage (created_at);
 
 -- Updated_at triggers
 CREATE OR REPLACE FUNCTION update_updated_at_column() RETURNS TRIGGER AS $$
@@ -304,8 +329,9 @@ CREATE OR REPLACE FUNCTION link_resource_to_entity(
 RETURNS VOID AS $$
 DECLARE
   v_story_id UUID;
+  v_current_links JSONB;
 BEGIN
-  SELECT r.story_id INTO v_story_id
+  SELECT r.story_id, r.linked_entities INTO v_story_id, v_current_links
   FROM resources r
   JOIN stories s ON r.story_id = s.id
   WHERE r.id = p_resource_id AND s.user_id = auth.uid();
@@ -314,41 +340,18 @@ BEGIN
     RAISE EXCEPTION 'Access denied: resource not found or not owned by current user';
   END IF;
 
-  IF p_entity_type = 'characters' THEN
-    UPDATE resources
-    SET linked_entities = jsonb_set(
-      linked_entities,
-      '{characters}',
-      COALESCE(linked_entities->'characters', '[]'::jsonb) || to_jsonb(p_entity_id)
-    )
-    WHERE id = p_resource_id;
-  ELSIF p_entity_type = 'scenes' THEN
-    UPDATE resources
-    SET linked_entities = jsonb_set(
-      linked_entities,
-      '{scenes}',
-      COALESCE(linked_entities->'scenes', '[]'::jsonb) || to_jsonb(p_entity_id)
-    )
-    WHERE id = p_resource_id;
-  ELSIF p_entity_type = 'conflicts' THEN
-    UPDATE resources
-    SET linked_entities = jsonb_set(
-      linked_entities,
-      '{conflicts}',
-      COALESCE(linked_entities->'conflicts', '[]'::jsonb) || to_jsonb(p_entity_id)
-    )
-    WHERE id = p_resource_id;
-  ELSIF p_entity_type = 'worldSettings' THEN
-    UPDATE resources
-    SET linked_entities = jsonb_set(
-      linked_entities,
-      '{worldSettings}',
-      COALESCE(linked_entities->'worldSettings', '[]'::jsonb) || to_jsonb(p_entity_id)
-    )
-    WHERE id = p_resource_id;
-  ELSE
-    RAISE EXCEPTION 'Invalid entity_type: %', p_entity_type;
+  -- Skip if already linked (deduplication)
+  IF COALESCE(v_current_links->p_entity_type, '[]'::jsonb) ? p_entity_id::text THEN
+    RETURN;
   END IF;
+
+  UPDATE resources
+  SET linked_entities = jsonb_set(
+    linked_entities,
+    ARRAY[p_entity_type],
+    COALESCE(linked_entities->p_entity_type, '[]'::jsonb) || to_jsonb(p_entity_id)
+  )
+  WHERE id = p_resource_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -417,10 +420,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Grants
-GRANT EXECUTE ON FUNCTION link_resource_to_entity TO anon, authenticated;
-GRANT EXECUTE ON FUNCTION unlink_resource_from_entity TO anon, authenticated;
-GRANT EXECUTE ON FUNCTION reorder_scenes TO anon, authenticated;
+-- Grants (Only to authenticated users)
+GRANT EXECUTE ON FUNCTION link_resource_to_entity TO authenticated;
+GRANT EXECUTE ON FUNCTION unlink_resource_from_entity TO authenticated;
+GRANT EXECUTE ON FUNCTION reorder_scenes TO authenticated;
 
 -- 5. Add Scene Context and Situation Details fields (2026-05-05)
 ALTER TABLE scenes 
