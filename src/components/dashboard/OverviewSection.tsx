@@ -35,12 +35,6 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
     r.linked_entities?.worldSettings?.includes(story.id)
   ).length;
   
-  const conflictResourceCounts = (conflicts || []).reduce((acc, c) => {
-    acc[c.id] = (resources || []).filter(r => 
-      r.linked_entities?.conflicts?.includes(c.id)
-    ).length;
-    return acc;
-  }, {} as Record<string, number>);
   return (
     <div className="h-full w-full p-4 lg:p-6 flex flex-col overflow-y-auto lg:overflow-hidden custom-scrollbar bg-background/50">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-full">
